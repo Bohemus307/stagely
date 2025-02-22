@@ -35,24 +35,29 @@ export function ThemedText({
 
 const styles = StyleSheet.create({
   default: {
+    fontFamily: "Montserrat",
     fontSize: 16,
     lineHeight: 24,
   },
   defaultSemiBold: {
+    fontFamily: "Montserrat",
     fontSize: 16,
     lineHeight: 24,
     fontWeight: "600",
   },
   title: {
+    fontFamily: "Montserrat",
     fontSize: 32,
     fontWeight: "bold",
     lineHeight: 32,
   },
   subtitle: {
+    fontFamily: "CrimsonText",
     fontSize: 20,
     fontWeight: "bold",
   },
   link: {
+    fontFamily: "CrimsonText",
     lineHeight: 30,
     fontSize: 16,
     color: "#7C94A4",
