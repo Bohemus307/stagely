@@ -1,22 +1,19 @@
-import { Image, StyleSheet, Button, Alert, Text } from 'react-native';
+import { Button, Image, StyleSheet, View, Text } from 'react-native';
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { useAuth0 } from 'react-native-auth0';
+import { useAuth0 } from 'react-native-auth0'; 
 
 export default function HomeScreen() {
-  const { authorize, clearSession, user, error, getCredentials, isLoading } =
-    useAuth0();
+  const { user, clearSession } = useAuth0();
 
-  const onLogin = async () => {
+  const onLogout = async () => {
     try {
-      await authorize();
-      let credentials = await getCredentials();
-      Alert.alert("AccessToken: " + credentials?.accessToken);
+      await clearSession();
     } catch (e) {
-      console.log(e);
+      console.log("Log out cancelled");
     }
   };
 
@@ -32,12 +29,9 @@ export default function HomeScreen() {
     >
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Welcome!</ThemedText>
+        <Text>{user?.email}</Text>
         <HelloWave />
-        <Button
-          onPress={onLogin}
-          title={"Log In"}
-        />
-        {error && <Text>{error.message}</Text>}
+        <Button onPress={onLogout} title={"Log Out"} />
       </ThemedView>
     </ParallaxScrollView>
   );
@@ -48,6 +42,12 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     gap: 8,
+  },
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F5FCFF",
   },
   stepContainer: {
     gap: 8,

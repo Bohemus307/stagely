@@ -1,15 +1,22 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
+import { Button, Platform, View, Text, StyleSheet } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAuth0 } from 'react-native-auth0';
+import Login from '@/components/Login';
 
 export default function TabLayout() {
+  const { user } = useAuth0();
   const colorScheme = useColorScheme();
+
+  if (!user) {
+    return <Login />;
+  }
 
   return (
     <Tabs

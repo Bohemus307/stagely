@@ -34,9 +34,9 @@ export default function RootLayout() {
 
   return (
     <Auth0Provider domain={DOMAIN} clientId={CLIENT_ID}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: true }} />
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />
