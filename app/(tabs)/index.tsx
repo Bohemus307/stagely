@@ -1,14 +1,15 @@
-import { Button, Image, StyleSheet, Text } from 'react-native';
+import { Image, StyleSheet, Text } from 'react-native';
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useAuth0 } from 'react-native-auth0'; 
+import { Button, ButtonText } from '@/components/ui/button';
 
 export default function HomeScreen() {
   const { user, clearSession } = useAuth0();
-
+console.log(user)
   const onLogout = async () => {
     try {
       await clearSession();
@@ -31,7 +32,9 @@ export default function HomeScreen() {
         <ThemedText type="title">Welcome!</ThemedText>
         <Text>{user?.email}</Text>
         <HelloWave />
-        <Button onPress={onLogout} title={"Log Out"} />
+        <Button onPress={onLogout}>
+          <ButtonText>Log Out</ButtonText>
+        </Button>
       </ThemedView>
     </ParallaxScrollView>
   );

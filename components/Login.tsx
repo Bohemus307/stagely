@@ -1,6 +1,7 @@
-import { View, Button, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { Image } from "expo-image";
 import { useAuth0 } from "react-native-auth0";
+import { Button, ButtonText } from "./ui/button";
 
 export default function Login() {
   const { authorize, error, isLoading } = useAuth0();
@@ -29,7 +30,7 @@ export default function Login() {
         contentFit="contain"
         transition={1000}
       />
-      <Button onPress={onLogin} title={"Log In"} />
+      <Button onPress={onLogin}><ButtonText>Log In</ButtonText></Button>
       
       {error && <Text>{error.message}</Text>}
 
@@ -43,6 +44,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#FFF",
+    paddingBottom: 55
   },
   image: {
     flex: 1,
