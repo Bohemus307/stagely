@@ -8,6 +8,7 @@ exports[`renders correctly 1`] = `
         "color": "#042C44",
       },
       {
+        "fontFamily": "Montserrat",
         "fontSize": 16,
         "lineHeight": 24,
       },

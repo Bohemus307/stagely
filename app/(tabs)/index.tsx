@@ -19,7 +19,7 @@ export default function HomeScreen() {
 
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: "#6C8494", dark: "#1D3D47" }}
+      headerBackgroundColor={{ light: "#042C44", dark: "#1D3D47" }}
       headerImage={
         <Image
           source={require("@/assets/images/partial-react-logo.png")}
@@ -39,8 +39,8 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   titleContainer: {
-    flexDirection: 'column',
-    alignItems: 'center',
+    flexDirection: "column",
+    alignItems: "center",
     gap: 8,
   },
   container: {
@@ -58,6 +58,6 @@ const styles = StyleSheet.create({
     width: 290,
     bottom: 0,
     left: 0,
-    position: 'absolute',
+    position: "absolute",
   },
 });
