@@ -1,8 +1,9 @@
 import { View, Button, Text, StyleSheet } from "react-native";
+import { Image } from "expo-image";
 import { useAuth0 } from "react-native-auth0";
 
 export default function Login() {
-  const { authorize, clearSession, user, error, isLoading } = useAuth0();
+  const { authorize, error, isLoading } = useAuth0();
 
   const onLogin = async () => {
     try {
@@ -12,34 +13,30 @@ export default function Login() {
     }
   };
 
-  const onLogout = async () => {
-    try {
-      await clearSession();
-    } catch (e) {
-      console.log("Log out cancelled");
-    }
-  };
-
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <Text>Loading</Text>
+        <Text>Loading...</Text>
       </View>
     );
   }
 
-  const loggedIn = user !== undefined && user !== null;
-
+  const blurhash =
+    "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
+  
   return (
     <View style={styles.container}>
-      {loggedIn && <Text>You are logged in as {user.name}</Text>}
-      {!loggedIn && <Text>You are not logged in</Text>}
+      <Image
+        style={styles.image}
+        source={require("../assets/images/splash-icon.png")}
+        placeholder={{ blurhash }}
+        contentFit="contain"
+        transition={1000}
+      />
+      <Button onPress={onLogin} title={"Log In"} />
+      
       {error && <Text>{error.message}</Text>}
 
-      <Button
-        onPress={loggedIn ? onLogout : onLogin}
-        title={loggedIn ? "Log Out" : "Log In"}
-      />
     </View>
   );
 }
@@ -49,6 +46,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#F5FCFF",
+    backgroundColor: "#FFF",
+  },
+  image: {
+    flex: 1,
+    width: "75%",
   },
 });
