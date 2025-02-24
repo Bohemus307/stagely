@@ -1,16 +1,15 @@
-import { Image, StyleSheet, Text } from 'react-native';
-
+import { StyleSheet, Text } from 'react-native';
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { useAuth0 } from 'react-native-auth0'; 
+import { useAuth0 } from 'react-native-auth0';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Link } from 'expo-router';
 
+
 export default function HomeScreen() {
   const { user, clearSession } = useAuth0();
-console.log(user)
   const onLogout = async () => {
     try {
       await clearSession();
@@ -21,13 +20,7 @@ console.log(user)
 
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: "#042C44", dark: "#1D3D47" }}
-      headerImage={
-        <Image
-          source={require("@/assets/images/partial-react-logo.png")}
-          style={styles.reactLogo}
-        />
-      }
+    headerBackgroundColor={{ light: "#042C44", dark: "#1D3D47" }}
     >
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Welcome!</ThemedText>

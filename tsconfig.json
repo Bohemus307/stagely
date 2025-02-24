@@ -9,8 +9,9 @@
       "tailwind.config": [
         "./tailwind.config.js"
       ]
-    }
+    },
   },
+  "exclude": ["node_modules"],
   "include": [
     "**/*.ts",
     "**/*.tsx",
