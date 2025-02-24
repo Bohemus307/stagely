@@ -1,45 +1,48 @@
-import  {View, TouchableOpacity, Image } from "react-native";
-import { Bell } from "lucide-react-native";
+import  { TouchableOpacity, Image } from "react-native";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useAuth0 } from "react-native-auth0";
 import { useRouter } from "expo-router";
 import { ThemedText } from "./ThemedText";
+import { ThemedView } from '@/components/ThemedView';
 import {
     Avatar,
     AvatarBadge,
     AvatarFallbackText,
     AvatarImage,
   } from "../components/ui/avatar"
-export function Header() {
+
+
+function Header() {
     const { user } = useAuth0();
     const router = useRouter();
 
     return (
-        <View
+        <ThemedView
             style={{
                 flexDirection: "row",
                 justifyContent: "space-between",
                 alignItems: "center",
                 paddingHorizontal: 6,
-                paddingVertical: 20,
+                paddingVertical: 40,
                 paddingBottom: 5,
                 backgroundColor: "#ffffff"
             }}
         >
-            <View style={{ flexDirection: "row", alignItems: "center"}}>
+            <ThemedView style={{ flexDirection: "row", alignItems: "center"}}>
                 <Image
                     source={require("@/assets/images/adaptive-icon.png")}
-                    style={{ width: 32, height: 32, marginLeft: 0 }}
+                    style={{ width: 32, height: 32, marginLeft: 0, marginRight: 5 }}
                 />
                 <ThemedText type="default">Stagely</ThemedText>
-            </View>
+            </ThemedView>
 
             {/* Notifications Button */}
-            <TouchableOpacity style={{marginRight: 0, marginLeft: 195 }} onPress={() => console.log("Notifications pressed")}>
-                <Bell color="#687076" size={24} />
+            <TouchableOpacity style={{ marginLeft: 210 }} onPress={() => console.log("Notifications pressed")}>
+                <MaterialIcons name="notifications" size={24} color="#687076" />
             </TouchableOpacity>
 
             {/*Avatar Button */}
-            <TouchableOpacity onPress={() => router.push("/explore")}> //NeedTo Fix
+            <TouchableOpacity onPress={() => router.push("/profile")}>
                 <Avatar size="sm">
                     {user?.picture ? (
                     <AvatarImage source={{ uri: user.picture }} />
@@ -51,6 +54,8 @@ export function Header() {
                     <AvatarBadge />
                 </Avatar>
             </TouchableOpacity>
-        </View>
+        </ThemedView>
     );
 }
+
+export default Header;

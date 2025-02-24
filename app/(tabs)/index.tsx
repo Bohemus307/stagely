@@ -9,7 +9,6 @@ import { Button, ButtonText } from '@/components/ui/button';
 
 export default function HomeScreen() {
   const { user, clearSession } = useAuth0();
-console.log(user)
   const onLogout = async () => {
     try {
       await clearSession();

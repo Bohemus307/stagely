@@ -10,7 +10,7 @@ import Animated, {
 import { ThemedView } from '@/components/ThemedView';
 import { useBottomTabOverflow } from '@/components/ui/TabBarBackground';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { Header } from './Header';
+import  Header  from '@/components/Header';
 
 const HEADER_HEIGHT = 100;
 
