@@ -6,6 +6,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useAuth0 } from 'react-native-auth0'; 
 import { Button, ButtonText } from '@/components/ui/button';
+import { Link } from 'expo-router';
 
 export default function HomeScreen() {
   const { user, clearSession } = useAuth0();
@@ -35,6 +36,12 @@ console.log(user)
         <Button onPress={onLogout}>
           <ButtonText>Log Out</ButtonText>
         </Button>
+
+        <Link href="./addProperty" asChild>
+          <Button>
+            <ButtonText>Add Property</ButtonText>
+          </Button>
+        </Link>
       </ThemedView>
     </ParallaxScrollView>
   );

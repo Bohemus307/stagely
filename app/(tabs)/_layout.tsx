@@ -22,21 +22,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-        headerShown: true,
-        headerStyle: {
-          backgroundColor: Colors.light.background,
-        },
-        headerTintColor: Colors.light.tint,
-        headerTitleStyle: {
-          fontFamily: "Montserrat",
-          fontWeight: "500",
-          fontSize: 18,
-          color: Colors.light.text,
-        },
-        headerBackTitleStyle: {
-          fontFamily: "Montserrat",
-        },
-        headerShadowVisible: true,
+        headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
@@ -49,9 +35,9 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="(dashboard)"
         options={{
-          title: "Home",
+          title: "Dashboard",
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="house.fill" color={color} />
           ),
