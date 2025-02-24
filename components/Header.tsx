@@ -10,8 +10,6 @@ import {
     AvatarFallbackText,
     AvatarImage,
   } from "@/components/ui/avatar"
-import { Button, ButtonText } from "./ui/button";
-
 
 function Header() {
     const { user } = useAuth0();
@@ -58,9 +56,6 @@ function Header() {
             )}
             <AvatarBadge />
           </Avatar>
-          <Button className="w-20" size="md" variant="solid" action="primary">
-            <ButtonText>Hello World!</ButtonText>
-          </Button>
         </TouchableOpacity>
       </ThemedView>
     );
