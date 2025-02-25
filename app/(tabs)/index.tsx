@@ -48,8 +48,8 @@ export default function HomeScreen() {
     ];
 
     const mockActivity = [
-      { id: 1, description: " New incident reported at Property A" },
-      { id: 2, description: " Maintenance completed at Property B" },
+      { id: 1, description: "New incident reported at Property A" },
+      { id: 2, description: "Maintenance completed at Property B" },
       { id: 3, description: "Document updated for Property C" },
     ];
 
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
   actions: {
     height: 200,
     width: 373,
-    marginLeft: '-10%', 
+    marginLeft: '-10%',
     marginRight: '-10%',
     padding: 8,
     borderRadius: 8,
