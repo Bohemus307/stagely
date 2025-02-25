@@ -9,7 +9,7 @@ interface Location {
   longitude: number;
 }
 
-export default function Add() {
+export default function AddProperty() {
   const handleBack = () => {
     router.back();
   };
