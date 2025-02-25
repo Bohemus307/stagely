@@ -222,12 +222,12 @@ BRH:0
 end_of_record
 TN:
 SF:app/(tabs)/(dashboard)/addProperty.tsx
-FN:12,Add
+FN:12,AddProperty
 FN:13,(anonymous_2)
 FN:17,(anonymous_3)
 FNF:3
 FNH:0
-FNDA:0,Add
+FNDA:0,AddProperty
 FNDA:0,(anonymous_2)
 FNDA:0,(anonymous_3)
 DA:1,0
