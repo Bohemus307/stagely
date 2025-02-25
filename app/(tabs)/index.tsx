@@ -35,7 +35,7 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
-    // Simulating backend data with mock data
+
     const mockProperties = [
       { id: 1, name: "Property A" },
       { id: 2, name: "Property B" },
@@ -48,9 +48,9 @@ export default function HomeScreen() {
     ];
 
     const mockActivity = [
-      { id: 1, description: "🔵 New incident reported at Property A" },
-      { id: 2, description: "🟢 Maintenance completed at Property B" },
-      { id: 3, description: "🟡 Document updated for Property C" },
+      { id: 1, description: " New incident reported at Property A" },
+      { id: 2, description: " Maintenance completed at Property B" },
+      { id: 3, description: "Document updated for Property C" },
     ];
 
     setProperties(mockProperties);
@@ -63,14 +63,21 @@ export default function HomeScreen() {
     <ParallaxScrollView
     headerBackgroundColor={{ light: "#042C44", dark: "#1D3D47" }}
     >
+       <ThemedText type="title">Welcome!</ThemedText>
+        <Text>{user?.email}</Text>
+        <HelloWave />
+        <Button onPress={onLogout}>
+          <ButtonText>Log Out</ButtonText>
+        </Button>
+
       <HStack space="lg" reversed={false} style={styles.metricsContainer}>
-        <Box className='h-20 w-45 p-4 rounded-lg flex justify-center items-center border-2 border-gray-800'>
+        <Box style={[styles.metrics, styles.margin]}>
           <ThemedText type='subtitle' style={styles.metricTitle}>Active Properties</ThemedText>
           <ThemedView>
             <ThemedText style={styles.metricValue}>{properties.length}</ThemedText>
           </ThemedView>
         </Box>
-        <Box className='h-20 w-45 p-4 rounded-lg flex justify-center items-center border-2 border-gray-800'>
+        <Box style={[styles.metrics, styles.margin]}>
           <ThemedText type='subtitle' style={styles.metricTitle}>Open Incidents</ThemedText>
           <ThemedView>
             <ThemedText style={styles.metricValue}>{incidents.length}</ThemedText>
@@ -78,8 +85,8 @@ export default function HomeScreen() {
         </Box>
       </HStack>
 
-      <Box className='w-full bg-primary-300 p-4 rounded-lg'>
-        <ThemedText type='subtitle' className='mb-2'>Recent Activity</ThemedText>
+      <Box style={[styles.activity, styles.margin]}>
+        <ThemedText type='subtitle' style={styles.sectionTitle}>Recent Activity</ThemedText>
         {recentActivity.length > 0 ? (
           recentActivity.map((activity) => (
             <ThemedText key={activity.id}>{activity.description}</ThemedText>
@@ -89,28 +96,23 @@ export default function HomeScreen() {
         )}
       </Box>
 
-      <Box className='w-full bg-primary-300 p-4 rounded-lg flex justify-center items-center'>
-        <ThemedText type="subtitle" className='mb-2 text-center'>
+      <Box style={[styles.actions, styles.margin, styles.centerContent]}>
+        <ThemedText type="subtitle" style={styles.sectionTitle} >
           Quick Actions
         </ThemedText>
-        <HStack space="md" className=''>
-          <Button className='flex-1 flex flex-col items-center justify-center gap-0 h-24' onPress={addProperty}>
+        <HStack space="md">
+          <Button style={styles.quickActionButton} onPress={addProperty}>
             <IconSymbol size={28} name="building.2.fill" color='grey' />
             <ButtonText>Add Property</ButtonText>
           </Button>
-          <Button className='flex-1 flex flex-col items-center justify-center gap-0 h-24' onPress={newIncident}>
+          <Button style={styles.quickActionButton} onPress={newIncident}>
             <IconSymbol size={28} name="exclamationmark.triangle.fill" color='grey' />
             <ButtonText>New Incident</ButtonText>
           </Button>
         </HStack>
       </Box>
-      
-        <ThemedText type="title">Welcome!</ThemedText>
-        <Text>{user?.email}</Text>
-        <HelloWave />
-        <Button onPress={onLogout}>
-          <ButtonText>Log Out</ButtonText>
-        </Button>
+
+
     </ParallaxScrollView>
   );
 }
@@ -119,8 +121,46 @@ const styles = StyleSheet.create({
   metricsContainer: {
     justifyContent: "center",
     paddingHorizontal: 8,
-    marginBottom: 16,
+    marginBottom: 5,
+  },
 
+  metrics: {
+    height: 80,
+    width: '60%',
+    padding: 8,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderColor: '#eff3f0',
+    borderWidth: 2,
+  },
+
+  activity: {
+    height: 200,
+    width: 373,
+    marginLeft: '-10%',
+    marginRight: '-10%',
+    padding: 8,
+    borderRadius: 8,
+    borderColor: '#eff3f0',
+    borderWidth: 2,
+  },
+
+  actions: {
+    height: 200,
+    width: 373,
+    marginLeft: '-10%', 
+    marginRight: '-10%',
+    padding: 8,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderColor: '#eff3f0',
+    borderWidth: 2,
+  },
+
+  margin: {
+    marginBottom: 5,
   },
 
   metricTitle: {
@@ -129,29 +169,31 @@ const styles = StyleSheet.create({
 
   metricValue: {
     fontSize: 24,
-    fontWeight: "bold",
     textAlign: "center",
-
   },
 
-  activitySection: {
-    paddingHorizontal: 16,
-    marginBottom: 16,
+  sectionTitle: {
+    marginBottom: 8,
+    textAlign: 'center',
   },
 
-  titleContainer: {
-    flexDirection: "column",
-    alignItems: "center",
-    gap: 8,
-  },
-  container: {
+  quickActionButton: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#F5FCFF",
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 0,
+    height: 96,
   },
-  stepContainer: {
-    gap: 8,
+
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  title: {
+    textAlign: 'center',
     marginBottom: 8,
   },
+
 });
