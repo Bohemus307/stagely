@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1740523835908" clover="3.2.0">
-  <project timestamp="1740523835908" name="All files">
+<coverage generated="1740524134789" clover="3.2.0">
+  <project timestamp="1740524134789" name="All files">
     <metrics statements="399" coveredstatements="28" conditionals="85" coveredconditionals="9" methods="72" coveredmethods="4" elements="556" coveredelements="41" complexity="0" loc="399" ncloc="399" packages="13" files="42" classes="42"/>
     <package name="stagely">
       <metrics statements="4" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
