@@ -7,9 +7,14 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useAuth0 } from 'react-native-auth0';
 import { Button, ButtonText } from '@/components/ui/button';
+<<<<<<< HEAD:app/(tabs)/index.tsx
 import { HStack } from '@/components/ui/hstack';
 import { Box } from '@/components/ui/box';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+=======
+import { Link } from 'expo-router';
+
+>>>>>>> develop:app/(tabs)/(dashboard)/index.tsx
 
 export default function HomeScreen() {
   const { user, clearSession } = useAuth0();
@@ -70,6 +75,7 @@ export default function HomeScreen() {
           <ButtonText>Log Out</ButtonText>
         </Button>
 
+<<<<<<< HEAD:app/(tabs)/index.tsx
       <HStack space="lg" reversed={false} style={styles.metricsContainer}>
         <Box style={[styles.metrics, styles.margin]}>
           <ThemedText type='subtitle' style={styles.metricTitle}>Active Properties</ThemedText>
@@ -113,6 +119,14 @@ export default function HomeScreen() {
       </Box>
 
 
+=======
+        <Link href="./addProperty" asChild>
+          <Button>
+            <ButtonText>Add Property</ButtonText>
+          </Button>
+        </Link>
+      </ThemedView>
+>>>>>>> develop:app/(tabs)/(dashboard)/index.tsx
     </ParallaxScrollView>
   );
 }

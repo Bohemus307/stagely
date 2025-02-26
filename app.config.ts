@@ -12,8 +12,16 @@ export default {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.joshua307.stagely",
+      config: {
+        googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
+      },
     },
     android: {
+      config: {
+        googleMaps: {
+          apiKey: process.env.GOOGLE_MAPS_API_KEY,
+        },
+      },
       adaptiveIcon: {
         foregroundImage: "./assets/images/adaptive-icon.png",
         backgroundColor: "#ffffff",
@@ -46,6 +54,7 @@ export default {
     extra: {
       domain: process.env.EXPO_PUBLIC_DOMAIN,
       clientId: process.env.EXPO_PUBLIC_CLIENT_ID,
+      googleMapsKey: process.env.GOOGLE_MAPS_API_KEY,
     },
     experiments: {
       typedRoutes: true,

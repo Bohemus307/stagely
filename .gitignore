@@ -40,4 +40,9 @@ app-example
 /ios
 /android
 /coverage
+<<<<<<< HEAD
 
+=======
+coverage
+./coverage
+>>>>>>> develop
