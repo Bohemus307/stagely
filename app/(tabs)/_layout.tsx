@@ -45,7 +45,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="properties"
+        name="(properties)"
         options={{
           title: "Properties",
           headerShown: false,

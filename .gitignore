@@ -39,6 +39,4 @@ app-example
 
 /ios
 /android
-/coverage
-coverage
-./coverage
+coverage/
