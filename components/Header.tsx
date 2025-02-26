@@ -1,4 +1,4 @@
-import  { TouchableOpacity, Image } from "react-native";
+import  { TouchableOpacity, Image, StyleSheet } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useAuth0 } from "react-native-auth0";
 import { useRouter } from "expo-router";
@@ -16,31 +16,19 @@ function Header() {
     const router = useRouter();
 
     return (
-      <ThemedView
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          paddingHorizontal: 6,
-          paddingVertical: 40,
-          paddingBottom: 5,
-          backgroundColor: "#ffffff",
-          marginTop: 15,
-        }}
-      >
-        <ThemedView style={{ flexDirection: "row", alignItems: "center" }}>
+      <ThemedView style={styles.container}>
+        <ThemedView style={styles.logoContainer}>
+          <TouchableOpacity onPress={() => console.log("Image Pressed!")} activeOpacity={0.7}>
           <Image
             source={require("@/assets/images/adaptive-icon.png")}
-            style={{ width: 32, height: 32, marginLeft: 0, marginRight: 5 }}
+            style={styles.logo}
           />
+          </TouchableOpacity>
           <ThemedText type="default">Stagely</ThemedText>
         </ThemedView>
 
         {/* Notifications Button */}
-        <TouchableOpacity
-          style={{ marginLeft: 210 }}
-          onPress={() => console.log("Notifications pressed")}
-        >
+        <TouchableOpacity style={styles.notificationsButton} onPress={() => console.log("Notifications pressed")}>
           <MaterialIcons name="notifications" size={24} color="#687076" />
         </TouchableOpacity>
 
@@ -60,5 +48,31 @@ function Header() {
       </ThemedView>
     );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 6,
+    paddingVertical: 40,
+    paddingBottom: 5,
+    backgroundColor: "#ffffff",
+    marginTop: 15,
+  },
+  logoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  logo: {
+    width: 32,
+    height: 32,
+    marginLeft: 0,
+    marginRight: 5,
+  },
+  notificationsButton: {
+    marginLeft: 210,
+  },
+});
 
 export default Header;
