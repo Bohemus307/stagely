@@ -17,19 +17,23 @@ export default function MetricsCard() {
   }, []);
 
 return (
-  <HStack className="justify-center px-2 mb-5 w-full">
-    <Box className="h-20 w-3/5 p-2 rounded-lg border-2 flex items-center justify-center">
-      <ThemedText type='subtitle' className="text-center">Active Properties</ThemedText>
+  <Box className="h-48 w-full mx-auto p-2 rounded-lg border-2 flex flex-col items-center justify-center">
+    <HStack className="justify-center px-2 mb-2 w-full space-x-4">
+    <Box className="h-20  p-2 mr-4 rounded-lg border-2 flex items-center justify-center">
+    <ThemedText type='subtitle' className="text-center">Active Properties</ThemedText>
         <ThemedView>
       <ThemedText className="text-2xl text-center">{properties.length}</ThemedText>
         </ThemedView>
     </Box>
-    <Box className="h-20 w-3/5 p-2 rounded-lg border-2 flex items-center justify-center">
-      <ThemedText type='subtitle' className="text-center">Open Incidents</ThemedText>
+    <Box className="h-20 p-2 rounded-lg border-2 flex items-center justify-center">
+    <ThemedText type='subtitle' className="text-center">Open Incidents</ThemedText>
         <ThemedView>
       <ThemedText className="text-2xl text-center">{incidents.length}</ThemedText>
         </ThemedView>
     </Box>
+
   </HStack>
+</Box>
+
   );
 }

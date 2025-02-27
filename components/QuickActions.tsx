@@ -14,8 +14,8 @@ export default function QuickActions() {
 return (
     <Box className="h-48 w-full mx-auto p-2 rounded-lg border-2 flex flex-col items-center justify-center">
         <ThemedText type="subtitle" className="mb-2 text-center">Quick Actions</ThemedText>
-        <HStack className="space-x-15">
-            <Button className="flex flex-col items-center justify-center h-24" onPress={addProperty}>
+        <HStack className="justify-center px-2 mb-5 w-full space-x-4">
+            <Button className="flex flex-col mr-4 items-center justify-center h-24" onPress={addProperty}>
                 <IconSymbol size={28} name="building.2.fill" color='grey' />
                 <ButtonText>Add Property</ButtonText>
             </Button>
