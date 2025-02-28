@@ -11,12 +11,9 @@ const PropertiesScreen = () => {
     <ThemedView className="flex-1">
       <Header />
       <SafeAreaView className="flex-1 flex-col">
-        {/* Fixed search at the top */}
         <View className="z-10 px-4 p-2">
           <PropertySearch />
         </View>
-
-        {/* Scrollable property list that takes remaining space */}
         <View className="flex-1">
           <PropertyList properties={properties} />
         </View>

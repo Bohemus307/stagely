@@ -2,6 +2,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { Image } from "expo-image";
 import { useAuth0 } from "react-native-auth0";
 import { Button, ButtonText } from "./ui/button";
+import { Spinner } from "./ui/spinner";
 
 export default function Login() {
   const { authorize, error, isLoading } = useAuth0();
@@ -17,7 +18,7 @@ export default function Login() {
   if (isLoading) {
     return (
       <View style={styles.container}>
-        <Text>Loading...</Text>
+        <Spinner size={"large"} />
       </View>
     );
   }

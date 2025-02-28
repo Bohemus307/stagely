@@ -10,6 +10,7 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Box } from "@/components/ui/box";
 import Constants from "expo-constants";
 import { Property } from ".";
+import { Colors } from "react-native/Libraries/NewAppScreen";
 
 // Props for components
 interface PropertyCardProps {
@@ -129,7 +130,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
     // Fallback to placeholder with message
     console.log("Showing error state");
     return (
-      <Box className="h-full w-full bg-gray-100 flex items-center justify-center flex-col">
+      <Box className="h-full w-full bg-secondary-100 flex items-center justify-center flex-col">
         <IconSymbol name="eye.slash" size={24} color="gray" />
         <Text className="text-xs text-gray-500 mt-1 text-center">
           Preview Unavailable
@@ -139,7 +140,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   };
 
   return (
-    <Box className="rounded-lg shadow-lg overflow-hidden bg-white border border-slate-100">
+    <Box className="rounded-lg shadow-lg overflow-hidden bg-white">
       {/* Main Card Content - Horizontal layout */}
       <HStack className="p-4 justify-between items-center">
         {/* Left: Property Image or Street View */}
@@ -148,7 +149,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
 
           {/* Show Street View indicator if using street view */}
           {!streetViewError && property.location && (
-            <Badge className="absolute bottom-0 left-0 bg-blue-400/70 text-white text-xs py-0.5 px-1 rounded-tr">
+            <Badge className="absolute bottom-0 left-0 bg-primary-400/70 text-white text-xs py-0.5 px-1 rounded-tr">
               <Text className="text-white text-xs">Street View</Text>
             </Badge>
           )}
@@ -156,7 +157,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           {/* Show Preview Unavailable badge when street view errors */}
           {streetViewError && (
             <Badge className="absolute bottom-0 left-0 bg-amber-400/70 text-white text-xs py-0.5 px-1 rounded-tr">
-              <Text className="text-white text-xs">No Preview</Text>
+              <Text className="text-xs">No Preview</Text>
             </Badge>
           )}
         </Box>
@@ -166,8 +167,12 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           <Heading className="text-lg font-semibold">
             {property.address}
           </Heading>
-          <HStack className="items-center text-sm text-gray-500 mt-1">
-            <IconSymbol name="location.fill" size={14} color="gray" />
+          <HStack className="items-center text-sm text-primary-500 mt-1">
+            <IconSymbol
+              name="location.fill"
+              size={14}
+              color={Colors.light.tabIconDefault}
+            />
             <Text className="ml-1">
               {property.city}, {property.state} {property.zip_code}
             </Text>
@@ -194,25 +199,29 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
       </HStack>
 
       {/* Bottom Buttons - White background with divider above */}
-      <Box className="border-t-2 border-slate-100">
+      <Box className="border-t-2 border-primary-100">
         <HStack className="bg-white">
           <Pressable
-            className="flex-1 py-3 flex items-center justify-center border-r border-slate-100"
+            className="flex-1 py-3 flex items-center justify-center border-r border-primary-100"
             onPress={() => onDetailsPress(property)}
           >
-            <Text className="text-sm font-medium text-gray-700">Details</Text>
+            <Text className="text-sm font-medium text-primary-700">
+              Details
+            </Text>
           </Pressable>
           <Pressable
-            className="flex-1 py-3 flex items-center justify-center border-r border-slate-100"
+            className="flex-1 py-3 flex items-center justify-center border-r border-primary-100"
             onPress={() => onPhotosPress(property)}
           >
-            <Text className="text-sm font-medium text-gray-700">Photos</Text>
+            <Text className="text-sm font-medium text-primary-700">Photos</Text>
           </Pressable>
           <Pressable
             className="flex-1 py-3 flex items-center justify-center"
             onPress={() => onDocumentsPress(property)}
           >
-            <Text className="text-sm font-medium text-gray-700">Documents</Text>
+            <Text className="text-sm font-medium text-primary-700">
+              Documents
+            </Text>
           </Pressable>
         </HStack>
       </Box>

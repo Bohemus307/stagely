@@ -3,6 +3,7 @@ import { FlatList, Text, View, TouchableOpacity } from "react-native";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import PropertyCard from "@/components/properties/list/PropertyCard";
 import { router } from "expo-router";
+import { Colors } from "@/constants/Colors";
 
 // Types for data structure
 export interface Location {
@@ -108,11 +109,15 @@ const PropertyList: React.FC<PropertyListProps> = ({
 
   const EmptyListComponent = () => (
     <View className="items-center justify-center p-8 flex-1">
-      <IconSymbol name="house.fill" size={28} color="" />
+      <IconSymbol
+        name="house.fill"
+        size={28}
+        color={Colors.light.tabIconDefault}
+      />
       <Text className="text-center my-3">
         No properties found. Add your first property to get started.
       </Text>
-      <TouchableOpacity className="bg-blue-500 rounded-lg px-4 py-2 mt-4">
+      <TouchableOpacity className="bg-primary-500 rounded-lg px-4 py-2 mt-4">
         <Text className="text-white font-medium">Add Property</Text>
       </TouchableOpacity>
     </View>
@@ -126,13 +131,12 @@ const PropertyList: React.FC<PropertyListProps> = ({
       contentContainerStyle={{
         paddingHorizontal: 15,
         paddingTop: 15,
-        paddingBottom: 20,
+        paddingBottom: 15,
         flexGrow: 1,
       }}
-      className="flex-1 bg-slate-100"
+      className="flex-1 bg-primary-50"
       showsVerticalScrollIndicator={true}
       ListEmptyComponent={<EmptyListComponent />}
-      ItemSeparatorComponent={() => <View className="h-0.5" />}
     />
   );
 };
