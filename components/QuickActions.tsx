@@ -7,7 +7,7 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 
 export default function QuickActions() {
     const router = useRouter();
-    const addProperty = () => router.push('/properties');
+    const addProperty = () => router.push('/(tabs)/(dashboard)/addProperty');
     const newIncident = () => router.push('/incidents');
 
 

@@ -45,7 +45,7 @@ describe('QuickActions Component', () => {
 
     // Simulate pressing the "Add Property" button
     fireEvent.press(getByText('Add Property'));
-    expect(push).toHaveBeenCalledWith('/properties'); // Expect navigation to /properties
+    expect(push).toHaveBeenCalledWith('/(tabs)/(dashboard)/addProperty'); // Expect navigation to /properties
 
     // Simulate pressing the "New Incident" button
     fireEvent.press(getByText('New Incident'));
