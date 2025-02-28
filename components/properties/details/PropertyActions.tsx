@@ -1,4 +1,4 @@
-import { Linking } from 'react-native'
+import { Linking, Text } from 'react-native'
 import React from 'react'
 import { HStack } from '@/components/ui/hstack';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -32,7 +32,7 @@ const PropertyActions = ({ property }: Props) => {
       <Button className="flex-1 bg-primary-500 py-2 rounded-md" onPress={openMaps}>
         <HStack className="items-center justify-center">
           <IconSymbol name="map.fill" size={16} color="white" />
-          <ThemedText className="text-white ml-2">Open in Maps</ThemedText>
+          <Text className="text-white ml-2">Open in Maps</Text>
         </HStack>
       </Button>
 
@@ -51,11 +51,11 @@ const PropertyActions = ({ property }: Props) => {
             size={16}
             color="white"
           />
-          <ThemedText className="text-white ml-2">
+          <Text className="text-white ml-2">
             {activeIncidents > 0
               ? `Issues (${activeIncidents})`
               : "Report Issue"}
-          </ThemedText>
+          </Text>
         </HStack>
       </Button>
     </HStack>
