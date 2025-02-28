@@ -1,19 +1,15 @@
-import { StyleSheet, TouchableOpacity, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { router } from "expo-router";
 import { ThemedView } from "@/components/ThemedView";
 import LocationSearchMap from "@/components/LocationSearchMap";
-import { Ionicons } from "@expo/vector-icons";
-import { ThemedText } from "@/components/ThemedText";
+import BackButton from "@/components/ui/BackButton";
+
 interface Location {
   latitude: number;
   longitude: number;
 }
 
 export default function AddProperty() {
-  const handleBack = () => {
-    router.back();
-  };
-
   const handleLocationSave = async (location: Location, address: string) => {
     try {
       // make your API call
@@ -34,10 +30,7 @@ export default function AddProperty() {
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#042C44" />
-          <ThemedText>Back</ThemedText>
-        </TouchableOpacity>
+        <BackButton />
       </View>
       <View style={styles.mapContainer}>
         <LocationSearchMap onSaveLocation={handleLocationSave} />
@@ -51,8 +44,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingTop: 15,
-    paddingBottom: 15,
+    paddingTop: 12,
+    paddingBottom: 12,
     paddingHorizontal: 20,
     width: "100%",
     zIndex: 1,
@@ -60,7 +53,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
-    elevation: 2, 
+    elevation: 2,
   },
   backButton: {
     flexDirection: "row",

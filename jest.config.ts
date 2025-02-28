@@ -20,7 +20,7 @@ const config: Config.InitialOptions = {
     // Handle image imports
     "\\.(jpg|jpeg|png|gif|webp|svg)$": "<rootDir>/__mocks__/fileMock.js",
     // Handle CSS imports (if using CSS in your project)
-    "\\.(css|less|scss|sass)$": "identity-obj-proxy"
+    "\\.(css|less|scss|sass)$": "identity-obj-proxy",
   },
   transform: {
     "^.+\\.(ts|tsx)$": [
@@ -38,6 +38,15 @@ const config: Config.InitialOptions = {
     "!**/babel.config.js",
     "!**/jest.setup.ts",
     "!**/metro.config.js",
+    "!**/components/ui/**",
+    "!**/__mocks__/**",
+    "!**/types/**",
+    "!jest.config.ts",
+    "!jest.setup.ts",
+    "!app.config.ts",
+    "!nativewind-env.d.ts",
+    "!react-native-streetview.d.ts",
+    "!stagely/lib/@types",
   ],
   verbose: true,
 };
