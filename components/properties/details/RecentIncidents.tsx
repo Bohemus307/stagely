@@ -1,4 +1,3 @@
-import { Text } from 'react-native'
 import React from 'react'
 import { Badge } from '@/components/ui/badge';
 import { Box } from '@/components/ui/box';
@@ -10,6 +9,7 @@ import { getIncidentStatusBadge, getSeverityBadge, formatDate } from '../lib/det
 import { Property } from '../list';
 import { Image } from "@/components/ui/image";
 import { Button } from '@/components/ui/button';
+import { ThemedText } from '@/components/ThemedText';
 
 type Props = {
   property: Property
@@ -27,23 +27,23 @@ const RecentIncidents = ({ property }: Props) => {
             className="bg-white rounded-lg  p-3"
           >
             <HStack className="justify-between items-start mb-2">
-              <Text className="font-medium">{incident.incident_type}</Text>
+              <ThemedText className="font-medium">{incident.incident_type}</ThemedText>
               <Badge className={getIncidentStatusBadge(incident.status)}>
-                <Text className="text-xs">{incident.status}</Text>
+                <ThemedText className="text-xs">{incident.status}</ThemedText>
               </Badge>
             </HStack>
 
-            <Text className="text-primary-600 text-sm mb-2">
+            <ThemedText className="text-primary-600 text-sm mb-2">
               {incident.description}
-            </Text>
+            </ThemedText>
 
             <HStack className="justify-between items-center rounded-2xl">
               <Badge className={getSeverityBadge(incident.severity)}>
-                <Text className="text-xs">{incident.severity} Priority</Text>
+                <ThemedText className="text-xs">{incident.severity} Priority</ThemedText>
               </Badge>
-              <Text className="text-xs text-primary-500">
+              <ThemedText className="text-xs text-primary-500">
                 {formatDate(incident.reported_at)}
-              </Text>
+              </ThemedText>
             </HStack>
 
             {/* Incident Images Preview */}
@@ -63,9 +63,9 @@ const RecentIncidents = ({ property }: Props) => {
                 ))}
                 {incident.images.length > 3 && (
                   <Box className="h-16 w-16 rounded overflow-hidden bg-primary-200 items-center justify-center">
-                    <Text className="text-primary-600 font-medium">
+                    <ThemedText className="text-primary-600 font-medium">
                       +{incident.images.length - 3}
-                    </Text>
+                    </ThemedText>
                   </Box>
                 )}
               </HStack>
@@ -85,9 +85,9 @@ const RecentIncidents = ({ property }: Props) => {
             })
           }
         >
-          <Text className="text-primary-700 text-center">
+          <ThemedText className="text-primary-700 text-center">
             View All {property.incidents.length} Incidents
-          </Text>
+          </ThemedText>
         </Button>
       )}
     </Box>

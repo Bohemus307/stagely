@@ -1,10 +1,11 @@
-import { Linking, Text } from 'react-native'
+import { Linking } from 'react-native'
 import React from 'react'
 import { HStack } from '@/components/ui/hstack';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { router } from 'expo-router';
-import { Property } from '../list';
 import { Button } from '@/components/ui/button';
+import { ThemedText } from '@/components/ThemedText';
+import { Property } from '../list';
 
 type Props = {
   property: Property
@@ -31,7 +32,7 @@ const PropertyActions = ({ property }: Props) => {
       <Button className="flex-1 bg-primary-500 py-2 rounded-md" onPress={openMaps}>
         <HStack className="items-center justify-center">
           <IconSymbol name="map.fill" size={16} color="white" />
-          <Text className="text-white ml-2">Open in Maps</Text>
+          <ThemedText className="text-white ml-2">Open in Maps</ThemedText>
         </HStack>
       </Button>
 
@@ -50,11 +51,11 @@ const PropertyActions = ({ property }: Props) => {
             size={16}
             color="white"
           />
-          <Text className="text-white ml-2">
+          <ThemedText className="text-white ml-2">
             {activeIncidents > 0
               ? `Issues (${activeIncidents})`
               : "Report Issue"}
-          </Text>
+          </ThemedText>
         </HStack>
       </Button>
     </HStack>

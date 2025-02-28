@@ -1,4 +1,3 @@
-import { Text } from "react-native";
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Box } from "@/components/ui/box";
@@ -9,6 +8,7 @@ import { VStack } from "@/components/ui/vstack";
 import { router } from "expo-router";
 import { Property } from "../list";
 import { Colors } from "react-native/Libraries/NewAppScreen";
+import { ThemedText } from "@/components/ThemedText";
 
 type Props = {
   property: Property;
@@ -35,7 +35,7 @@ const QuickActions = ({ property }: Props) => {
               size={18}
               color={Colors.light.tabIconDefault}
             />
-            <Text className="ml-2 text-primary-700">Manage Photos</Text>
+            <ThemedText className="ml-2 text-primary-700">Manage Photos</ThemedText>
           </HStack>
         </Button>
 
@@ -54,7 +54,7 @@ const QuickActions = ({ property }: Props) => {
               size={18}
               color={Colors.light.tabIconDefault}
             />
-            <Text className="ml-2 text-primary-700">View Documents</Text>
+            <ThemedText className="ml-2 text-primary-700">View Documents</ThemedText>
           </HStack>
         </Button>
 
@@ -73,7 +73,7 @@ const QuickActions = ({ property }: Props) => {
               size={18}
               color={Colors.light.tabIconDefault}
             />
-            <Text className="ml-2 text-primary-700">Edit Property</Text>
+            <ThemedText className="ml-2 text-primary-700">Edit Property</ThemedText>
           </HStack>
         </Button>
       </VStack>

@@ -1,4 +1,3 @@
-import { Text } from 'react-native'
 import React from 'react'
 import { Badge } from '@/components/ui/badge';
 import { Box } from '@/components/ui/box';
@@ -11,6 +10,7 @@ import QuickActions from './QuickActions';
 import RecentIncidents from './RecentIncidents';
 import { Property } from '../list';
 import { getStatusBadge } from '../lib/detailsHelpers';
+import { ThemedText } from '@/components/ThemedText';
 
 type Props = {
   property: Property;
@@ -22,19 +22,21 @@ const PropertyInformation = ({ property }: Props) => {
   return (
     <Box className="p-4">
       <HStack className="justify-between items-start mb-2">
-        <Heading className="text-xl font-bold">{property.address}</Heading>
+        <Heading className="text-xl font-bold">
+          <ThemedText>{property.address}</ThemedText>
+        </Heading>
         <Badge className={`${statusBadge.color} py-1 px-3 rounded-full`}>
-          <Text>{statusBadge.text}</Text>
+          <ThemedText>{statusBadge.text}</ThemedText>
         </Badge>
       </HStack>
 
       <HStack className="items-center mb-4">
         <IconSymbol name="location.fill" size={16} color="gray" />
-        <Text className="ml-1 text-gray-700">
+        <ThemedText className="ml-1 text-gray-700">
           {property.city}
           {property.state ? `, ${property.state}` : ""} {property.zip_code},{" "}
           {property.country}
-        </Text>
+        </ThemedText>
       </HStack>
 
       {/* Property Actions */}
