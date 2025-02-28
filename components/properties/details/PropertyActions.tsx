@@ -4,7 +4,6 @@ import { HStack } from '@/components/ui/hstack';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { router } from 'expo-router';
 import { Button } from '@/components/ui/button';
-import { ThemedText } from '@/components/ThemedText';
 import { Property } from '../list';
 
 type Props = {
