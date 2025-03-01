@@ -35,6 +35,13 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+app-example
+
+/ios
+/android
+/coverage
+
+
 ios
 android
 coverage
