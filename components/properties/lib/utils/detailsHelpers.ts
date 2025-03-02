@@ -1,4 +1,4 @@
-import { PropertyStatus } from "../list";
+import { PropertyStatus } from "../../list";
 // Determine status badge color and text based on property status
 export const getStatusBadge = (status: PropertyStatus) => {
   switch (status) {
@@ -17,19 +17,19 @@ export const formatDate = (dateString: string) => {
   try {
     // Parse the date and ensure it's treated as UTC
     const date = new Date(dateString);
-    
+
     // For ISO format strings that don't specify timezone, force UTC interpretation
-    if (dateString.indexOf('Z') === -1 && dateString.indexOf('+') === -1) {
+    if (dateString.indexOf("Z") === -1 && dateString.indexOf("+") === -1) {
       // Adjust the date by adding the local timezone offset
       const userTimezoneOffset = date.getTimezoneOffset() * 60000;
       date.setTime(date.getTime() + userTimezoneOffset);
     }
-    
+
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
-      timeZone: 'UTC' // Always use UTC for display to ensure consistency
+      timeZone: "UTC", // Always use UTC for display to ensure consistency
     });
   } catch (error) {
     console.error("Error formatting date:", error);

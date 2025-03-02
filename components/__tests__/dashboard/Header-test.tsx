@@ -8,7 +8,8 @@ import {
   ViewStyle,
 } from "react-native";
 import { ReactNode } from "react";
-import Header from "../Header";
+import Header from "@/components/Header";
+
 
 // Mock all external dependencies
 jest.mock("react-native-auth0", () => ({

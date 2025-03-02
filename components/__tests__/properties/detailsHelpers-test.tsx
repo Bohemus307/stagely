@@ -3,7 +3,7 @@ import {
   formatDate,
   getSeverityBadge,
   getIncidentStatusBadge,
-} from "@/components/properties/lib/detailsHelpers";
+} from "@/components/properties/lib/utils/detailsHelpers";
 import { PropertyStatus } from "@/components/properties/list";
 
 describe("detailsHelpers", () => {

@@ -1,7 +1,8 @@
 import React from "react";
 import { render, waitFor, screen } from "@testing-library/react-native";
-import RecentActivity from "../dashboard/RecentActivity";
+
 import { Text, View } from "react-native";
+import RecentActivity from "@/components/dashboard/RecentActivity";
 
 // Mock necessary components
 jest.mock("@/components/ThemedText", () => ({

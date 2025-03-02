@@ -10,7 +10,6 @@ export default function QuickActions() {
     const addProperty = () => router.push('/(tabs)/(properties)/add');
     const newIncident = () => router.push('/incidents');
 
-
 return (
     <Box className="h-48 w-full mx-auto p-2 rounded-lg border-2 flex flex-col items-center justify-center">
         <ThemedText type="subtitle" className="mb-2 text-center">Quick Actions</ThemedText>

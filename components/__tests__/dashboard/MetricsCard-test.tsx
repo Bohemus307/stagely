@@ -1,7 +1,8 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
-import MetricsCard from "../dashboard/MetricsCard";
+
 import { Text, View } from "react-native";
+import MetricsCard from "@/components/dashboard/MetricsCard";
 
 jest.mock("@/components/ThemedText", () => ({
   ThemedText: ({ children }: { children: React.ReactNode }) => (

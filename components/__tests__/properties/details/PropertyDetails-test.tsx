@@ -1,11 +1,11 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
 import PropertyDetails from "@/components/properties/details/PropertyDetails";
-import { formatDate } from "@/components/properties/lib/detailsHelpers";
+import { formatDate } from "@/components/properties/lib/utils/detailsHelpers";
 import { Property, PropertyStatus } from "@/components/properties/list";
 
 // Mock the formatDate helper
-jest.mock("@/components/properties/lib/detailsHelpers.ts", () => ({
+jest.mock("@/components/properties/lib/utils/detailsHelpers.ts", () => ({
   formatDate: jest.fn((date) => `Formatted: ${date}`),
 }));
 
@@ -66,7 +66,9 @@ describe("PropertyDetails", () => {
     };
 
     const { getByText } = render(
-      <PropertyDetails property={propertyWithMissingDates as unknown as Property} />
+      <PropertyDetails
+        property={propertyWithMissingDates as unknown as Property}
+      />
     );
 
     // Component should still render without crashing

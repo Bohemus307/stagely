@@ -1,19 +1,23 @@
-import React from 'react'
-import { Badge } from '@/components/ui/badge';
-import { Box } from '@/components/ui/box';
-import { Heading } from '@/components/ui/heading';
-import { HStack } from '@/components/ui/hstack';
-import { VStack } from '@/components/ui/vstack';
-import { router } from 'expo-router';
-import { getIncidentStatusBadge, getSeverityBadge, formatDate } from '../lib/detailsHelpers';
-import { Property } from '../list';
+import React from "react";
+import { Badge } from "@/components/ui/badge";
+import { Box } from "@/components/ui/box";
+import { Heading } from "@/components/ui/heading";
+import { HStack } from "@/components/ui/hstack";
+import { VStack } from "@/components/ui/vstack";
+import { router } from "expo-router";
+import {
+  getIncidentStatusBadge,
+  getSeverityBadge,
+  formatDate,
+} from "../lib/utils/detailsHelpers";
+import { Property } from "../list";
 import { Image } from "@/components/ui/image";
-import { Button } from '@/components/ui/button';
-import { ThemedText } from '@/components/ThemedText';
+import { Button } from "@/components/ui/button";
+import { ThemedText } from "@/components/ThemedText";
 
 type Props = {
-  property: Property
-}
+  property: Property;
+};
 
 const RecentIncidents = ({ property }: Props) => {
   return (
@@ -22,12 +26,11 @@ const RecentIncidents = ({ property }: Props) => {
 
       <VStack className="gap-3">
         {property?.incidents?.slice(0, 3).map((incident) => (
-          <Box
-            key={incident.incident_id}
-            className="bg-white rounded-lg  p-3"
-          >
+          <Box key={incident.incident_id} className="bg-white rounded-lg  p-3">
             <HStack className="justify-between items-start mb-2">
-              <ThemedText className="font-medium">{incident.incident_type}</ThemedText>
+              <ThemedText className="font-medium">
+                {incident.incident_type}
+              </ThemedText>
               <Badge className={getIncidentStatusBadge(incident.status)}>
                 <ThemedText className="text-xs">{incident.status}</ThemedText>
               </Badge>
@@ -39,7 +42,9 @@ const RecentIncidents = ({ property }: Props) => {
 
             <HStack className="justify-between items-center rounded-2xl">
               <Badge className={getSeverityBadge(incident.severity)}>
-                <ThemedText className="text-xs">{incident.severity} Priority</ThemedText>
+                <ThemedText className="text-xs">
+                  {incident.severity} Priority
+                </ThemedText>
               </Badge>
               <ThemedText className="text-xs text-primary-500">
                 {formatDate(incident.reported_at)}
@@ -92,6 +97,6 @@ const RecentIncidents = ({ property }: Props) => {
       )}
     </Box>
   );
-}
+};
 
 export default RecentIncidents;

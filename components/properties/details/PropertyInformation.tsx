@@ -1,24 +1,24 @@
-import React from 'react'
-import { Badge } from '@/components/ui/badge';
-import { Box } from '@/components/ui/box';
-import { Heading } from '@/components/ui/heading';
-import { HStack } from '@/components/ui/hstack';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import PropertyActions from './PropertyActions';
-import PropertyDetails from './PropertyDetails';
-import QuickActions from './QuickActions';
-import RecentIncidents from './RecentIncidents';
-import { Property } from '../list';
-import { getStatusBadge } from '../lib/detailsHelpers';
-import { ThemedText } from '@/components/ThemedText';
+import React from "react";
+import { Badge } from "@/components/ui/badge";
+import { Box } from "@/components/ui/box";
+import { Heading } from "@/components/ui/heading";
+import { HStack } from "@/components/ui/hstack";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import PropertyActions from "./PropertyActions";
+import PropertyDetails from "./PropertyDetails";
+import QuickActions from "./QuickActions";
+import RecentIncidents from "./RecentIncidents";
+import { Property } from "../list";
+import { getStatusBadge } from "../lib/utils/detailsHelpers";
+import { ThemedText } from "@/components/ThemedText";
 
 type Props = {
   property: Property;
-}
+};
 
 const PropertyInformation = ({ property }: Props) => {
   const statusBadge = getStatusBadge(property.status);
-  
+
   return (
     <Box className="p-4">
       <HStack className="justify-between items-start mb-2">
@@ -54,6 +54,6 @@ const PropertyInformation = ({ property }: Props) => {
       <QuickActions property={property} />
     </Box>
   );
-}
+};
 
-export default PropertyInformation
+export default PropertyInformation;

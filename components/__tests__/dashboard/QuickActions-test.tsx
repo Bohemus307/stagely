@@ -1,7 +1,7 @@
 import React from "react";
 import { render, fireEvent } from "@testing-library/react-native";
-import QuickActions from "../dashboard/QuickActions";
 import { Text, View } from "react-native";
+import QuickActions from "@/components/dashboard/QuickActions";
 
 // Mock the necessary components
 jest.mock("@/components/ThemedText", () => ({
