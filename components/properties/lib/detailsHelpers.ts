@@ -41,13 +41,13 @@ export const formatDate = (dateString: string) => {
 export const getSeverityBadge = (severity: string) => {
   switch (severity.toLowerCase()) {
     case "high":
-      return "bg-red-100 text-red-800";
+      return "bg-red-400/80 text-red-800";
     case "medium":
-      return "bg-amber-100 text-amber-800";
+      return "bg-amber-400/80 text-amber-800";
     case "low":
-      return "bg-blue-100 text-blue-800";
+      return "bg-blue-400/80 text-blue-800";
     default:
-      return "bg-gray-100 text-gray-800";
+      return "bg-gray-400/80 text-gray-800";
   }
 };
 
@@ -55,12 +55,12 @@ export const getSeverityBadge = (severity: string) => {
 export const getIncidentStatusBadge = (status: string) => {
   switch (status.toLowerCase()) {
     case "resolved":
-      return "bg-green-100 text-green-800";
+      return "bg-green-400/80 text-green-800 rounded-2xl";
     case "in progress":
-      return "bg-blue-100 text-blue-800";
+      return "bg-blue-400/80 text-blue-800 rounded-2xl";
     case "pending":
-      return "bg-amber-100 text-amber-800";
+      return "bg-amber-400/80 text-amber-800 rounded-2xl";
     default:
-      return "bg-gray-100 text-gray-800";
+      return "bg-gray-400/80 text-gray-800 rounded-2xl";
   }
 };

@@ -5,7 +5,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { Spinner } from "@/components/ui/spinner";
 import { properties } from "@/components/properties/data/properties";
 import { Property } from "@/components/properties/list";
-import BackButton from "@/components/ui/BackButton";
+import BackButton from "@/components/BackButton";
 
 const PropertyEditScreen = () => {
   const { propertyId } = useLocalSearchParams();

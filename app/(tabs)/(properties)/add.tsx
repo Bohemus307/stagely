@@ -1,8 +1,8 @@
-import { StyleSheet, View } from "react-native";
+import { View } from "react-native";
 import { router } from "expo-router";
 import { ThemedView } from "@/components/ThemedView";
 import LocationSearchMap from "@/components/LocationSearchMap";
-import BackButton from "@/components/ui/BackButton";
+import BackButton from "@/components/BackButton";
 
 interface Location {
   latitude: number;
@@ -28,43 +28,13 @@ export default function AddProperty() {
   };
 
   return (
-    <ThemedView style={styles.container}>
-      <View style={styles.header}>
+    <ThemedView className="flex-1">
+      <View className="px-5 w-full z-10 shadow-sm">
         <BackButton />
       </View>
-      <View style={styles.mapContainer}>
+      <View className="flex-1 w-full">
         <LocationSearchMap onSaveLocation={handleLocationSave} />
       </View>
     </ThemedView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    paddingTop: 12,
-    paddingBottom: 12,
-    paddingHorizontal: 20,
-    width: "100%",
-    zIndex: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  backText: {
-    fontSize: 16,
-    marginLeft: 4,
-  },
-  mapContainer: {
-    flex: 1,
-    width: "100%",
-  },
-});

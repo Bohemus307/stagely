@@ -1,9 +1,7 @@
-import React, {  } from "react";
-import {
-  SafeAreaView,
-} from "react-native";
+import React from "react";
+import { SafeAreaView } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
-import BackButton from "@/components/ui/BackButton";
+import BackButton from "@/components/BackButton";
 import { ThemedText } from "@/components/ThemedText";
 
 const PropertyPhotosScreen = () => {

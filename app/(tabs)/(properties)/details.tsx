@@ -12,7 +12,7 @@ import { Property } from "@/components/properties/list";
 import StreetViewImage from "@/components/properties/details/StreetView";
 import { Spinner } from "@/components/ui/spinner";
 import PropertyInformation from "@/components/properties/details/PropertyInformation";
-import BackButton from "@/components/ui/BackButton";
+import BackButton from "@/components/BackButton";
 
 const PropertyDetailsScreen = () => {
   const params = useLocalSearchParams();
@@ -101,7 +101,6 @@ const PropertyDetailsScreen = () => {
 
           {/* Property Information */}
           <PropertyInformation property={property} />
-
         </ScrollView>
       </SafeAreaView>
     </ThemedView>

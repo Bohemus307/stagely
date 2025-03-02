@@ -10,7 +10,6 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Box } from "@/components/ui/box";
 import Constants from "expo-constants";
 import { Property } from ".";
-import { Colors } from "react-native/Libraries/NewAppScreen";
 
 // Props for components
 interface PropertyCardProps {
@@ -168,11 +167,11 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
             {property.address}
           </Heading>
           <HStack className="items-center text-sm text-primary-500 mt-1">
-            <IconSymbol
+            {/* <IconSymbol
               name="location.fill"
               size={14}
               color={Colors.light.tabIconDefault}
-            />
+            /> */}
             <Text className="ml-1">
               {property.city}, {property.state} {property.zip_code}
             </Text>

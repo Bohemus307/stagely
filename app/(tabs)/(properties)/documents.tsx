@@ -1,8 +1,8 @@
-import { SafeAreaView } from 'react-native'
-import React from 'react'
-import { ThemedView } from '@/components/ThemedView';
-import BackButton from '@/components/ui/BackButton';
-import { ThemedText } from '@/components/ThemedText';
+import { SafeAreaView } from "react-native";
+import React from "react";
+import { ThemedView } from "@/components/ThemedView";
+import BackButton from "@/components/BackButton";
+import { ThemedText } from "@/components/ThemedText";
 
 const Documents = () => {
   return (
@@ -13,6 +13,6 @@ const Documents = () => {
       </SafeAreaView>
     </ThemedView>
   );
-}
+};
 
-export default Documents
+export default Documents;

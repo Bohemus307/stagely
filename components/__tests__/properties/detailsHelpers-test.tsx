@@ -68,70 +68,70 @@ describe("detailsHelpers", () => {
   describe("getSeverityBadge", () => {
     test("returns correct badge class for high severity", () => {
       const result = getSeverityBadge("High");
-      expect(result).toBe("bg-red-100 text-red-800");
+      expect(result).toBe("bg-red-400/80 text-red-800");
     });
 
     test("returns correct badge class for medium severity", () => {
       const result = getSeverityBadge("Medium");
-      expect(result).toBe("bg-amber-100 text-amber-800");
+      expect(result).toBe("bg-amber-400/80 text-amber-800");
     });
 
     test("returns correct badge class for low severity", () => {
       const result = getSeverityBadge("Low");
-      expect(result).toBe("bg-blue-100 text-blue-800");
+      expect(result).toBe("bg-blue-400/80 text-blue-800");
     });
 
     test("returns default badge class for unknown severity", () => {
       const result = getSeverityBadge("Unknown");
-      expect(result).toBe("bg-gray-100 text-gray-800");
+      expect(result).toBe("bg-gray-400/80 text-gray-800");
     });
 
     test("is case insensitive", () => {
-      expect(getSeverityBadge("HIGH")).toBe("bg-red-100 text-red-800");
-      expect(getSeverityBadge("high")).toBe("bg-red-100 text-red-800");
-      expect(getSeverityBadge("High")).toBe("bg-red-100 text-red-800");
+      expect(getSeverityBadge("HIGH")).toBe("bg-red-400/80 text-red-800");
+      expect(getSeverityBadge("high")).toBe("bg-red-400/80 text-red-800");
+      expect(getSeverityBadge("High")).toBe("bg-red-400/80 text-red-800");
     });
   });
 
   describe("getIncidentStatusBadge", () => {
     test("returns correct badge class for resolved status", () => {
       const result = getIncidentStatusBadge("Resolved");
-      expect(result).toBe("bg-green-100 text-green-800");
+      expect(result).toBe("bg-green-400/80 text-green-800 rounded-2xl");
     });
 
     test("returns correct badge class for in progress status", () => {
       const result = getIncidentStatusBadge("In Progress");
-      expect(result).toBe("bg-blue-100 text-blue-800");
+      expect(result).toBe("bg-blue-400/80 text-blue-800 rounded-2xl");
     });
 
     test("returns correct badge class for pending status", () => {
       const result = getIncidentStatusBadge("Pending");
-      expect(result).toBe("bg-amber-100 text-amber-800");
+      expect(result).toBe("bg-amber-400/80 text-amber-800 rounded-2xl");
     });
 
     test("returns default badge class for unknown status", () => {
       const result = getIncidentStatusBadge("Unknown");
-      expect(result).toBe("bg-gray-100 text-gray-800");
+      expect(result).toBe("bg-gray-400/80 text-gray-800 rounded-2xl");
     });
 
     test("is case insensitive", () => {
       expect(getIncidentStatusBadge("RESOLVED")).toBe(
-        "bg-green-100 text-green-800"
+        "bg-green-400/80 text-green-800 rounded-2xl"
       );
       expect(getIncidentStatusBadge("resolved")).toBe(
-        "bg-green-100 text-green-800"
+        "bg-green-400/80 text-green-800 rounded-2xl"
       );
       expect(getIncidentStatusBadge("Resolved")).toBe(
-        "bg-green-100 text-green-800"
+        "bg-green-400/80 text-green-800 rounded-2xl"
       );
       expect(getIncidentStatusBadge("IN PROGRESS")).toBe(
-        "bg-blue-100 text-blue-800"
+        "bg-blue-400/80 text-blue-800 rounded-2xl"
       );
     });
 
     test("handles 'open' status correctly", () => {
       const result = getIncidentStatusBadge("Open");
-      expect(result).toBe("bg-gray-100 text-gray-800");
+      expect(result).toBe("bg-gray-400/80 text-gray-800 rounded-2xl");
     });
   });
 });

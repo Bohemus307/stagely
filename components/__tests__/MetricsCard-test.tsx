@@ -1,14 +1,18 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
-import MetricsCard from "../MetricsCard";
+import MetricsCard from "../dashboard/MetricsCard";
 import { Text, View } from "react-native";
 
 jest.mock("@/components/ThemedText", () => ({
-  ThemedText: ({ children }: { children: React.ReactNode }) => <Text>{children}</Text>,
+  ThemedText: ({ children }: { children: React.ReactNode }) => (
+    <Text>{children}</Text>
+  ),
 }));
 
 jest.mock("@/components/ui/hstack", () => ({
-  HStack: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+  HStack: ({ children }: { children: React.ReactNode }) => (
+    <View>{children}</View>
+  ),
 }));
 
 jest.mock("@/components/ui/box", () => ({
