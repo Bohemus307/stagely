@@ -4,25 +4,41 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { HStack } from '@/components/ui/hstack';
 import { Box } from '@/components/ui/box';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import React from 'react';
+import { ThemedView } from '../ThemedView';
+import { VStack } from '../ui/vstack';
 
-export default function QuickActions() {
+export default function QuickActions(): JSX.Element {
     const router = useRouter();
-    const addProperty = () => router.push('/(tabs)/(properties)/add');
-    const newIncident = () => router.push('/incidents');
+    const addProperty = (): void => router.push('/(tabs)/(properties)/add');
+    const newIncident = (): void => router.push('/incidents');
 
-return (
-    <Box className="h-48 w-full mx-auto p-2 rounded-lg border-2 flex flex-col items-center justify-center">
-        <ThemedText type="subtitle" className="mb-2 text-center">Quick Actions</ThemedText>
-        <HStack className="justify-center px-2 mb-5 w-full space-x-4">
-            <Button className="flex flex-col mr-4 items-center justify-center h-24" onPress={addProperty}>
-                <IconSymbol size={28} name="building.2.fill" color='grey' />
-                <ButtonText>Add Property</ButtonText>
+    return (
+        <ThemedView>
+        <Box className="p-2 rounded-2xl flex flex-col shadow-sm bg-white mt-4">
+          <ThemedText className="text-left text-lg text-primary-500 font-semibold mb-3">Quick Actions</ThemedText>
+          <HStack className="justify-center px-2 mb-2 w-full gap-4">
+            <Button
+              className="h-16 w-1/2 rounded-lg flex flex-col items-center justify-center shadow-sm bg-background-50"
+              onPress={addProperty}
+            >
+              <VStack className="items-center justify-center">
+                <IconSymbol size={18} name="building.2.fill" color='grey' />
+                <ButtonText className="mt-1 text-primary-700">Add Property</ButtonText>
+              </VStack>
             </Button>
-            <Button className="flex flex-col items-center justify-center h-24" onPress={newIncident}>
-                <IconSymbol size={28} name="exclamationmark.triangle.fill" color='grey' />
-                 <ButtonText>New Incident</ButtonText>
-             </Button>
-        </HStack>
-    </Box>
+
+            <Button
+              className="h-16 w-1/2 rounded-lg flex flex-col items-center justify-center shadow-sm bg-background-50"
+              onPress={newIncident}
+            >
+              <VStack className="items-center justify-center">
+                <IconSymbol size={18} name="exclamationmark.triangle.fill" color='grey' />
+                <ButtonText className="mt-1 text-primary-700">New Incident</ButtonText>
+              </VStack>
+            </Button>
+          </HStack>
+        </Box>
+      </ThemedView>
     );
 }
