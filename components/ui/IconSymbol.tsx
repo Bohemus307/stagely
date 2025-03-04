@@ -1,5 +1,3 @@
-// This file is a fallback for using MaterialIcons on Android and web.
-
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { SymbolWeight } from "expo-symbols";
 import React from "react";
@@ -9,7 +7,6 @@ import { OpaqueColorValue, StyleProp, ViewStyle } from "react-native";
 const MAPPING = {
   // See MaterialIcons here: https://icons.expo.fyi
   //See SF Symbols in the SF Symbols a pp on Mac.
-  "camera.slash": "camera",
   "house.fill": "home",
   "paperplane.fill": "send",
   "chevron.left.forwardslash.chevron.right": "code",
@@ -18,6 +15,13 @@ const MAPPING = {
   "exclamationmark.triangle.fill": "error",
   "message.fill": "message",
   "person.circle.fill.fill": "person",
+  "wrench.fill": "build",
+  "doc.text.fill": "description",
+  "person.fill": "person",
+  "magnifying.glass": "search",
+  "circle.fill": "circle",
+  "location.fill": "location-on",
+  "checkmark.circle.fill": "check-circle",
 } as Partial<
   Record<
     import("expo-symbols").SymbolViewProps["name"],

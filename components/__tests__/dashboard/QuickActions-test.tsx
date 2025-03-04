@@ -37,6 +37,6 @@ describe("QuickActions Component", () => {
     fireEvent.press(getByText("Add Property"));
 
     // Verify navigation
-    expect(push).toHaveBeenCalledWith("/(tabs)/(dashboard)/addProperty");
+    expect(push).toHaveBeenCalledWith("/(tabs)/(properties)/addProperty");
   });
 });

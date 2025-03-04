@@ -41,24 +41,24 @@ export default function MetricsCard(): JSX.Element {
   ];
 
   return (
-    <ThemedView>
-      <Box className="p-2 rounded-2xl flex flex-col items-center justify-center">
-        <HStack className="justify-center px-2 mb-2 w-full gap-4">
-          {metricItems.map((item, index) => (
-            <Box
-              key={index}
-              className="h-28 w-1/2 p-4 rounded-lg flex shadow-sm bg-white"
-            >
-              <ThemedText className="text-left text-black font-semibold font-roboto">
-                {item.title}
-              </ThemedText>
-              <ThemedText className="text-2xl font-semibold font-roboto text-left">
-                {item.value}
-              </ThemedText>
-            </Box>
-          ))}
-        </HStack>
-      </Box>
-    </ThemedView>
-  );
+      <ThemedView>
+        <Box className="p-2 rounded-2xl flex flex-col items-center justify-center mt-2 mb-0">
+          <HStack className="justify-center px-2 mb-2 w-full gap-4">
+            {metricItems.map((item, index) => (
+              <Box
+                key={index}
+                className="h-16 w-1/2 p-4 rounded-lg flex flex-col justify-center shadow-sm bg-white"
+              >
+                <ThemedText className="text-left text-black font-semibold font-roboto mb-1">
+                  {item.title}
+                </ThemedText>
+                <ThemedText className="text-2xl font-semibold font-roboto text-left">
+                  {item.value}
+                </ThemedText>
+              </Box>
+            ))}
+          </HStack>
+        </Box>
+      </ThemedView>
+    );
 }
