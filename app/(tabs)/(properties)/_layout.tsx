@@ -11,7 +11,7 @@ export default function PropertiesLayout() {
         name="index"
         options={{
           headerShown: false,
-          presentation: "modal", 
+          presentation: "modal",
         }}
       />
     </Stack>

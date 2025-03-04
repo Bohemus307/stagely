@@ -52,7 +52,7 @@ const LocationSearchMap: React.FC<LocationSearchMapProps> = ({
   onSaveLocation,
 }) => {
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(
-    null
+    null,
   );
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
   const [mapReady, setMapReady] = useState<boolean>(false);
@@ -73,7 +73,7 @@ const LocationSearchMap: React.FC<LocationSearchMapProps> = ({
       latitudeDelta: 50,
       longitudeDelta: 50,
     }),
-    []
+    [],
   );
 
   // Memoize the API query parameters
@@ -82,7 +82,7 @@ const LocationSearchMap: React.FC<LocationSearchMapProps> = ({
       key: GOOGLE_MAPS_API_KEY,
       language: "en",
     }),
-    [GOOGLE_MAPS_API_KEY]
+    [GOOGLE_MAPS_API_KEY],
   );
 
   // Memoize the autocomplete styles
@@ -130,7 +130,7 @@ const LocationSearchMap: React.FC<LocationSearchMapProps> = ({
         fontSize: 15,
       },
     }),
-    []
+    [],
   );
 
   const handleConfirm = useCallback(async () => {
@@ -200,7 +200,7 @@ const LocationSearchMap: React.FC<LocationSearchMapProps> = ({
               latitudeDelta: 0.01,
               longitudeDelta: 0.01,
             },
-            1000
+            1000,
           );
         }
 
@@ -212,7 +212,7 @@ const LocationSearchMap: React.FC<LocationSearchMapProps> = ({
         console.error("Error processing location:", error);
       }
     },
-    [mapReady]
+    [mapReady],
   );
 
   const renderRow = useCallback((rowData: GooglePlace) => {
@@ -280,9 +280,7 @@ const LocationSearchMap: React.FC<LocationSearchMapProps> = ({
       </View>
 
       <View
-        className={`absolute ${
-          Platform.OS === "ios" ? "top-8" : "top-3"
-        } w-full z-10`}
+        className={`absolute ${Platform.OS === "ios" ? "top-8" : "top-3"} w-full z-10`}
       >
         <GooglePlacesAutocomplete
           placeholder="Search for any address"

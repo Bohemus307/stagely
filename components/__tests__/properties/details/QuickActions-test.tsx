@@ -50,7 +50,7 @@ describe("QuickActions Component", () => {
 
   test("renders correctly with the expected title and buttons", () => {
     const { getByText, getAllByText } = render(
-      <QuickActions property={mockProperty} />
+      <QuickActions property={mockProperty} />,
     );
 
     // Check if the component renders the title
@@ -97,7 +97,7 @@ describe("QuickActions Component", () => {
 
   test("uses correct property ID for navigation", () => {
     const { getByText } = render(
-      <QuickActions property={{...mockProperty, property_id: 67890 }} />
+      <QuickActions property={{ ...mockProperty, property_id: 67890 }} />,
     );
 
     fireEvent.press(getByText("Edit Property"));

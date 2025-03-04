@@ -50,6 +50,30 @@ export default {
           domain: "dev-fxqphucoelzcm6nf.us.auth0.com",
         },
       ],
+      [
+        "expo-location",
+        {
+          locationAlwaysAndWhenInUsePermission:
+            "Allow $(PRODUCT_NAME) to use your location.",
+        },
+      ],
+      [
+        "expo-camera",
+        {
+          cameraPermission: "Allow $(PRODUCT_NAME) to access your camera",
+          microphonePermission:
+            "Allow $(PRODUCT_NAME) to access your microphone",
+          recordAudioAndroid: true,
+        },
+      ],
+      [
+        "expo-media-library",
+        {
+          photosPermission: "Allow $(PRODUCT_NAME) to access your photos.",
+          savePhotosPermission: "Allow $(PRODUCT_NAME) to save photos.",
+          isAccessMediaLocationEnabled: true,
+        },
+      ],
     ],
     extra: {
       domain: process.env.EXPO_PUBLIC_DOMAIN,

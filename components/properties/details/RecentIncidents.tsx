@@ -85,7 +85,7 @@ const RecentIncidents = ({ property }: Props) => {
           className="mt-3 py-2 bg-white"
           onPress={() =>
             router.push({
-              pathname: "/incidents",
+              pathname: "/(tabs)/(incidents)",
               params: { propertyId: property.property_id },
             })
           }

@@ -34,15 +34,15 @@ describe("RecentActivity Component", () => {
 
     // Wait for the useEffect to complete and for the state to update
     await waitFor(() =>
-      screen.getByText("New incident reported at Property A")
+      screen.getByText("New incident reported at Property A"),
     );
 
     // Check if the component renders the activity descriptions after the state update
     expect(
-      screen.getByText("New incident reported at Property A")
+      screen.getByText("New incident reported at Property A"),
     ).toBeTruthy();
     expect(
-      screen.getByText("Maintenance completed at Property B")
+      screen.getByText("Maintenance completed at Property B"),
     ).toBeTruthy();
     expect(screen.getByText("Document updated for Property C")).toBeTruthy();
   });

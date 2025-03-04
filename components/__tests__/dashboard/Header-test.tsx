@@ -1,15 +1,8 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
-import {
-  Text,
-  View,
-  Image,
-  StyleProp,
-  ViewStyle,
-} from "react-native";
+import { Text, View, Image, StyleProp, ViewStyle } from "react-native";
 import { ReactNode } from "react";
 import Header from "@/components/Header";
-
 
 // Mock all external dependencies
 jest.mock("react-native-auth0", () => ({
@@ -73,7 +66,7 @@ jest.mock(
       color: string;
     }) {
       return <View testID="material-icon" />;
-    }
+    },
 );
 
 describe("Header Component", () => {

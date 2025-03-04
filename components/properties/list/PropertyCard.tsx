@@ -73,14 +73,14 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   const [streetViewError, setStreetViewError] = useState(
     !property.location ||
       typeof property.location.latitude !== "number" ||
-      typeof property.location.longitude !== "number"
+      typeof property.location.longitude !== "number",
   );
 
   // Count active incidents
   const activeIncidents =
     property.incidents?.filter(
       (incident) =>
-        incident.status !== "Resolved" && incident.status !== "Closed"
+        incident.status !== "Resolved" && incident.status !== "Closed",
     ).length || 0;
 
   // For debugging
