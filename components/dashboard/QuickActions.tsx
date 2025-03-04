@@ -15,8 +15,8 @@ export default function QuickActions(): JSX.Element {
 
     return (
         <ThemedView>
-        <Box className="p-2 rounded-2xl flex flex-col shadow-sm bg-white mt-4">
-          <ThemedText className="text-left text-lg text-primary-500 font-semibold mb-3">Quick Actions</ThemedText>
+        <Box className="mr-2 ml-2 p-4 rounded-2xl flex flex-col shadow-sm bg-white mt-4">
+          <ThemedText type="defaultSemiBold" className="text-left mb-3">Quick Actions</ThemedText>
           <HStack className="justify-center px-2 mb-2 w-full gap-4">
             <Button
               className="h-16 w-1/2 rounded-lg flex flex-col items-center justify-center shadow-sm bg-background-50"
