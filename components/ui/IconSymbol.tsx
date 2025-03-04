@@ -17,6 +17,13 @@ const MAPPING = {
   'exclamationmark.triangle.fill': 'error',
   'message.fill': 'message',
   'person.circle.fill.fill': 'person',
+  'wrench.fill': 'build',
+  'doc.text.fill': 'description',
+  'person.fill': 'person',
+  'magnifyingglass': 'search',
+  'circle.fill': 'circle',
+  'location.fill': 'location-on',
+  'checkmark.circle.fill': 'check-circle',
 } as Partial<
   Record<
     import('expo-symbols').SymbolViewProps['name'],
