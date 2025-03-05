@@ -3,7 +3,12 @@ import { render } from "@testing-library/react-native";
 import RecentIncidents from "@/components/properties/details/RecentIncidents";
 import { router } from "expo-router";
 import { fireEvent } from "@testing-library/react-native";
-import { Incident, IncidentImage, Property, PropertyStatus } from "@/components/properties/list";
+import {
+  Incident,
+  IncidentImage,
+  Property,
+  PropertyStatus,
+} from "@/components/properties/list";
 
 // Just mock router for navigation testing
 jest.mock("expo-router", () => ({
@@ -20,7 +25,7 @@ describe("RecentIncidents Component", () => {
     description: string,
     status: "Open" | "In Progress" | "Resolved" | "Closed",
     severity: "Low" | "Medium" | "High" | "Critical",
-    images: IncidentImage[] = []
+    images: IncidentImage[] = [],
   ): Incident => ({
     incident_id: id,
     incident_type: type,
@@ -40,7 +45,7 @@ describe("RecentIncidents Component", () => {
       "Power outage in living room",
       "Resolved",
       "High",
-      []
+      [],
     ),
     createIncident(103, "HVAC", "AC not working", "In Progress", "Low"),
     createIncident(104, "Structural", "Crack in ceiling", "Open", "High"),
@@ -78,7 +83,7 @@ describe("RecentIncidents Component", () => {
         caption: "Image 4",
         taken_at: "2025-02-18T11:25:00Z",
       },
-    ]
+    ],
   );
 
   // Create base property
@@ -151,7 +156,7 @@ describe("RecentIncidents Component", () => {
 
   test("does not display View All button when there are 3 or fewer incidents", () => {
     const { queryByText } = render(
-      <RecentIncidents property={propertyWithFewerIncidents} />
+      <RecentIncidents property={propertyWithFewerIncidents} />,
     );
     expect(queryByText(/View All/)).toBeFalsy();
   });
@@ -163,7 +168,7 @@ describe("RecentIncidents Component", () => {
     fireEvent.press(viewAllButton);
 
     expect(router.push).toHaveBeenCalledWith({
-      pathname: "/incidents",
+      pathname: "/(tabs)/(incidents)",
       params: { propertyId: 12345 },
     });
   });
@@ -172,7 +177,7 @@ describe("RecentIncidents Component", () => {
     const propertyWithImageIncident = createProperty([mockIncidentWithImages]);
 
     const { getByText } = render(
-      <RecentIncidents property={propertyWithImageIncident} />
+      <RecentIncidents property={propertyWithImageIncident} />,
     );
 
     // Should display the incident type
@@ -184,7 +189,7 @@ describe("RecentIncidents Component", () => {
 
   test("handles property with no incidents gracefully", () => {
     const { queryByText } = render(
-      <RecentIncidents property={propertyWithNoIncidents} />
+      <RecentIncidents property={propertyWithNoIncidents} />,
     );
 
     // Should still show the heading
@@ -205,7 +210,7 @@ describe("RecentIncidents Component", () => {
     };
 
     const { queryByText } = render(
-      <RecentIncidents property={propertyWithUndefinedIncidents} />
+      <RecentIncidents property={propertyWithUndefinedIncidents} />,
     );
 
     // Should still show the heading

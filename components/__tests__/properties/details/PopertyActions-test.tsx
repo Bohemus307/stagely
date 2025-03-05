@@ -5,7 +5,6 @@ import PropertyActions from "@/components/properties/details/PropertyActions";
 import { Property, PropertyStatus } from "@/components/properties/list";
 import { router } from "expo-router";
 
-
 // Mock the dependencies
 jest.mock("expo-router", () => ({
   router: {
@@ -113,7 +112,7 @@ describe("PropertyActions", () => {
     };
 
     const { getByText } = render(
-      <PropertyActions property={propertyWithNoActiveIncidents as Property} />
+      <PropertyActions property={propertyWithNoActiveIncidents as Property} />,
     );
 
     expect(getByText("Report Issue")).toBeTruthy();
@@ -126,7 +125,7 @@ describe("PropertyActions", () => {
     };
 
     const { getByText } = render(
-      <PropertyActions property={propertyWithNoIncidents as Property} />
+      <PropertyActions property={propertyWithNoIncidents as Property} />,
     );
 
     expect(getByText("Report Issue")).toBeTruthy();
@@ -141,7 +140,7 @@ describe("PropertyActions", () => {
 
     // Check if Linking.openURL was called with the correct URL
     expect(Linking.openURL).toHaveBeenCalledWith(
-      "https://www.google.com/maps/search/?api=1&query=37.7749,-122.4194"
+      "https://www.google.com/maps/search/?api=1&query=37.7749,-122.4194",
     );
   });
 
@@ -152,7 +151,9 @@ describe("PropertyActions", () => {
     };
 
     const { getByText } = render(
-      <PropertyActions property={propertyWithoutLocation as unknown as Property} />
+      <PropertyActions
+        property={propertyWithoutLocation as unknown as Property}
+      />,
     );
 
     // Find and press the Maps button
@@ -172,7 +173,7 @@ describe("PropertyActions", () => {
 
     // Check if router.push was called with the correct parameters
     expect(router.push).toHaveBeenCalledWith({
-      pathname: "/incidents",
+      pathname: "/(tabs)/(incidents)",
       params: { propertyId: 12345 },
     });
   });
@@ -223,7 +224,7 @@ describe("PropertyActions", () => {
     };
 
     const { getByText } = render(
-      <PropertyActions property={propertyWithMixedIncidents as Property} />
+      <PropertyActions property={propertyWithMixedIncidents as Property} />,
     );
 
     // Should only count 'Open' and 'In Progress' incidents

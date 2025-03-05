@@ -35,7 +35,9 @@ const QuickActions = ({ property }: Props) => {
               size={18}
               color={Colors.light.tabIconDefault}
             />
-            <ThemedText className="ml-2 text-primary-700">Manage Photos</ThemedText>
+            <ThemedText className="ml-2 text-primary-700">
+              Manage Photos
+            </ThemedText>
           </HStack>
         </Button>
 
@@ -54,7 +56,9 @@ const QuickActions = ({ property }: Props) => {
               size={18}
               color={Colors.light.tabIconDefault}
             />
-            <ThemedText className="ml-2 text-primary-700">View Documents</ThemedText>
+            <ThemedText className="ml-2 text-primary-700">
+              View Documents
+            </ThemedText>
           </HStack>
         </Button>
 
@@ -73,7 +77,9 @@ const QuickActions = ({ property }: Props) => {
               size={18}
               color={Colors.light.tabIconDefault}
             />
-            <ThemedText className="ml-2 text-primary-700">Edit Property</ThemedText>
+            <ThemedText className="ml-2 text-primary-700">
+              Edit Property
+            </ThemedText>
           </HStack>
         </Button>
       </VStack>

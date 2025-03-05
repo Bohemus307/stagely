@@ -71,7 +71,7 @@ describe("PropertyCard Component", () => {
         onDetailsPress={mockOnDetailsPress}
         onPhotosPress={mockOnPhotosPress}
         onDocumentsPress={mockOnDocumentsPress}
-      />
+      />,
     );
 
     expect(getByText("123 Test Street")).toBeTruthy();
@@ -86,7 +86,7 @@ describe("PropertyCard Component", () => {
         onDetailsPress={mockOnDetailsPress}
         onPhotosPress={mockOnPhotosPress}
         onDocumentsPress={mockOnDocumentsPress}
-      />
+      />,
     );
 
     expect(getByText("Active")).toBeTruthy();
@@ -105,7 +105,7 @@ describe("PropertyCard Component", () => {
         onDetailsPress={mockOnDetailsPress}
         onPhotosPress={mockOnPhotosPress}
         onDocumentsPress={mockOnDocumentsPress}
-      />
+      />,
     );
 
     expect(getByText("Maintenance")).toBeTruthy();
@@ -124,7 +124,7 @@ describe("PropertyCard Component", () => {
         onDetailsPress={mockOnDetailsPress}
         onPhotosPress={mockOnPhotosPress}
         onDocumentsPress={mockOnDocumentsPress}
-      />
+      />,
     );
 
     expect(getByText("Archived")).toBeTruthy();
@@ -138,7 +138,7 @@ describe("PropertyCard Component", () => {
         onDetailsPress={mockOnDetailsPress}
         onPhotosPress={mockOnPhotosPress}
         onDocumentsPress={mockOnDocumentsPress}
-      />
+      />,
     );
 
     expect(getByText("1 Issue")).toBeTruthy();
@@ -152,7 +152,7 @@ describe("PropertyCard Component", () => {
         onDetailsPress={mockOnDetailsPress}
         onPhotosPress={mockOnPhotosPress}
         onDocumentsPress={mockOnDocumentsPress}
-      />
+      />,
     );
 
     expect(getByText("Street View")).toBeTruthy();
@@ -171,7 +171,7 @@ describe("PropertyCard Component", () => {
         onDetailsPress={mockOnDetailsPress}
         onPhotosPress={mockOnPhotosPress}
         onDocumentsPress={mockOnDocumentsPress}
-      />
+      />,
     );
 
     expect(getByText("No Preview")).toBeTruthy();
@@ -185,7 +185,7 @@ describe("PropertyCard Component", () => {
         onDetailsPress={mockOnDetailsPress}
         onPhotosPress={mockOnPhotosPress}
         onDocumentsPress={mockOnDocumentsPress}
-      />
+      />,
     );
 
     fireEvent.press(getByText("Details"));
@@ -200,7 +200,7 @@ describe("PropertyCard Component", () => {
         onDetailsPress={mockOnDetailsPress}
         onPhotosPress={mockOnPhotosPress}
         onDocumentsPress={mockOnDocumentsPress}
-      />
+      />,
     );
 
     fireEvent.press(getByText("Photos"));
@@ -215,7 +215,7 @@ describe("PropertyCard Component", () => {
         onDetailsPress={mockOnDetailsPress}
         onPhotosPress={mockOnPhotosPress}
         onDocumentsPress={mockOnDocumentsPress}
-      />
+      />,
     );
 
     fireEvent.press(getByText("Documents"));

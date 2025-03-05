@@ -1,12 +1,10 @@
-import type { PropsWithChildren, ReactElement } from 'react';
-import { StyleSheet } from 'react-native';
-import Animated, {
-  useAnimatedRef,
-} from 'react-native-reanimated';
+import type { PropsWithChildren, ReactElement } from "react";
+import { StyleSheet } from "react-native";
+import Animated, { useAnimatedRef } from "react-native-reanimated";
 
-import { ThemedView } from '@/components/ThemedView';
-import { useBottomTabOverflow } from '@/components/ui/TabBarBackground';
-import  Header  from '@/components/Header';
+import { ThemedView } from "@/components/ThemedView";
+import { useBottomTabOverflow } from "@/components/ui/TabBarBackground";
+import Header from "@/components/Header";
 
 const HEADER_HEIGHT = 100;
 
@@ -15,9 +13,7 @@ type Props = PropsWithChildren<{
   headerBackgroundColor: { dark: string; light: string };
 }>;
 
-export default function ParallaxScrollView({
-  children,
-}: Props) {
+export default function ParallaxScrollView({ children }: Props) {
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const bottom = useBottomTabOverflow();
 
@@ -27,9 +23,9 @@ export default function ParallaxScrollView({
         ref={scrollRef}
         scrollEventThrottle={16}
         scrollIndicatorInsets={{ bottom }}
-        contentContainerStyle={{ paddingBottom: bottom }}>
-        <Animated.View
-          >
+        contentContainerStyle={{ paddingBottom: bottom }}
+      >
+        <Animated.View>
           <Header />
         </Animated.View>
         <ThemedView style={styles.content}>{children}</ThemedView>
@@ -44,12 +40,12 @@ const styles = StyleSheet.create({
   },
   header: {
     height: HEADER_HEIGHT,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   content: {
     flex: 1,
     padding: 5,
     gap: 16,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
 });

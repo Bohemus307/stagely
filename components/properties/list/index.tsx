@@ -97,7 +97,7 @@ const PropertyList: React.FC<PropertyListProps> = ({
   };
 
   const handleAddProperty = () => {
-    router.push("/(tabs)/(properties)/add");
+    router.push("/(tabs)/(properties)/addProperty");
   };
 
   const renderProperty = ({ item }: { item: Property }) => (

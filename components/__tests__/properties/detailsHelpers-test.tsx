@@ -116,16 +116,16 @@ describe("detailsHelpers", () => {
 
     test("is case insensitive", () => {
       expect(getIncidentStatusBadge("RESOLVED")).toBe(
-        "bg-green-400/80 text-green-800 rounded-2xl"
+        "bg-green-400/80 text-green-800 rounded-2xl",
       );
       expect(getIncidentStatusBadge("resolved")).toBe(
-        "bg-green-400/80 text-green-800 rounded-2xl"
+        "bg-green-400/80 text-green-800 rounded-2xl",
       );
       expect(getIncidentStatusBadge("Resolved")).toBe(
-        "bg-green-400/80 text-green-800 rounded-2xl"
+        "bg-green-400/80 text-green-800 rounded-2xl",
       );
       expect(getIncidentStatusBadge("IN PROGRESS")).toBe(
-        "bg-blue-400/80 text-blue-800 rounded-2xl"
+        "bg-blue-400/80 text-blue-800 rounded-2xl",
       );
     });
 
