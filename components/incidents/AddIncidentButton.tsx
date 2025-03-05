@@ -194,17 +194,34 @@ export default function AddIncidentButton() {
   return (
     <>
       <Button
-        className="flex flex-col items-center justify-center h-24"
+        className="h-16 w-1/2 rounded-lg flex flex-col items-center justify-center shadow-sm bg-background-50"
+        onPress={handlePress}
+      >
+        <VStack className="items-center justify-center">
+          <IconSymbol
+            size={18}
+            name="exclamationmark.triangle.fill"
+            color="grey"
+          />
+          <ButtonText className="text-primary-500 mt-1">
+            {isLoading ? "Locating..." : "New Incident"}
+          </ButtonText>
+        </VStack>
+      </Button>
+      {/* <Button
+        className="h-16 w-1/2 rounded-lg flex flex-col items-center justify-center shadow-sm bg-background-50"
         onPress={handlePress}
         isDisabled={isLoading}
       >
         <IconSymbol
-          size={28}
+          size={18}
           name="exclamationmark.triangle.fill"
           color="grey"
         />
-        <ButtonText>{isLoading ? "Locating..." : "New Incident"}</ButtonText>
-      </Button>
+        <ButtonText className="text-primary-700">
+          {isLoading ? "Locating..." : "New Incident"}
+        </ButtonText>
+      </Button> */}
 
       {/* Property Confirmation Modal */}
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} size="md">

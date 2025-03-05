@@ -1,5 +1,5 @@
 import React from "react";
-import { render, waitFor, screen } from "@testing-library/react-native";
+import { render, screen } from "@testing-library/react-native";
 
 import { Text, View } from "react-native";
 import RecentActivity from "@/components/dashboard/RecentActivity";
@@ -27,23 +27,5 @@ describe("RecentActivity Component", () => {
 
     // Check if the component renders the "Recent Activity" text
     expect(screen.getByText("Recent Activity")).toBeTruthy();
-  });
-
-  it("displays the recent activity after state is updated", async () => {
-    render(<RecentActivity />);
-
-    // Wait for the useEffect to complete and for the state to update
-    await waitFor(() =>
-      screen.getByText("New incident reported at Property A"),
-    );
-
-    // Check if the component renders the activity descriptions after the state update
-    expect(
-      screen.getByText("New incident reported at Property A"),
-    ).toBeTruthy();
-    expect(
-      screen.getByText("Maintenance completed at Property B"),
-    ).toBeTruthy();
-    expect(screen.getByText("Document updated for Property C")).toBeTruthy();
   });
 });

@@ -26,25 +26,44 @@ export default function RecentActivity(): JSX.Element {
         type: "incident",
       },
       {
+        id: 6,
+        description: "Inspection scheduled for Property E",
+        timestamp: "Yesterday, 10:15 AM",
+        type: "inspection",
+      },
+      {
         id: 2,
         description: "Maintenance completed at Property B",
         timestamp: "4 hours ago",
         type: "maintenance",
       },
       {
-        id: 3,
+        id: 7,
         description: "Document updated for Property C",
         timestamp: "Yesterday, 3:45 PM",
         type: "document",
       },
       {
+        id: 3,
+        description: "New incident reported at Property A",
+        timestamp: "2 hours ago",
+        type: "incident",
+      },
+      {
         id: 4,
-        description: "Tenant moved into Property D",
-        timestamp: "Yesterday, 2:30 PM",
-        type: "tenant",
+        description: "Maintenance completed at Property B",
+        timestamp: "4 hours ago",
+        type: "maintenance",
       },
       {
         id: 5,
+        description: "Document updated for Property C",
+        timestamp: "Yesterday, 3:45 PM",
+        type: "document",
+      },
+
+      {
+        id: 8,
         description: "Inspection scheduled for Property E",
         timestamp: "Yesterday, 10:15 AM",
         type: "inspection",
@@ -92,7 +111,7 @@ export default function RecentActivity(): JSX.Element {
         Recent Activity
       </ThemedText>
       <ScrollView
-        style={{ maxHeight: 200 }}
+        style={{ maxHeight: 250 }}
         contentContainerStyle={{ paddingBottom: 10 }}
       >
         <ThemedView>
@@ -108,12 +127,10 @@ export default function RecentActivity(): JSX.Element {
                     />
                   </Box>
                   <Box className="flex-1 ml-2">
-                    <ThemedText type="subtitle" style={{ gap: 0 }}>
+                    <ThemedText type="defaultSemiBold">
                       {activity.description}
                     </ThemedText>
-                    <ThemedText type="link" style={{ marginTop: -8 }}>
-                      {activity.timestamp}
-                    </ThemedText>
+                    <ThemedText>{activity.timestamp}</ThemedText>
                   </Box>
                 </HStack>
               </Box>

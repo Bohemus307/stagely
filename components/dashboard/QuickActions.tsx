@@ -27,27 +27,11 @@ export default function QuickActions(): JSX.Element {
           >
             <VStack className="items-center justify-center">
               <IconSymbol size={18} name="building.2.fill" color="grey" />
-              <ButtonText className="mt-1 text-primary-700">
+              <ButtonText className="mt-1 text-primary-500">
                 Add Property
               </ButtonText>
             </VStack>
           </Button>
-
-          {/* <Button
-            className="h-16 w-1/2 rounded-lg flex flex-col items-center justify-center shadow-sm bg-background-50"
-            onPress={newIncident}
-          >
-            <VStack className="items-center justify-center">
-              <IconSymbol
-                size={18}
-                name="exclamationmark.triangle.fill"
-                color="grey"
-              />
-              <ButtonText className="mt-1 text-primary-700">
-                New Incident
-              </ButtonText>
-            </VStack>
-          </Button> */}
           <AddIncidentButton />
         </HStack>
       </Box>
