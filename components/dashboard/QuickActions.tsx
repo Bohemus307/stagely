@@ -11,7 +11,8 @@ import AddIncidentButton from "../incidents/AddIncidentButton";
 
 export default function QuickActions(): JSX.Element {
   const router = useRouter();
-  const addProperty = (): void => router.push("/(tabs)/(properties)/addProperty");
+  const addProperty = (): void =>
+    router.push("/(tabs)/(properties)/addProperty");
 
   return (
     <ThemedView>
