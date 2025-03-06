@@ -163,7 +163,7 @@ describe("RecentIncidents Component", () => {
     fireEvent.press(viewAllButton);
 
     expect(router.push).toHaveBeenCalledWith({
-      pathname: "/incidents",
+      pathname: "/(tabs)/(incidents)",
       params: { propertyId: 12345 },
     });
   });

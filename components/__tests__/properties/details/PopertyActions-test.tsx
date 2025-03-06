@@ -172,7 +172,7 @@ describe("PropertyActions", () => {
 
     // Check if router.push was called with the correct parameters
     expect(router.push).toHaveBeenCalledWith({
-      pathname: "/incidents",
+      pathname: "/(tabs)/(incidents)",
       params: { propertyId: 12345 },
     });
   });

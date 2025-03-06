@@ -61,6 +61,6 @@ describe("QuickActions Component", () => {
 
     // Simulate pressing the "New Incident" button
     fireEvent.press(getByText("New Incident"));
-    expect(push).toHaveBeenCalledWith("/incidents"); // Expect navigation to /incidents
+    expect(push).toHaveBeenCalledWith("/(tabs)/(incidents)"); // Expect navigation to /incidents
   });
 });

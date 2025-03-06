@@ -25,7 +25,7 @@ const PropertyActions = ({ property }: Props) => {
       (incident) =>
         incident.status !== "Resolved" && incident.status !== "Closed"
     ).length || 0;
-  
+
   return (
     <HStack className="mb-6 gap-2 rounded-2xl">
       <Button className="flex-1 bg-primary-500 py-2 rounded-md" onPress={openMaps}>
@@ -39,7 +39,7 @@ const PropertyActions = ({ property }: Props) => {
         className="flex-1 bg-secondary-500 py-2 rounded-md"
         onPress={() =>
           router.push({
-            pathname: "/incidents",
+            pathname: "/(tabs)/(incidents)",
             params: { propertyId: property.property_id },
           })
         }

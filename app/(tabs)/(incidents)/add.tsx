@@ -4,7 +4,7 @@ import { View, Text } from "react-native";
 const IncidentsScreen = () => {
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Text>Incidents Screen (Coming Soon)</Text>
+      <Text> Screen (Coming Soon)</Text>
     </View>
   );
 };

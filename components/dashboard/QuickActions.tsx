@@ -11,7 +11,7 @@ import { VStack } from '../ui/vstack';
 export default function QuickActions(): JSX.Element {
     const router = useRouter();
     const addProperty = (): void => router.push('/(tabs)/(properties)/add');
-    const newIncident = (): void => router.push('/incidents');
+    const newIncident = (): void => router.push('/(tabs)/(incidents)');
 
     return (
         <ThemedView>
