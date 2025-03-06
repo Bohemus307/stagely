@@ -54,6 +54,8 @@ export const getSeverityBadge = (severity: string) => {
 // Get status badge color for incidents
 export const getIncidentStatusBadge = (status: string) => {
   switch (status.toLowerCase()) {
+    case "urgent":
+      return "bg-red-400/80 text-red-800 rounded-2xl";
     case "resolved":
       return "bg-green-400/80 text-green-800 rounded-2xl";
     case "in progress":
