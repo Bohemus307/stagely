@@ -11,7 +11,7 @@ export default function IncidentsLayout() {
         name="index"
         options={{
           headerShown: false,
-          presentation: "card",
+          presentation: "modal",
         }}
       />
     </Stack>
