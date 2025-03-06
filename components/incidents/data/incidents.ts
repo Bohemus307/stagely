@@ -7,7 +7,7 @@ export interface IncidentImage {
 
 export interface Incident {
   incident_id: number;
-  property_id: number;  // Reference to the property
+  property_id: number; // Reference to the property
   incident_type: string;
   description: string;
   reported_at: string;
@@ -25,7 +25,8 @@ export const incidents: Incident[] = [
     incident_id: 1,
     property_id: 1,
     incident_type: "Water Damage",
-    description: "Leak from upstairs bathroom caused ceiling damage in living room",
+    description:
+      "Leak from upstairs bathroom caused ceiling damage in living room",
     reported_at: "2025-02-22T08:15:00Z",
     severity: "Medium",
     status: "In Progress",

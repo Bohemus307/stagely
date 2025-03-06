@@ -68,7 +68,7 @@ describe("PropertyDetails", () => {
     const { getByText } = render(
       <PropertyDetails
         property={propertyWithMissingDates as unknown as Property}
-      />
+      />,
     );
 
     // Component should still render without crashing
@@ -85,7 +85,7 @@ describe("PropertyDetails", () => {
     };
 
     const { getByText } = render(
-      <PropertyDetails property={propertyWithLargeId as Property} />
+      <PropertyDetails property={propertyWithLargeId as Property} />,
     );
 
     // Check if the large ID is displayed correctly

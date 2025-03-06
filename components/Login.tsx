@@ -22,7 +22,7 @@ export default function Login() {
       </View>
     );
   }
-  
+
   return (
     <View style={styles.container}>
       <Image
@@ -31,10 +31,11 @@ export default function Login() {
         contentFit="contain"
         transition={1000}
       />
-      <Button onPress={onLogin}><ButtonText>Log In</ButtonText></Button>
-      
-      {error && <Text>{error.message}</Text>}
+      <Button onPress={onLogin}>
+        <ButtonText>Log In</ButtonText>
+      </Button>
 
+      {error && <Text>{error.message}</Text>}
     </View>
   );
 }
@@ -45,7 +46,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#FFF",
-    paddingBottom: 55
+    paddingBottom: 55,
   },
   image: {
     flex: 1,

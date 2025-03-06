@@ -1,33 +1,31 @@
-// This file is a fallback for using MaterialIcons on Android and web.
-
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { SymbolWeight } from 'expo-symbols';
-import React from 'react';
-import { OpaqueColorValue, StyleProp, ViewStyle } from 'react-native';
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { SymbolWeight } from "expo-symbols";
+import React from "react";
+import { OpaqueColorValue, StyleProp, ViewStyle } from "react-native";
 
 // Add your SFSymbol to MaterialIcons mappings here.
 const MAPPING = {
   // See MaterialIcons here: https://icons.expo.fyi
   //See SF Symbols in the SF Symbols a pp on Mac.
-  'house.fill': 'home',
-  'paperplane.fill': 'send',
-  'chevron.left.forwardslash.chevron.right': 'code',
-  'chevron.right': 'chevron-right',
-  'building.2.fill': 'business',
-  'exclamationmark.triangle.fill': 'error',
-  'message.fill': 'message',
-  'person.circle.fill.fill': 'person',
-  'wrench.fill': 'build',
-  'doc.text.fill': 'description',
-  'person.fill': 'person',
-  'magnifyingglass': 'search',
-  'circle.fill': 'circle',
-  'location.fill': 'location-on',
-  'checkmark.circle.fill': 'check-circle',
+  "house.fill": "home",
+  "paperplane.fill": "send",
+  "chevron.left.forwardslash.chevron.right": "code",
+  "chevron.right": "chevron-right",
+  "building.2.fill": "business",
+  "exclamationmark.triangle.fill": "error",
+  "message.fill": "message",
+  "person.circle.fill.fill": "person",
+  "wrench.fill": "build",
+  "doc.text.fill": "description",
+  "person.fill": "person",
+  "magnifying.glass": "search",
+  "circle.fill": "circle",
+  "location.fill": "location-on",
+  "checkmark.circle.fill": "check-circle",
 } as Partial<
   Record<
-    import('expo-symbols').SymbolViewProps['name'],
-    React.ComponentProps<typeof MaterialIcons>['name']
+    import("expo-symbols").SymbolViewProps["name"],
+    React.ComponentProps<typeof MaterialIcons>["name"]
   >
 >;
 

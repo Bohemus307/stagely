@@ -7,25 +7,33 @@ jest.mock("expo-constants", () => ({
 }));
 
 // Mock expo-symbols
-jest.mock('expo-symbols', () => {
-  const React = require('react');
-  
+jest.mock("expo-symbols", () => {
+  const React = require("react");
+
   // Export a mock version of SymbolView
-  const SymbolView = ({ name, size, color }: { name: string; size: number; color: string }) => {
+  const SymbolView = ({
+    name,
+    size,
+    color,
+  }: {
+    name: string;
+    size: number;
+    color: string;
+  }) => {
     return React.createElement("view", {
       testID: `symbol-${name}`,
       style: { width: size, height: size, backgroundColor: color },
     });
   };
-  
+
   // Define the types/enums that are exported from expo-symbols
   const SymbolWeight = {
-    REGULAR: 'regular',
-    BOLD: 'bold',
-    THIN: 'thin',
-    HEAVY: 'heavy',
+    REGULAR: "regular",
+    BOLD: "bold",
+    THIN: "thin",
+    HEAVY: "heavy",
   };
-  
+
   return {
     SymbolView,
     SymbolWeight,
@@ -34,19 +42,25 @@ jest.mock('expo-symbols', () => {
 });
 
 // Mock expo-modules-core to fix TypeScript errors
-jest.mock('expo-modules-core', () => ({
-  // Mock the EventEmitter class that's causing TypeScript issues
-  EventEmitter: class {
-    // eslint-disable-next-line @typescript-eslint/no-useless-constructor
-    constructor() {}
-    addListener() { return { remove: () => {} }; }
-    removeAllListeners() {}
-    emit() {}
-  },
-  // Add any other exports from expo-modules-core that your code might use
-  NativeModulesProxy: {},
-  Platform: { OS: 'jest' },
-}), { virtual: true });
+jest.mock(
+  "expo-modules-core",
+  () => ({
+    // Mock the EventEmitter class that's causing TypeScript issues
+    EventEmitter: class {
+      // eslint-disable-next-line @typescript-eslint/no-useless-constructor
+      constructor() {}
+      addListener() {
+        return { remove: () => {} };
+      }
+      removeAllListeners() {}
+      emit() {}
+    },
+    // Add any other exports from expo-modules-core that your code might use
+    NativeModulesProxy: {},
+    Platform: { OS: "jest" },
+  }),
+  { virtual: true },
+);
 
 // Mock React Navigation
 jest.mock("@react-navigation/native", () => {
@@ -95,7 +109,7 @@ global.fetch = jest.fn(() =>
     json: () => Promise.resolve({}),
     ok: true,
     status: 200,
-  })
+  }),
 ) as jest.Mock;
 
 // Cleanup mocks after each test

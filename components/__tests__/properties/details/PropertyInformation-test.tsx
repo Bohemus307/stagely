@@ -57,7 +57,7 @@ describe("PropertyInformation", () => {
 
   test("renders correctly with complete property data", () => {
     const { getByText, queryByText } = render(
-      <PropertyInformation property={mockProperty} />
+      <PropertyInformation property={mockProperty} />,
     );
 
     // Check for other key elements
@@ -72,13 +72,12 @@ describe("PropertyInformation", () => {
       status: PropertyStatus.Maintenance,
     };
 
-    const { getByText, } = render(
-      <PropertyInformation property={maintenanceProperty} />
+    const { getByText } = render(
+      <PropertyInformation property={maintenanceProperty} />,
     );
 
     // Maintenance status badge should be rendered
     expect(getByText(/Maintenance/)).toBeTruthy();
-
   });
 
   test("renders location without state", () => {
@@ -88,7 +87,7 @@ describe("PropertyInformation", () => {
     };
 
     const { getByText, getAllByText } = render(
-      <PropertyInformation property={propertyWithoutState} />
+      <PropertyInformation property={propertyWithoutState} />,
     );
 
     // Uncomment to see what's being rendered
@@ -107,7 +106,7 @@ describe("PropertyInformation", () => {
     };
 
     const { queryByText } = render(
-      <PropertyInformation property={propertyWithoutIncidents} />
+      <PropertyInformation property={propertyWithoutIncidents} />,
     );
 
     // RecentIncidents component should not be rendered
@@ -121,7 +120,7 @@ describe("PropertyInformation", () => {
     } as Property;
 
     const { queryByText } = render(
-      <PropertyInformation property={propertyWithUndefinedIncidents} />
+      <PropertyInformation property={propertyWithUndefinedIncidents} />,
     );
 
     // RecentIncidents component should not be rendered
@@ -138,7 +137,7 @@ describe("PropertyInformation", () => {
     };
 
     const { getByText } = render(
-      <PropertyInformation property={propertyWithMissingFields} />
+      <PropertyInformation property={propertyWithMissingFields} />,
     );
 
     // Check for individual parts of the address that should be displayed

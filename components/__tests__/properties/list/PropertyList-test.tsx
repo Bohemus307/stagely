@@ -24,7 +24,7 @@ describe("PropertyList Component", () => {
   // Sample property data
   const createProperty = (
     id: number,
-    status = PropertyStatus.Active
+    status = PropertyStatus.Active,
   ): Property => ({
     property_id: id,
     address: `${id} Test Street`,
@@ -57,7 +57,7 @@ describe("PropertyList Component", () => {
     const { getByText } = render(<PropertyList properties={[]} />);
 
     expect(
-      getByText("No properties found. Add your first property to get started.")
+      getByText("No properties found. Add your first property to get started."),
     ).toBeTruthy();
     expect(getByText("Add Property")).toBeTruthy();
   });
@@ -76,7 +76,7 @@ describe("PropertyList Component", () => {
       <PropertyList
         properties={mockProperties}
         onSelectProperty={mockOnSelectProperty}
-      />
+      />,
     );
 
     // Press the first property by its address
@@ -87,7 +87,7 @@ describe("PropertyList Component", () => {
 
   test("navigates to details page when details button is pressed", () => {
     const { getAllByText } = render(
-      <PropertyList properties={mockProperties} />
+      <PropertyList properties={mockProperties} />,
     );
 
     // Find all "View Details" buttons and press the second one
@@ -102,7 +102,7 @@ describe("PropertyList Component", () => {
 
   test("navigates to photos page when photos button is pressed", () => {
     const { getAllByText } = render(
-      <PropertyList properties={mockProperties} />
+      <PropertyList properties={mockProperties} />,
     );
 
     // Find all "Manage Photos" buttons and press the third one
@@ -117,7 +117,7 @@ describe("PropertyList Component", () => {
 
   test("navigates to documents page when documents button is pressed", () => {
     const { getAllByText } = render(
-      <PropertyList properties={mockProperties} />
+      <PropertyList properties={mockProperties} />,
     );
 
     // Find all "View Documents" buttons and press the first one

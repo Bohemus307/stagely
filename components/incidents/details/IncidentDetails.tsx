@@ -16,7 +16,9 @@ interface IncidentDetailsProps {
 const IncidentDetails: React.FC<IncidentDetailsProps> = ({ incident }) => {
   return (
     <Box className="bg-white mx-4 p-4 rounded-lg shadow-sm mb-4">
-      <ThemedText className="font-bold text-lg mb-3">Incident Details</ThemedText>
+      <ThemedText className="font-bold text-lg mb-3">
+        Incident Details
+      </ThemedText>
 
       <VStack className="space-y-3">
         <HStack className="justify-between">
@@ -30,9 +32,7 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({ incident }) => {
 
         <HStack className="justify-between">
           <ThemedText className="text-gray-500">Status</ThemedText>
-          <ThemedText className="font-medium">
-            {incident.status}
-          </ThemedText>
+          <ThemedText className="font-medium">{incident.status}</ThemedText>
         </HStack>
 
         <Divider className="bg-gray-200" />

@@ -9,7 +9,11 @@ import { Incident } from "../data/incidents";
 import { ThemedText } from "@/components/ThemedText";
 import { properties } from "@/components/properties/data/properties";
 import { Text } from "react-native";
-import { getIncidentStatusBadge, getStatusIcon, getTimeAgo } from "../lib/utils/detailsHelpers";
+import {
+  getIncidentStatusBadge,
+  getStatusIcon,
+  getTimeAgo,
+} from "../lib/utils/detailsHelpers";
 
 interface IncidentCardProps {
   incident: Incident;
@@ -20,11 +24,11 @@ interface IncidentCardProps {
 const IncidentCard: React.FC<IncidentCardProps> = ({
   incident,
   onPress,
-  onDetailsPress
+  onDetailsPress,
 }) => {
   // Helper function to get property name from property ID
   const getPropertyName = (propertyId: number) => {
-    const property = properties.find(p => p.property_id === propertyId);
+    const property = properties.find((p) => p.property_id === propertyId);
     if (property) {
       return `${property.address}, ${property.city}`;
     }
@@ -32,7 +36,8 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
   };
 
   const statusIcon = getStatusIcon(incident.status, incident.severity);
-  const isUrgent = incident.severity === "High" || incident.severity === "Critical";
+  const isUrgent =
+    incident.severity === "High" || incident.severity === "Critical";
   const displayStatus = isUrgent ? "Urgent" : incident.status;
   const badgeClass = getIncidentStatusBadge(displayStatus);
 
@@ -43,10 +48,19 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
         <VStack className="flex-1">
           {/* Incident title */}
           <HStack className="justify-between items-center">
-            <Box className="h-8 w-8 rounded-full flex-shrink-0 flex justify-center items-center" style={{backgroundColor: `${statusIcon.color}20`}}>
-              <IconSymbol name={statusIcon.name} size={16} color={statusIcon.color} />
+            <Box
+              className="h-8 w-8 rounded-full flex-shrink-0 flex justify-center items-center"
+              style={{ backgroundColor: `${statusIcon.color}20` }}
+            >
+              <IconSymbol
+                name={statusIcon.name}
+                size={16}
+                color={statusIcon.color}
+              />
             </Box>
-            <ThemedText type="defaultSemiBold" className="flex-1 ml-2">{incident.incident_type}</ThemedText>
+            <ThemedText type="defaultSemiBold" className="flex-1 ml-2">
+              {incident.incident_type}
+            </ThemedText>
             <Badge className={badgeClass}>
               <Text className="text-xs font-medium">{displayStatus}</Text>
             </Badge>
@@ -67,16 +81,14 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
         {/* Time ago with icon */}
         <HStack className="items-center">
           <IconSymbol name="clock" size={14} color="gray" />
-          <ThemedText type='link' className="ml-1">
+          <ThemedText type="link" className="ml-1">
             {getTimeAgo(incident.reported_at)}
           </ThemedText>
         </HStack>
 
         {/* View Details link */}
         <Pressable onPress={() => onDetailsPress(incident)}>
-          <ThemedText type="default">
-            View Details
-          </ThemedText>
+          <ThemedText type="default">View Details</ThemedText>
         </Pressable>
       </HStack>
     </Box>

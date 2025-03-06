@@ -1,14 +1,13 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
-import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { useAuth0 } from 'react-native-auth0';
-import Login from '@/components/Login';
-
+import { Tabs } from "expo-router";
+import React from "react";
+import { Platform } from "react-native";
+import { HapticTab } from "@/components/HapticTab";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import TabBarBackground from "@/components/ui/TabBarBackground";
+import { Colors } from "@/constants/Colors";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { useAuth0 } from "react-native-auth0";
+import Login from "@/components/Login";
 
 export default function TabLayout() {
   const { user } = useAuth0();
@@ -59,7 +58,11 @@ export default function TabLayout() {
           title: "Incidents",
           headerShown: false,
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="exclamationmark.triangle.fill" color={color} />
+            <IconSymbol
+              size={28}
+              name="exclamationmark.triangle.fill"
+              color={color}
+            />
           ),
         }}
       />
@@ -73,7 +76,7 @@ export default function TabLayout() {
           ),
         }}
       />
-       <Tabs.Screen
+      <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",

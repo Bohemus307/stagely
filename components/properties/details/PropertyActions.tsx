@@ -1,14 +1,14 @@
-import { Linking, Text } from 'react-native'
-import React from 'react'
-import { HStack } from '@/components/ui/hstack';
-import { IconSymbol } from '@/components/ui/IconSymbol';
-import { router } from 'expo-router';
-import { Button } from '@/components/ui/button';
-import { Property } from '../list';
+import { Linking, Text } from "react-native";
+import React from "react";
+import { HStack } from "@/components/ui/hstack";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { router } from "expo-router";
+import { Button } from "@/components/ui/button";
+import { Property } from "../list";
 
 type Props = {
-  property: Property
-}
+  property: Property;
+};
 
 const PropertyActions = ({ property }: Props) => {
   // Open Maps app with the location
@@ -23,12 +23,15 @@ const PropertyActions = ({ property }: Props) => {
   const activeIncidents =
     property.incidents?.filter(
       (incident) =>
-        incident.status !== "Resolved" && incident.status !== "Closed"
+        incident.status !== "Resolved" && incident.status !== "Closed",
     ).length || 0;
 
   return (
     <HStack className="mb-6 gap-2 rounded-2xl">
-      <Button className="flex-1 bg-primary-500 py-2 rounded-md" onPress={openMaps}>
+      <Button
+        className="flex-1 bg-primary-500 py-2 rounded-md"
+        onPress={openMaps}
+      >
         <HStack className="items-center justify-center">
           <IconSymbol name="map.fill" size={16} color="white" />
           <Text className="text-white ml-2">Open in Maps</Text>
@@ -59,6 +62,6 @@ const PropertyActions = ({ property }: Props) => {
       </Button>
     </HStack>
   );
-}
+};
 
-export default PropertyActions
+export default PropertyActions;
