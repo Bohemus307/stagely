@@ -51,7 +51,7 @@ const IncidentSearch: React.FC<IncidentSearchProps> = ({
         />
       </Input>
       <Pressable className="p-2">
-        <Ionicons name="filter" size={24} color={Colors.light.tabIconDefault} />
+        <Ionicons name="search" size={24} color={Colors.light.tabIconDefault} />
       </Pressable>
     </View>
 
