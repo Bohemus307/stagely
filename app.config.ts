@@ -15,6 +15,13 @@ export default {
       config: {
         googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY,
       },
+      // Add this section for camera permissions
+      infoPlist: {
+        NSCameraUsageDescription:
+          "This app uses the camera to document property incidents and take before/after photos for inspections.",
+        NSPhotoLibraryUsageDescription:
+          "This app needs access to your photo library to save and manage property photos.",
+      },
     },
     android: {
       config: {
@@ -27,6 +34,13 @@ export default {
         backgroundColor: "#ffffff",
       },
       package: "com.joshua307.stagely",
+      // Add this section for camera permissions
+      infoPlist: {
+        NSCameraUsageDescription:
+          "This app uses the camera to document property incidents and take before/after photos for inspections.",
+        NSPhotoLibraryUsageDescription:
+          "This app needs access to your photo library to save and manage property photos.",
+      },
     },
     web: {
       bundler: "metro",

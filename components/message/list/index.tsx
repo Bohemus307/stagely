@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import { Box } from "@/components/ui/box";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ThemedText";
-import { FlatList } from "react-native";
+import { ScrollView } from "react-native";
 import MessageCard from "./MessageCard";
 import { mockMessages } from "../data/messages";
 
@@ -58,8 +58,12 @@ const MessagesList: React.FC<MessageListProps> = ({ searchQuery = "" }) => {
 
   const handleMessagePress = (message: Message) => {
     router.push({
-      pathname: "/(tabs)/(messages)",
-      params: { userId: message.user.id, propertyId: message.propertyId },
+      pathname: "/(tabs)/(messages)/[conversation]",
+      params: {
+        conversation: message.user.id,
+        userId: message.user.id,
+        propertyId: message.propertyId,
+      },
     });
   };
 
@@ -75,18 +79,22 @@ const MessagesList: React.FC<MessageListProps> = ({ searchQuery = "" }) => {
   );
 
   return (
-    <FlatList
-      data={filteredMessages}
-      renderItem={({ item }) => (
-        <MessageCard message={item} onPress={handleMessagePress} />
-      )}
-      keyExtractor={(item) => item.id}
+    <ScrollView
       contentContainerStyle={{
         padding: 16,
-        flexGrow: 1,
+        flexGrow: filteredMessages.length ? 0 : 1,
       }}
-      ListEmptyComponent={renderEmpty}
-    />
+    >
+      {filteredMessages.length > 0
+        ? filteredMessages.map((item) => (
+            <MessageCard
+              key={item.id}
+              message={item}
+              onPress={handleMessagePress}
+            />
+          ))
+        : renderEmpty()}
+    </ScrollView>
   );
 };
 
