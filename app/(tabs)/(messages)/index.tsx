@@ -20,7 +20,7 @@ const MessagesScreen = () => {
             statusFilter={statusFilter}
             onStatusFilterChange={setStatusFilter}
           />
-          <MessagesList searchQuery={searchQuery} />
+          <MessagesList searchQuery={searchQuery} statusFilter={statusFilter} />
         </View>
       </SafeAreaView>
     </ThemedView>

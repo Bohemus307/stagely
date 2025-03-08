@@ -25,9 +25,13 @@ export interface Message {
 
 interface MessageListProps {
   searchQuery?: string;
+  statusFilter?: string | null;
 }
 
-const MessagesList: React.FC<MessageListProps> = ({ searchQuery = "" }) => {
+const MessagesList: React.FC<MessageListProps> = ({
+  searchQuery = "",
+  statusFilter = null,
+}) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -49,13 +53,28 @@ const MessagesList: React.FC<MessageListProps> = ({ searchQuery = "" }) => {
     fetchMessages();
   }, []);
 
-  const filteredMessages = messages.filter(
-    (message) =>
+  const filteredMessages = messages.filter((message) => {
+    // Apply text search filter
+    const matchesSearch =
       message.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       message.lastMessage.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (message.propertyName &&
-        message.propertyName.toLowerCase().includes(searchQuery.toLowerCase())),
-  );
+        message.propertyName.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    // Apply status filter
+    let matchesStatus = true;
+    if (statusFilter === "Unread") {
+      matchesStatus = message.unread;
+    } else if (statusFilter === "Team") {
+      matchesStatus =
+        message.user.role === "cleaner" || message.user.role === "manager";
+    } else if (statusFilter === "Tenants") {
+      matchesStatus =
+        message.user.role !== "cleaner" && message.user.role !== "manager";
+    }
+
+    return matchesSearch && matchesStatus;
+  });
 
   const handleMessagePress = (message: Message) => {
     router.push({
@@ -72,7 +91,7 @@ const MessagesList: React.FC<MessageListProps> = ({ searchQuery = "" }) => {
     <Box className="flex-1 justify-center items-center p-8">
       <IconSymbol name="message.fill" size={48} color="#9CA3AF" />
       <ThemedText className="text-center mt-4 text-gray-500">
-        {searchQuery
+        {searchQuery || statusFilter
           ? "No messages match your search"
           : "No messages yet. Start a conversation!"}
       </ThemedText>
