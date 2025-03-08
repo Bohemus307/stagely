@@ -29,7 +29,7 @@ const IncidentMetrics: React.FC<IncidentMetricsProps> = ({ incidents }) => {
   }, [incidents]);
 
   return (
-    <Box className="p-2 rounded-2xl flex flex-col items-center justify-center mr-4 mt-2 mb-0">
+    <Box className="p-2 rounded-2xl flex flex-col items-center justify-center mr-2 -ml-2 mt-2 mb-0">
       <HStack className="justify-between px-2 w-full gap-2 ">
         {metrics.map((item, index) => (
           <Box

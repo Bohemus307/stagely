@@ -3,9 +3,10 @@ import { router } from "expo-router";
 import { Box } from "@/components/ui/box";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ThemedText";
-import { ScrollView } from "react-native";
+import { FlatList } from "react-native";
 import MessageCard from "./MessageCard";
 import { mockMessages } from "../data/messages";
+import { Fab } from "@/components/ui/fab";
 
 export interface Message {
   id: string;
@@ -78,23 +79,38 @@ const MessagesList: React.FC<MessageListProps> = ({ searchQuery = "" }) => {
     </Box>
   );
 
+  // Fab button
+  const handleNewMessage = () => {
+    // Navigate to a new message screen or open a new message modal
+    router.push({
+      pathname: "/(tabs)/(messages)", // Adjust this path
+    });
+  };
+
   return (
-    <ScrollView
-      contentContainerStyle={{
-        padding: 16,
-        flexGrow: filteredMessages.length ? 0 : 1,
-      }}
-    >
-      {filteredMessages.length > 0
-        ? filteredMessages.map((item) => (
-            <MessageCard
-              key={item.id}
-              message={item}
-              onPress={handleMessagePress}
-            />
-          ))
-        : renderEmpty()}
-    </ScrollView>
+    <Box className="flex-1 relative bg-primary-50">
+      <FlatList
+        data={filteredMessages}
+        renderItem={({ item }) => (
+          <MessageCard message={item} onPress={handleMessagePress} />
+        )}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{
+          padding: 16,
+          flexGrow: filteredMessages.length ? 0 : 1,
+        }}
+        className="flex-1"
+        ListEmptyComponent={renderEmpty}
+      />
+      <Fab
+        size="lg"
+        placement="bottom right"
+        onPress={handleNewMessage}
+        className="mb-14 mr-4"
+      >
+        <IconSymbol name="message.fill" size={24} color="white" />
+      </Fab>
+    </Box>
   );
 };
 

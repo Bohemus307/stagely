@@ -42,7 +42,7 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
   const badgeClass = getIncidentStatusBadge(displayStatus);
 
   return (
-    <Box className="rounded-lg shadow-sm overflow-hidden bg-white px-3 py-2">
+    <Box className="rounded-lg shadow-sm overflow-hidden bg-white px-3 py-2 -mr-2 -ml-2">
       <HStack className="items-start">
         {/* Content */}
         <VStack className="flex-1">

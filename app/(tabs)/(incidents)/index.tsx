@@ -60,7 +60,7 @@ const IncidentsScreen = () => {
     <ThemedView className="flex-1">
       <Header />
       <SafeAreaView className="flex-1 flex-col">
-        <View className="z-10 px-4 p-2">
+        <View>
           <IncidentSearch
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
