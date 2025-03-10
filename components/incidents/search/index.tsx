@@ -1,7 +1,13 @@
 import React from "react";
-import Search from "@/components/Search";
+import { ThemedView } from "@/components/ThemedView";
+import { SearchIcon } from "@/components/ui/icon";
+import { Input, InputSlot, InputIcon, InputField } from "@/components/ui/input";
+import { View, Text } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { Colors } from "@/constants/Colors";
+import { Pressable } from "@/components/ui/pressable";
 
-export interface IncidentSearchProps {
+interface IncidentSearchProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   statusFilter: string | null;
@@ -22,14 +28,53 @@ const IncidentSearch: React.FC<IncidentSearchProps> = ({
   ];
 
   return (
-    <Search
-      searchQuery={searchQuery}
-      onSearchChange={onSearchChange}
-      statusFilter={statusFilter}
-      onStatusFilterChange={onStatusFilterChange}
-      placeholderText="Search Incidents..."
-      filterOptions={incidentFilterOptions}
-    />
+    <ThemedView>
+      <View className="flex flex-row items-center w-full gap-2">
+        <Input className="w-11/12 rounded-2xl border">
+          <InputSlot className="pl-3">
+            <InputIcon as={SearchIcon} />
+          </InputSlot>
+          <InputField
+            placeholder="Search Incidents..."
+            value={searchQuery}
+            onChangeText={onSearchChange}
+          />
+        </Input>
+        <Pressable>
+          <Ionicons
+            name="filter"
+            size={24}
+            color={Colors.light.tabIconDefault}
+          />
+        </Pressable>
+      </View>
+
+      <View className="flex flex-row flex-wrap gap-2 mt-3 px-1">
+        {statuses.map((item) => (
+          <Pressable
+            key={item.label}
+            onPress={() => handleStatusSelect(item.value)}
+            className={`px-3 py-1.5 rounded-full border ${
+              statusFilter === item.value ||
+              (statusFilter === null && item.value === null)
+                ? "bg-primary-500 border-primary-500"
+                : "bg-white border-gray-300"
+            }`}
+          >
+            <Text
+              className={`text-sm ${
+                statusFilter === item.value ||
+                (statusFilter === null && item.value === null)
+                  ? "text-white"
+                  : "text-gray-700"
+              }`}
+            >
+              {item.label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+    </ThemedView>
   );
 };
 
