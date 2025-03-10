@@ -12,14 +12,16 @@ const MessagesScreen = () => {
   return (
     <ThemedView className="flex-1">
       <Header />
-      <SafeAreaView className="flex-1">
-        <View className="flex-1">
+      <SafeAreaView className="flex-1 flex-col">
+        <View className="px-4 p-2">
           <MessageSearch
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             statusFilter={statusFilter}
             onStatusFilterChange={setStatusFilter}
           />
+        </View>
+        <View className="flex-1">
           <MessagesList searchQuery={searchQuery} statusFilter={statusFilter} />
         </View>
       </SafeAreaView>
