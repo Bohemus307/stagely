@@ -20,7 +20,7 @@ export const getTimeAgo = (dateString: string) => {
 export const getIncidentStatusBadge = (status: string) => {
   switch (status.toLowerCase()) {
     case "urgent":
-      return "bg-red-500 text-white rounded-2xl";
+      return "bg-red-400/80 text-white rounded-2xl";
     case "open":
       return "bg-amber-400/80 text-amber-800 rounded-2xl";
     case "resolved":

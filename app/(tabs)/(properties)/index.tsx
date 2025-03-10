@@ -5,15 +5,17 @@ import PropertyList from "@/components/properties/list";
 import PropertySearch from "@/components/properties/search";
 import { ThemedView } from "@/components/ThemedView";
 import Header from "@/components/Header";
+import PropertyMetrics from "@/components/properties/PropertyMetrics";
 
 const PropertiesScreen = () => {
   return (
     <ThemedView className="flex-1">
       <Header />
       <SafeAreaView className="flex-1 flex-col">
-        <View className="z-10 px-4 p-2">
+        <View className="px-4 p-2">
           <PropertySearch />
         </View>
+        <PropertyMetrics />
         <View className="flex-1">
           <PropertyList properties={properties} />
         </View>

@@ -1,14 +1,10 @@
 import React from "react";
 import { ThemedView } from "@/components/ThemedView";
-import { ThemedText } from "@/components/ThemedText";
 import { SearchIcon } from "@/components/ui/icon";
 import { Input, InputSlot, InputIcon, InputField } from "@/components/ui/input";
-import { View } from "react-native";
+import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
-import { HStack } from "@/components/ui/hstack";
-import { Box } from "@/components/ui/box";
-import { Badge } from "@/components/ui/badge";
 import { Pressable } from "@/components/ui/pressable";
 
 interface IncidentSearchProps {
@@ -37,8 +33,8 @@ const IncidentSearch: React.FC<IncidentSearchProps> = ({
 
   return (
     <ThemedView>
-      <View className="flex flex-row items-center w-full">
-        <Input className="flex-1 rounded-2xl border">
+      <View className="flex flex-row items-center w-full gap-2">
+        <Input className="w-11/12 rounded-2xl border">
           <InputSlot className="pl-3">
             <InputIcon as={SearchIcon} />
           </InputSlot>
@@ -48,45 +44,40 @@ const IncidentSearch: React.FC<IncidentSearchProps> = ({
             onChangeText={onSearchChange}
           />
         </Input>
-        <Pressable className="p-2">
+        <Pressable>
           <Ionicons
-            name="search"
+            name="filter"
             size={24}
             color={Colors.light.tabIconDefault}
           />
         </Pressable>
       </View>
 
-      <Box className="mt-2 w-full">
-        <HStack className="flex-wrap gap-1 mr-2 mb-0">
-          {statuses.map((item) => (
-            <Pressable
-              key={item.label}
-              onPress={() => handleStatusSelect(item.value)}
+      <View className="flex flex-row flex-wrap gap-2 mt-3 px-1">
+        {statuses.map((item) => (
+          <Pressable
+            key={item.label}
+            onPress={() => handleStatusSelect(item.value)}
+            className={`px-3 py-1.5 rounded-full border ${
+              statusFilter === item.value ||
+              (statusFilter === null && item.value === null)
+                ? "bg-primary-500 border-primary-500"
+                : "bg-white border-gray-300"
+            }`}
+          >
+            <Text
+              className={`text-sm ${
+                statusFilter === item.value ||
+                (statusFilter === null && item.value === null)
+                  ? "text-white"
+                  : "text-gray-700"
+              }`}
             >
-              <Badge
-                className={`py-1 px-3 rounded-full ${
-                  statusFilter === item.value ||
-                  (statusFilter === null && item.value === null)
-                    ? "bg-primary-500"
-                    : "bg-gray-100"
-                }`}
-              >
-                <ThemedText
-                  className={`text-sm font-medium ${
-                    statusFilter === item.value ||
-                    (statusFilter === null && item.value === null)
-                      ? "text-white"
-                      : "text-gray-700"
-                  }`}
-                >
-                  {item.label}
-                </ThemedText>
-              </Badge>
-            </Pressable>
-          ))}
-        </HStack>
-      </Box>
+              {item.label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
     </ThemedView>
   );
 };
