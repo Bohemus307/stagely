@@ -47,10 +47,21 @@ const IncidentsScreen = () => {
       );
     }
 
+    // Apply status filter
     if (statusFilter) {
-      filtered = filtered.filter(
-        (incident) => incident.status === statusFilter,
-      );
+      // Special case for "Urgent" which is mapped to "High" severity
+      if (statusFilter === "High") {
+        // Filter for incidents with High or Critical severity
+        filtered = filtered.filter(
+          (incident) =>
+            incident.severity === "High" || incident.severity === "Critical",
+        );
+      } else {
+        // For other filters (like "In Progress" or "Resolved"), filter by status directly
+        filtered = filtered.filter(
+          (incident) => incident.status === statusFilter,
+        );
+      }
     }
 
     setFilteredIncidents(filtered);

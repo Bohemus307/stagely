@@ -30,12 +30,9 @@ const MessageCard: React.FC<MessageCardProps> = ({ message, onPress }) => {
   };
 
   return (
-    <TouchableOpacity
-      onPress={() => onPress(message)}
-      className="mb-2 -ml-2 -mr-2"
-    >
+    <TouchableOpacity onPress={() => onPress(message)} className="mb-2">
       <Box
-        className={`${message.urgent ? "border-l-4 border-amber-500" : ""} bg-white p-3 rounded-lg`}
+        className={`${message.urgent ? "border-l-4 border-amber-500" : ""} bg-white p-2 shadow-sm rounded-lg`}
       >
         <HStack className="space-x-3 items-start">
           <Avatar size="sm" className="mr-3">
