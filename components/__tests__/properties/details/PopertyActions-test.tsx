@@ -2,7 +2,11 @@ import React from "react";
 import { render, fireEvent } from "@testing-library/react-native";
 import { Linking } from "react-native";
 import PropertyActions from "@/components/properties/details/PropertyActions";
-import { Property, PropertyStatus } from "@/components/properties/list";
+import {
+  Property,
+  PropertyStatus,
+  Incident,
+} from "@/components/properties/list";
 import { router } from "expo-router";
 
 // Mock the dependencies
@@ -22,59 +26,73 @@ jest.mock("@/components/ui/IconSymbol", () => ({
   IconSymbol: () => "IconSymbol",
 }));
 
+// Helper function to create properly typed incidents
+const createIncident = (
+  id: number,
+  type: string,
+  description: string,
+  status: string,
+  severity: string,
+  resolved_at?: string,
+): Incident => ({
+  property_id: 12345,
+  incident_id: id,
+  incident_type: type,
+  description,
+  reported_at: "2025-02-15T10:30:00Z",
+  severity: severity as "Low" | "Medium" | "High" | "Critical",
+  status: status as "Open" | "In Progress" | "Resolved" | "Closed",
+  images: [],
+  ...(resolved_at ? { resolved_at } : {}),
+});
+
+// Helper function to create test property
+const createTestProperty = (incidents: Incident[] = []): Property => ({
+  property_id: 12345,
+  address: "123 Test Street",
+  city: "Test City",
+  state: "TS",
+  zip_code: "12345",
+  country: "Test Country",
+  location: {
+    latitude: 37.7749,
+    longitude: -122.4194,
+  },
+  status: PropertyStatus.Active,
+  images: [],
+  incidents,
+  created_at: "2025-01-01T00:00:00Z",
+  updated_at: "2025-02-01T00:00:00Z",
+});
+
 describe("PropertyActions", () => {
   // Reset mocks before each test
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  // Mock property data using the correct interfaces
-  const mockProperty: Property = {
-    property_id: 12345,
-    address: "123 Test Street",
-    city: "Test City",
-    state: "TS",
-    zip_code: "12345",
-    country: "Test Country",
-    location: {
-      latitude: 37.7749,
-      longitude: -122.4194,
-    },
-    status: PropertyStatus.Active,
-    images: [],
-    incidents: [
-      {
-        incident_id: 101,
-        incident_type: "Plumbing",
-        description: "Water leak in bathroom",
-        reported_at: "2025-02-15T10:30:00Z",
-        severity: "Medium",
-        status: "Open",
-        images: [],
-      },
-      {
-        incident_id: 102,
-        incident_type: "Electrical",
-        description: "Power outage in living room",
-        reported_at: "2025-02-10T14:15:00Z",
-        resolved_at: "2025-02-12T09:45:00Z",
-        severity: "High",
-        status: "Resolved",
-        images: [],
-      },
-      {
-        incident_id: 103,
-        incident_type: "HVAC",
-        description: "AC not cooling properly",
-        reported_at: "2025-02-20T08:20:00Z",
-        severity: "Low",
-        status: "In Progress",
-        images: [],
-      },
-    ],
-    created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-02-01T00:00:00Z",
-  };
+  // Define incidents using the helper function
+  const activeIncidents = [
+    createIncident(101, "Plumbing", "Water leak in bathroom", "Open", "Medium"),
+    createIncident(
+      102,
+      "Electrical",
+      "Power outage in living room",
+      "Resolved",
+      "High",
+      "2025-02-12T09:45:00Z",
+    ),
+    createIncident(
+      103,
+      "HVAC",
+      "AC not cooling properly",
+      "In Progress",
+      "Low",
+    ),
+  ];
+
+  // Create a test property with the incidents
+  const mockProperty = createTestProperty(activeIncidents);
 
   test("renders correctly with property data", () => {
     const { getByText } = render(<PropertyActions property={mockProperty} />);
@@ -85,34 +103,29 @@ describe("PropertyActions", () => {
   });
 
   test('displays "Report Issue" when no active incidents', () => {
-    const propertyWithNoActiveIncidents = {
-      ...mockProperty,
-      incidents: [
-        {
-          incident_id: 104,
-          incident_type: "Plumbing",
-          description: "Fixed faucet",
-          reported_at: "2025-02-01T10:30:00Z",
-          resolved_at: "2025-02-02T15:45:00Z",
-          severity: "Low",
-          status: "Resolved",
-          images: [],
-        },
-        {
-          incident_id: 105,
-          incident_type: "Appliance",
-          description: "Refrigerator repair",
-          reported_at: "2025-01-25T09:20:00Z",
-          resolved_at: "2025-01-26T14:30:00Z",
-          severity: "Medium",
-          status: "Closed",
-          images: [],
-        },
-      ],
-    };
+    const resolvedIncidents = [
+      createIncident(
+        104,
+        "Plumbing",
+        "Fixed faucet",
+        "Resolved",
+        "Low",
+        "2025-02-02T15:45:00Z",
+      ),
+      createIncident(
+        105,
+        "Appliance",
+        "Refrigerator repair",
+        "Closed",
+        "Medium",
+        "2025-01-26T14:30:00Z",
+      ),
+    ];
+
+    const propertyWithNoActiveIncidents = createTestProperty(resolvedIncidents);
 
     const { getByText } = render(
-      <PropertyActions property={propertyWithNoActiveIncidents as Property} />,
+      <PropertyActions property={propertyWithNoActiveIncidents} />,
     );
 
     expect(getByText("Report Issue")).toBeTruthy();
@@ -179,52 +192,31 @@ describe("PropertyActions", () => {
   });
 
   test("correctly counts only unresolved incidents", () => {
-    const propertyWithMixedIncidents = {
-      ...mockProperty,
-      incidents: [
-        {
-          incident_id: 101,
-          incident_type: "Plumbing",
-          description: "Water leak",
-          reported_at: "2025-02-15T10:30:00Z",
-          severity: "Medium",
-          status: "Open",
-          images: [],
-        },
-        {
-          incident_id: 102,
-          incident_type: "Electrical",
-          description: "Light fixture",
-          reported_at: "2025-02-10T14:15:00Z",
-          severity: "Low",
-          status: "In Progress",
-          images: [],
-        },
-        {
-          incident_id: 103,
-          incident_type: "HVAC",
-          description: "Heating issue",
-          reported_at: "2025-01-20T08:20:00Z",
-          resolved_at: "2025-01-25T16:30:00Z",
-          severity: "High",
-          status: "Resolved",
-          images: [],
-        },
-        {
-          incident_id: 104,
-          incident_type: "Appliance",
-          description: "Dishwasher repair",
-          reported_at: "2025-01-10T09:20:00Z",
-          resolved_at: "2025-01-12T11:45:00Z",
-          severity: "Medium",
-          status: "Closed",
-          images: [],
-        },
-      ],
-    };
+    const mixedIncidents = [
+      createIncident(101, "Plumbing", "Water leak", "Open", "Medium"),
+      createIncident(102, "Electrical", "Light fixture", "In Progress", "Low"),
+      createIncident(
+        103,
+        "HVAC",
+        "Heating issue",
+        "Resolved",
+        "High",
+        "2025-01-25T16:30:00Z",
+      ),
+      createIncident(
+        104,
+        "Appliance",
+        "Dishwasher repair",
+        "Closed",
+        "Medium",
+        "2025-01-12T11:45:00Z",
+      ),
+    ];
+
+    const propertyWithMixedIncidents = createTestProperty(mixedIncidents);
 
     const { getByText } = render(
-      <PropertyActions property={propertyWithMixedIncidents as Property} />,
+      <PropertyActions property={propertyWithMixedIncidents} />,
     );
 
     // Should only count 'Open' and 'In Progress' incidents

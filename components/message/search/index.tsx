@@ -17,8 +17,7 @@ const MessageSearch: React.FC<MessageSearchProps> = ({
   const messageFilterOptions = [
     { label: "All", value: null },
     { label: "Unread", value: "Unread" },
-    { label: "Team", value: "Team" },
-    { label: "Tenants", value: "Tenants" },
+    { label: "Urgent", value: "Urgent" },
   ];
 
   return (

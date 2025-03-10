@@ -31,6 +31,7 @@ describe("PropertyCard Component", () => {
     },
     incidents: [
       {
+        property_id: 12345,
         incident_id: 1,
         incident_type: "Plumbing",
         description: "Leaking pipe",
@@ -40,6 +41,7 @@ describe("PropertyCard Component", () => {
         images: [],
       },
       {
+        property_id: 12345,
         incident_id: 2,
         incident_type: "Electrical",
         description: "Wiring issue",

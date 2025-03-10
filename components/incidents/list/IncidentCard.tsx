@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Pressable } from "@/components/ui/pressable";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Box } from "@/components/ui/box";
-import { Incident } from "../data/incidents";
+import { Incident } from "@/components/properties/list";
 import { ThemedText } from "@/components/ThemedText";
 import { properties } from "@/components/properties/data/properties";
 import { Text } from "react-native";
@@ -13,9 +13,9 @@ import {
   getIncidentStatusBadge,
   getStatusIcon,
   getTimeAgo,
-} from "../lib/utils/detailsHelpers";
+} from "../lib/utils/incidentHelpers";
 
-interface IncidentCardProps {
+export interface IncidentCardProps {
   incident: Incident;
   onPress: (incident: Incident) => void;
   onDetailsPress: (incident: Incident) => void;

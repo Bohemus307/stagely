@@ -1,7 +1,7 @@
 import React from "react";
 import Search from "@/components/Search";
 
-interface IncidentSearchProps {
+export interface IncidentSearchProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   statusFilter: string | null;

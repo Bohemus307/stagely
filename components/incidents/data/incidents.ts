@@ -1,3 +1,4 @@
+//Types for Data Structure
 export interface IncidentImage {
   image_id: number;
   image_url: string;
@@ -18,7 +19,6 @@ export interface Incident {
   assigned_to?: string;
   notes?: string;
 }
-
 // Sample incidents data
 export const incidents: Incident[] = [
   {

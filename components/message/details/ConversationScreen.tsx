@@ -9,7 +9,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { mockConversations, mockUsers } from "../data/messages";
+import {
+  mockConversations,
+  mockUsers,
+  UserDictionary,
+  ConversationDictionary,
+} from "../data/messages";
 import { Box } from "@/components/ui/box";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -22,24 +27,15 @@ import {
 } from "@/components/ui/avatar";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Ionicons } from "@expo/vector-icons";
-
-interface MessageUser {
-  id: string;
-  name: string;
-  avatar?: string;
-  role: "owner" | "cleaner" | "manager";
-}
-
-interface ChatMessage {
-  id: string;
-  text: string;
-  timestamp: string;
-  sender: string;
-  status?: "sent" | "delivered" | "read";
-}
+import { useAuth0 } from "react-native-auth0";
+import { ChatMessage, MessageUser } from "@/components/message/data/messages";
 
 const ConversationScreen = () => {
-  const { userId, propertyId } = useLocalSearchParams();
+  const { user: auth0User } = useAuth0();
+  const params = useLocalSearchParams();
+  const userId = params.userId as string;
+  const propertyId = params.propertyId as string;
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [otherUser, setOtherUser] = useState<MessageUser | null>(null);
@@ -48,17 +44,18 @@ const ConversationScreen = () => {
 
   useEffect(() => {
     if (userId) {
-      //Getuser data
-      const user = mockUsers[userId as string];
+      // Get user data - type assertion to address indexing issue
+      const user = (mockUsers as UserDictionary)[userId];
       setOtherUser(user);
 
-      //Get Conversation Data
-      const conversation = mockConversations[userId as string] || [];
+      // Get Conversation Data - type assertion to address indexing issue
+      const conversation =
+        (mockConversations as ConversationDictionary)[userId] || [];
       setMessages(conversation);
 
-      //Eventually fetch the property name from API
+      // Eventually fetch the property name from API
       if (propertyId) {
-        //mock data
+        // mock data
         const propertyNames: Record<string, string> = {
           "1": "588 Cortez St",
           "2": "742 Evergreen Terrace",
@@ -67,10 +64,16 @@ const ConversationScreen = () => {
           "6": "123 Main St",
         };
 
-        setPropertyName(propertyNames[propertyId as string] || "");
+        setPropertyName(propertyNames[propertyId] || "");
+      }
+
+      if (auth0User) {
+        console.log("Current Auth0 user in conversation:", auth0User.name);
+        // In a real app, you would use the auth0User ID to validate permissions
+        // or to track which user is viewing the conversation
       }
     }
-  }, [userId, propertyId]);
+  }, [userId, propertyId, auth0User]);
 
   const sendMessage = () => {
     if (newMessage.trim() === "") return;
@@ -86,7 +89,7 @@ const ConversationScreen = () => {
     setMessages((prev) => [...prev, newMsg]);
     setNewMessage("");
 
-    //Scroll to bottom when new msg is added
+    // Scroll to bottom when new msg is added
     setTimeout(() => {
       flatListRef.current?.scrollToEnd({ animated: true });
     }, 100);
@@ -100,7 +103,7 @@ const ConversationScreen = () => {
       const ampm = hours >= 12 ? "PM" : "AM";
 
       hours = hours % 12;
-      hours = hours ? hours : 12; // the hour '0' should be '12'
+      hours = hours ? hours : 12;
 
       const formattedMinutes = minutes < 10 ? "0" + minutes : minutes;
 
@@ -126,13 +129,13 @@ const ConversationScreen = () => {
             {item.text}
           </ThemedText>
           <ThemedText
-            className={`text-xs mt-1 ${isCurrentUser ? "test-white/70" : "text-gray-500"}`}
+            className={`text-xs mt-1 ${isCurrentUser ? "text-white/70" : "text-gray-500"}`}
           >
             {formatMessageTime(item.timestamp)}
             {isCurrentUser && item.status && (
               <ThemedText className="ml-1">
                 {" "}
-                . {item.status === "read" ? "Read" : item.status}
+                · {item.status === "read" ? "Read" : item.status}
               </ThemedText>
             )}
           </ThemedText>

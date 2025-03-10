@@ -1,5 +1,5 @@
 import React from "react";
-import { Message } from ".";
+import { Message } from "../data/messages";
 import { TouchableOpacity, View } from "react-native";
 import { HStack } from "@/components/ui/hstack";
 import {
@@ -12,7 +12,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Badge } from "@/components/ui/badge";
 import { Box } from "@/components/ui/box";
-import { formatDate } from "../lib/utils/detailsHelpers";
+import { formatDate } from "../lib/utils/timeHelpers";
 
 interface MessageCardProps {
   message: Message;
@@ -34,7 +34,9 @@ const MessageCard: React.FC<MessageCardProps> = ({ message, onPress }) => {
       onPress={() => onPress(message)}
       className="mb-2 -ml-2 -mr-2"
     >
-      <Box className="bg-white p-3 rounded-lg shadow-sm">
+      <Box
+        className={`${message.urgent ? "border-l-4 border-amber-500" : ""} bg-white p-3 rounded-lg`}
+      >
         <HStack className="space-x-3 items-start">
           <Avatar size="sm" className="mr-3">
             {message.user.avatar ? (
@@ -51,7 +53,7 @@ const MessageCard: React.FC<MessageCardProps> = ({ message, onPress }) => {
               <ThemedText type="defaultSemiBold">
                 {message.user.name}
               </ThemedText>
-              <ThemedText type="default" className="text-gray-500 text-sm">
+              <ThemedText type="default">
                 {formatMessageTime(message.timestamp)}
               </ThemedText>
             </HStack>
@@ -64,12 +66,7 @@ const MessageCard: React.FC<MessageCardProps> = ({ message, onPress }) => {
                     size={12}
                     color="#6b7280"
                   />
-                  <ThemedText
-                    type="default"
-                    className="text-gray-500 text-xs ml-1"
-                  >
-                    {message.propertyName}
-                  </ThemedText>
+                  <ThemedText type="default">{message.propertyName}</ThemedText>
                 </HStack>
               ) : (
                 <View />

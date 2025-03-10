@@ -8,7 +8,7 @@ import { Box } from "@/components/ui/box";
 import { Fab, FabIcon } from "@/components/ui/fab";
 import { AddIcon } from "@/components/ui/icon";
 import IncidentCard from "@/components/incidents/list/IncidentCard";
-import { Incident } from "../data/incidents";
+import { Incident } from "@/components/properties/list";
 
 export interface IncidentListProps {
   incidents: Incident[];

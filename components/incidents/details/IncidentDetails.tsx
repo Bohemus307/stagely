@@ -7,9 +7,9 @@ import { VStack } from "@/components/ui/vstack";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/components/properties/lib/utils/detailsHelpers";
 import { getSeverityBadge } from "@/components/properties/lib/utils/detailsHelpers";
-import { Incident } from "../data/incidents";
+import { Incident } from "@/components/properties/list";
 
-interface IncidentDetailsProps {
+export interface IncidentDetailsProps {
   incident: Incident;
 }
 

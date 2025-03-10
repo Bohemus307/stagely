@@ -7,23 +7,10 @@ import { FlatList } from "react-native";
 import MessageCard from "./MessageCard";
 import { mockMessages } from "../data/messages";
 import { Fab } from "@/components/ui/fab";
+import { useAuth0 } from "react-native-auth0";
+import { Message } from "@/components/message/data/messages";
 
-export interface Message {
-  id: string;
-  user: {
-    id: string;
-    name: string;
-    avatar?: string;
-    role: "owner" | "cleaner" | "manager";
-  };
-  lastMessage: string;
-  timestamp: string;
-  unread: boolean;
-  propertyId?: number;
-  propertyName?: string;
-}
-
-interface MessageListProps {
+export interface MessageListProps {
   searchQuery?: string;
   statusFilter?: string | null;
 }
@@ -32,17 +19,26 @@ const MessagesList: React.FC<MessageListProps> = ({
   searchQuery = "",
   statusFilter = null,
 }) => {
+  const { user } = useAuth0();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    //simulate fetching messages from API
+    // Simulate fetching messages from API
     const fetchMessages = async () => {
       try {
-        //Mock Data
+        // Mock Data
         setTimeout(() => {
+          // We're using the mockMessages as they already have urgent flags
           setMessages(mockMessages);
           setIsLoading(false);
+
+          // Log the current Auth0 user - in a real app you'd use this to fetch user-specific messages
+          if (user) {
+            console.log("Current Auth0 user:", user.name);
+            // In a real application, you would fetch messages for this specific user
+            // Example: const response = await fetch(`/api/messages?userId=${user.sub}`);
+          }
         }, 500);
       } catch (error) {
         console.error("Error fetching messages:", error);
@@ -51,26 +47,22 @@ const MessagesList: React.FC<MessageListProps> = ({
     };
 
     fetchMessages();
-  }, []);
+  }, [user]);
 
   const filteredMessages = messages.filter((message) => {
-    // Apply text search filter
+    // text search filter
     const matchesSearch =
       message.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       message.lastMessage.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (message.propertyName &&
         message.propertyName.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    // Apply status filter
+    // status filter
     let matchesStatus = true;
     if (statusFilter === "Unread") {
       matchesStatus = message.unread;
-    } else if (statusFilter === "Team") {
-      matchesStatus =
-        message.user.role === "cleaner" || message.user.role === "manager";
-    } else if (statusFilter === "Tenants") {
-      matchesStatus =
-        message.user.role !== "cleaner" && message.user.role !== "manager";
+    } else if (statusFilter === "Urgent") {
+      matchesStatus = !!message.urgent;
     }
 
     return matchesSearch && matchesStatus;
@@ -100,7 +92,6 @@ const MessagesList: React.FC<MessageListProps> = ({
 
   // Fab button
   const handleNewMessage = () => {
-    // Navigate to a new message screen or open a new message modal
     router.push({
       pathname: "/(tabs)/(messages)", // Adjust this path
     });
