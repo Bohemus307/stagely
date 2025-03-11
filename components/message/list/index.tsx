@@ -9,6 +9,7 @@ import { mockMessages } from "../data/messages";
 import { Fab } from "@/components/ui/fab";
 import { useAuth0 } from "react-native-auth0";
 import { Message } from "@/components/message/data/messages";
+import { filterMessages } from "../lib/utils/messageHelpers";
 
 export interface MessageListProps {
   searchQuery?: string;
@@ -49,24 +50,8 @@ const MessagesList: React.FC<MessageListProps> = ({
     fetchMessages();
   }, [user]);
 
-  const filteredMessages = messages.filter((message) => {
-    // text search filter
-    const matchesSearch =
-      message.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      message.lastMessage.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (message.propertyName &&
-        message.propertyName.toLowerCase().includes(searchQuery.toLowerCase()));
-
-    // status filter
-    let matchesStatus = true;
-    if (statusFilter === "Unread") {
-      matchesStatus = message.unread;
-    } else if (statusFilter === "Urgent") {
-      matchesStatus = !!message.urgent;
-    }
-
-    return matchesSearch && matchesStatus;
-  });
+  //helper function to filter
+  const filteredMessages = filterMessages(messages, searchQuery, statusFilter);
 
   const handleMessagePress = (message: Message) => {
     router.push({
