@@ -16,6 +16,7 @@ export const properties: Property[] = [
     images: [],
     incidents: [
       {
+        property_id: 1,
         incident_id: 1,
         incident_type: "Water Damage",
         description:
@@ -70,6 +71,7 @@ export const properties: Property[] = [
     ],
     incidents: [
       {
+        property_id: 2,
         incident_id: 2,
         incident_type: "Broken Window",
         description: "Baseball broke front living room window",
@@ -117,6 +119,7 @@ export const properties: Property[] = [
     images: [],
     incidents: [
       {
+        property_id: 3,
         incident_id: 3,
         incident_type: "Lock Malfunction",
         description: "Front door lock jammed, tenant temporarily locked out",
@@ -145,6 +148,7 @@ export const properties: Property[] = [
     images: [],
     incidents: [
       {
+        property_id: 4,
         incident_id: 4,
         incident_type: "HVAC Failure",
         description: "East wing HVAC system failure during winter",
@@ -209,6 +213,7 @@ export const properties: Property[] = [
     images: [],
     incidents: [
       {
+        property_id: 6,
         incident_id: 5,
         incident_type: "Tree Damage",
         description: "Storm caused tree to fall on garage roof",
@@ -272,6 +277,7 @@ export const properties: Property[] = [
     images: [],
     incidents: [
       {
+        property_id: 8,
         incident_id: 6,
         incident_type: "Plumbing Issue",
         description: "Water main break in east parking lot",
@@ -319,6 +325,7 @@ export const properties: Property[] = [
     images: [],
     incidents: [
       {
+        property_id: 9,
         incident_id: 7,
         incident_type: "Gas Leak",
         description: "Gas odor detected in basement",
@@ -383,6 +390,7 @@ export const properties: Property[] = [
     images: [],
     incidents: [
       {
+        property_id: 11,
         incident_id: 8,
         incident_type: "Structural Damage",
         description: "Wall crack in eastern corner of building",
@@ -429,6 +437,7 @@ export const properties: Property[] = [
     images: [],
     incidents: [
       {
+        property_id: 12,
         incident_id: 9,
         incident_type: "Vandalism",
         description: "Graffiti on exterior wall",
@@ -493,6 +502,7 @@ export const properties: Property[] = [
     images: [],
     incidents: [
       {
+        property_id: 14,
         incident_id: 10,
         incident_type: "Elevator Malfunction",
         description: "North tower service elevator stuck between floors",
@@ -540,6 +550,7 @@ export const properties: Property[] = [
     images: [],
     incidents: [
       {
+        property_id: 15,
         incident_id: 11,
         incident_type: "Electrical Failure",
         description: "Power outage in entire building",

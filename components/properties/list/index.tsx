@@ -29,6 +29,7 @@ export interface IncidentImage {
 }
 
 export interface Incident {
+  property_id: number;
   incident_id: number;
   incident_type: string;
   description: string;

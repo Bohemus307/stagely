@@ -27,6 +27,7 @@ describe("RecentIncidents Component", () => {
     severity: "Low" | "Medium" | "High" | "Critical",
     images: IncidentImage[] = [],
   ): Incident => ({
+    property_id: 12345,
     incident_id: id,
     incident_type: type,
     description,

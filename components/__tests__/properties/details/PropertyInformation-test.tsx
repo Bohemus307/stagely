@@ -16,6 +16,7 @@ describe("PropertyInformation", () => {
   // Sample incidents data
   const mockIncidents: Incident[] = [
     {
+      property_id: 12345,
       incident_id: 101,
       incident_type: "Plumbing",
       description: "Water leak in bathroom",
@@ -25,6 +26,7 @@ describe("PropertyInformation", () => {
       images: [],
     },
     {
+      property_id: 12345,
       incident_id: 102,
       incident_type: "Electrical",
       description: "Power outage in living room",

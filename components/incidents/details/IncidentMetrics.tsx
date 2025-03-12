@@ -2,9 +2,9 @@ import React, { useMemo } from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { HStack } from "@/components/ui/hstack";
 import { Box } from "@/components/ui/box";
-import { Incident } from "../data/incidents";
+import { Incident } from "@/components/properties/list";
 
-interface IncidentMetricsProps {
+export interface IncidentMetricsProps {
   incidents: Incident[];
 }
 

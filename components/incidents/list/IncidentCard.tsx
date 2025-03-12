@@ -13,7 +13,7 @@ import Constants from "expo-constants";
 import {
   getIncidentStatusBadge,
   getTimeAgo,
-} from "../lib/utils/detailsHelpers";
+} from "../lib/utils/incidentHelpers";
 import { Heading } from "@/components/ui/heading";
 
 // Street View Image Component
@@ -51,7 +51,7 @@ const StreetViewImage: React.FC<StreetViewImageProps> = ({
   );
 };
 
-interface IncidentCardProps {
+export interface IncidentCardProps {
   incident: Incident;
   onPress: (incident: Incident) => void;
   onDetailsPress: (incident: Incident) => void;
