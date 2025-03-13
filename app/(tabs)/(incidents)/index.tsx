@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { View, SafeAreaView } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
-import Header from "@/components/Header";
 import IncidentSearch from "@/components/incidents/search";
 import IncidentList from "@/components/incidents/list";
 import IncidentMetrics from "@/components/incidents/details/IncidentMetrics";
@@ -10,6 +9,7 @@ import {
   incidents as allIncidentsData,
 } from "@/components/incidents/data/incidents";
 import { useLocalSearchParams } from "expo-router";
+import ParallaxScrollView from "@/components/ParallaxScrollView";
 
 const IncidentsScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -68,23 +68,26 @@ const IncidentsScreen = () => {
   }, [searchQuery, statusFilter, allIncidents]);
 
   return (
-    <ThemedView className="flex-1">
-      <Header />
-      <SafeAreaView className="flex-1 flex-col">
-        <View className="px-4 p-2">
-          <IncidentSearch
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            statusFilter={statusFilter}
-            onStatusFilterChange={setStatusFilter}
-          />
-        </View>
-        <IncidentMetrics incidents={filteredIncidents} />
-        <View className="flex-1">
-          <IncidentList incidents={filteredIncidents} />
-        </View>
-      </SafeAreaView>
-    </ThemedView>
+    <ParallaxScrollView
+      headerBackgroundColor={{ light: "#042C44", dark: "#1D3D47" }}
+    >
+      <ThemedView className="flex-1">
+        <SafeAreaView className="flex-1 flex-col">
+          <View className="px-4 p-2">
+            <IncidentSearch
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              statusFilter={statusFilter}
+              onStatusFilterChange={setStatusFilter}
+            />
+          </View>
+          <IncidentMetrics incidents={filteredIncidents} />
+          <View className="flex-1">
+            <IncidentList incidents={filteredIncidents} />
+          </View>
+        </SafeAreaView>
+      </ThemedView>
+    </ParallaxScrollView>
   );
 };
 
