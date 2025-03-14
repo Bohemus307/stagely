@@ -61,8 +61,7 @@ const ProfileScreen: React.FC<ProfileData> = () => {
   };
 
   const navigateToEditProfile = () => {
-    //replace later
-    console.log("To Edit Profile Button Pushed");
+    router.push("/(tabs)/(profile)/edit");
   };
 
   return (
