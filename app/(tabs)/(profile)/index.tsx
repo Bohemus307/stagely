@@ -3,7 +3,6 @@ import { Box } from "@/components/ui/box";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Divider } from "@/components/ui/divider";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
-import { HStack } from "@/components/ui/hstack";
 import { router } from "expo-router";
 import React from "react";
 import { useAuth0 } from "react-native-auth0";
@@ -132,10 +131,8 @@ const ProfileScreen: React.FC<ProfileData> = () => {
         <Divider />
 
         {/* Logout Button */}
-        <Button onPress={handleLogout}>
-          <HStack className="items-center">
-            <ButtonText className="text-white ml-2">Logout</ButtonText>
-          </HStack>
+        <Button className="rounded-2xl mr-2 ml-2 mt-2" onPress={handleLogout}>
+          <ButtonText className=" text-white">Logout</ButtonText>
         </Button>
       </Box>
     </ParallaxScrollView>
