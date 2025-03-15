@@ -1,12 +1,10 @@
 import type { PropsWithChildren, ReactElement } from "react";
 import { StyleSheet } from "react-native";
-import Animated, { useAnimatedRef } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 
 import { ThemedView } from "@/components/ThemedView";
 import { useBottomTabOverflow } from "@/components/ui/TabBarBackground";
 import Header from "@/components/Header";
-
-const HEADER_HEIGHT = 100;
 
 type Props = PropsWithChildren<{
   headerImage?: ReactElement;
@@ -14,22 +12,19 @@ type Props = PropsWithChildren<{
 }>;
 
 export default function ParallaxScrollView({ children }: Props) {
-  const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const bottom = useBottomTabOverflow();
 
   return (
     <ThemedView style={styles.container}>
-      <Animated.ScrollView
-        ref={scrollRef}
-        scrollEventThrottle={16}
-        scrollIndicatorInsets={{ bottom }}
-        contentContainerStyle={{ paddingBottom: bottom }}
-      >
-        <Animated.View>
-          <Header />
-        </Animated.View>
-        <ThemedView style={styles.content}>{children}</ThemedView>
-      </Animated.ScrollView>
+      {/* Header is now in a regular view, not a ScrollView */}
+      <Animated.View>
+        <Header />
+      </Animated.View>
+
+      {/* Children (which contain their own scrolling) are rendered directly */}
+      <ThemedView style={[styles.content, { paddingBottom: bottom }]}>
+        {children}
+      </ThemedView>
     </ThemedView>
   );
 }
@@ -39,7 +34,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    height: HEADER_HEIGHT,
     overflow: "hidden",
   },
   content: {
