@@ -14,14 +14,12 @@ import { Box } from "@/components/ui/box";
 interface ProfileHeaderProps {
   name: string;
   picture?: string;
-  role: string;
   onEditProfile: () => void;
 }
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   name,
   picture,
-  role,
   onEditProfile,
 }) => {
   return (
@@ -44,7 +42,6 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         </Avatar>
         <VStack>
           <ThemedText type="defaultSemiBold">{name}</ThemedText>
-          <ThemedText>{role}</ThemedText>
           <TouchableOpacity onPress={onEditProfile}>
             <ThemedText type="link">Edit Profile</ThemedText>
           </TouchableOpacity>

@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
-import Constants from "expo-constants";
+import React, { useState } from "react";
 import { useAuth0 } from "react-native-auth0";
 import { router } from "expo-router";
 import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   ScrollView,
 } from "react-native";
@@ -22,16 +22,12 @@ import { HStack } from "@/components/ui/hstack";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { VStack } from "@/components/ui/vstack";
 import { ThemedText } from "@/components/ThemedText";
-import { Input, InputField } from "@/components/ui/input";
 
 interface UserMetadata {
-  role?: string;
   properties?: number;
   teamMembers?: number;
   activeTasks?: number;
   phone?: string;
-  jobTitle?: string;
-  company?: string;
 }
 
 interface UserUpdatePayload {
@@ -44,30 +40,21 @@ const EditProfile = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Form Fields
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [role, setRole] = useState("");
-  const [company, setCompany] = useState("");
+  // Get the Auth0 domain
+  const AUTH0_DOMAIN = process.env.EXPO_PUBLIC_DOMAIN;
 
-  // Get the Auth0 domain from Expo Constants (configured in app.config.ts)
-  const AUTH0_DOMAIN =
-    Constants.expoConfig?.extra?.domain || "dev-fxqphucoelzcm6nf.us.auth0.com";
+  const redirectToAuth0Profile = () => {
+    // Auth0 profile management URL - adjust as needed based on your Auth0 tenant setup
+    const profileUrl = `https://${AUTH0_DOMAIN}/manage/profile`;
 
-  //Get User Data
-  useEffect(() => {
-    if (user) {
-      setName(user.name || "");
-      setEmail(user.email || "");
-
-      //User MetaData
-      const metadata = (user.user_metadata as UserMetadata) || {};
-      setPhone(metadata.phone || "");
-      setRole(metadata.role || "");
-      setCompany(metadata.company || "");
-    }
-  }, [user]);
+    Linking.canOpenURL(profileUrl).then((supported) => {
+      if (supported) {
+        Linking.openURL(profileUrl);
+      } else {
+        Alert.alert("Error", "Couldn't open the profile management page");
+      }
+    });
+  };
 
   const saveProfile = async () => {
     if (!user) {
@@ -86,21 +73,14 @@ const EditProfile = () => {
       // Prepare the update payload
       const updatePayload: UserUpdatePayload = {
         user_metadata: {
-          role,
-          phone,
-          company,
           // Preserve existing metadata that shouldn't be modified here
           properties: (user.user_metadata as UserMetadata)?.properties,
           teamMembers: (user.user_metadata as UserMetadata)?.teamMembers,
           activeTasks: (user.user_metadata as UserMetadata)?.activeTasks,
         },
       };
-      // If the name needs to be updated (depending on your Auth0 setup)
-      if (name !== user.name) {
-        updatePayload.name = name;
-      }
 
-      // Call the Auth0 Management API
+      // Call API
       const response = await fetch(
         `https://${AUTH0_DOMAIN}/api/v2/users/${user.sub}`,
         {
@@ -169,64 +149,21 @@ const EditProfile = () => {
           </Box>
 
           <VStack className="px-4 space-y-4">
-            <Box>
-              <ThemedText>Name</ThemedText>
-              <Input variant="outline" className="bg-white">
-                <InputField
-                  value={name}
-                  onChangeText={setName}
-                  placeholder="Name"
-                />
-              </Input>
+            <Box className="bg-white p-4 rounded-lg">
+              <ThemedText type="defaultSemiBold" className="mb-2">
+                Profile Information
+              </ThemedText>
+              <ThemedText>Name: {user?.name}</ThemedText>
+              <ThemedText>Email: {user?.email}</ThemedText>
+              <ThemedText>Phone: {user?.phoneNumber}</ThemedText>
             </Box>
 
-            <Box>
-              <ThemedText>Email</ThemedText>
-              <Input variant="outline" className="bg-white">
-                <InputField
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="Email"
-                  keyboardType="email-address"
-                  editable={false}
-                  className="opacity-70"
-                />
-              </Input>
-            </Box>
-
-            <Box>
-              <ThemedText>Phone</ThemedText>
-              <Input variant="outline" className="bg-white">
-                <InputField
-                  value={phone}
-                  onChangeText={setPhone}
-                  placeholder="Phone Number"
-                  keyboardType="phone-pad"
-                />
-              </Input>
-            </Box>
-
-            <Box>
-              <ThemedText>Role</ThemedText>
-              <Input variant="outline" className="bg-white">
-                <InputField
-                  value={role}
-                  onChangeText={setRole}
-                  placeholder="Your role"
-                />
-              </Input>
-            </Box>
-
-            <Box>
-              <ThemedText>Company</ThemedText>
-              <Input variant="outline" className="bg-white">
-                <InputField
-                  value={company}
-                  onChangeText={setCompany}
-                  placeholder="Company"
-                />
-              </Input>
-            </Box>
+            <Button className="mt-6" onPress={redirectToAuth0Profile}>
+              <HStack className="items-center">
+                <IconSymbol name="pencil" size={16} color="white" />
+                <ButtonText className="ml-2">Edit Profile</ButtonText>
+              </HStack>
+            </Button>
 
             <HStack className="space-x-4 mt-4 mb-10">
               <Button
