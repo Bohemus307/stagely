@@ -10,7 +10,6 @@ export default function HomeScreen() {
     <ParallaxScrollView
       headerBackgroundColor={{ light: "#042C44", dark: "#1D3D47" }}
     >
-      {/* Added ScrollView here since ParallaxScrollView no longer handles scrolling */}
       <ScrollView
         showsVerticalScrollIndicator={true}
         contentContainerStyle={{ paddingBottom: 40 }}
