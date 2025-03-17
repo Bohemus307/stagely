@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { SafeAreaView, View } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
-import Header from "@/components/Header";
 import MessageSearch from "@/components/message/search";
 import MessagesList from "@/components/message/list";
+import Header from "@/components/Header";
 
 const MessagesScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");

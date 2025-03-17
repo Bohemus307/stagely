@@ -40,7 +40,7 @@ const IncidentList: React.FC<IncidentListProps> = ({
   };
 
   const renderIncident = ({ item }: { item: Incident }) => (
-    <View className="mb-3">
+    <View className="mb-4">
       <IncidentCard
         incident={item}
         onPress={() => handleIncidentPress(item)}

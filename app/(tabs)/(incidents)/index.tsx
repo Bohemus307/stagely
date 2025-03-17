@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { View, SafeAreaView } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
-import Header from "@/components/Header";
 import IncidentSearch from "@/components/incidents/search";
 import IncidentList from "@/components/incidents/list";
 import IncidentMetrics from "@/components/incidents/details/IncidentMetrics";
@@ -10,6 +9,7 @@ import {
   incidents as allIncidentsData,
 } from "@/components/incidents/data/incidents";
 import { useLocalSearchParams } from "expo-router";
+import Header from "@/components/Header";
 
 const IncidentsScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
