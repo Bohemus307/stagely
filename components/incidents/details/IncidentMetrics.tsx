@@ -10,13 +10,10 @@ export interface IncidentMetricsProps {
 
 const IncidentMetrics: React.FC<IncidentMetricsProps> = ({ incidents }) => {
   const metrics = useMemo(() => {
-    // Total count of all incidents
     const totalCount = incidents.length;
 
-    // Count of open incidents
     const openCount = incidents.filter((i) => i.status === "Open").length;
 
-    // Count of urgent (high priority) incidents
     const urgentCount = incidents.filter(
       (i) => i.severity === "High" || i.severity === "Critical",
     ).length;
