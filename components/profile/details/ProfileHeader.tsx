@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/avatar";
 import { VStack } from "@/components/ui/vstack";
 import { HStack } from "@/components/ui/hstack";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Box } from "@/components/ui/box";
 
 interface ProfileHeaderProps {
@@ -33,12 +32,6 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               {name ? name.charAt(0) : "?"}
             </AvatarFallbackText>
           )}
-          <TouchableOpacity
-            className="absolute bottom-0 right-0 bg-primary-500 rounded-full w-6 h-6 items-center justify-center"
-            onPress={onEditProfile}
-          >
-            <IconSymbol name="plus" size={14} color="white" />
-          </TouchableOpacity>
         </Avatar>
         <VStack>
           <ThemedText type="defaultSemiBold">{name}</ThemedText>

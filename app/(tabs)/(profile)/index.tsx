@@ -1,6 +1,5 @@
 import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
-import { Divider } from "@/components/ui/divider";
 import { router } from "expo-router";
 import React from "react";
 import { ScrollView } from "react-native";
@@ -24,7 +23,6 @@ const ProfileScreen = () => {
     );
   }
 
-  // If no user after loading completes, redirect to login
   if (!user) {
     router.replace("/");
     return (
@@ -118,21 +116,18 @@ const ProfileScreen = () => {
             title="Account Information"
             onPress={navigateToAccountInfo}
           />
-          <Divider />
 
           <ProfileMenuItem
             iconName="lock.fill"
             title="Privacy & Security"
             onPress={navigateToSecurity}
           />
-          <Divider />
 
           <ProfileMenuItem
             iconName="bell.fill"
             title="Notifications"
             onPress={navigateToNotifications}
           />
-          <Divider />
 
           {/* Team Management Section */}
           <ThemedText type="defaultSemiBold" className="px-5 pt-2">
@@ -144,14 +139,12 @@ const ProfileScreen = () => {
             title="Team Members"
             onPress={navigateToTeamMembers}
           />
-          <Divider />
 
           <ProfileMenuItem
             iconName="person.2.fill"
             title="Roles & Permissions"
             onPress={navigateToRoles}
           />
-          <Divider />
 
           {/* Preferences Section */}
           <ThemedText type="defaultSemiBold" className="px-5 pt-2">
@@ -162,14 +155,12 @@ const ProfileScreen = () => {
             title="Appearance"
             onPress={navigateToPreferences}
           />
-          <Divider />
 
           <ProfileMenuItem
             iconName="app.badge"
             title="App Settings"
             onPress={navigateToSettings}
           />
-          <Divider />
 
           {/* Support Section */}
           <ThemedText type="defaultSemiBold" className="px-5 pt-2">
@@ -180,14 +171,12 @@ const ProfileScreen = () => {
             title="Help Center"
             onPress={navigateToHelp}
           />
-          <Divider />
 
           <ProfileMenuItem
             iconName="square.and.arrow.up.on.square"
             title="Log Out"
             onPress={handleLogout}
           />
-          <Divider />
         </Box>
       </ScrollView>
     </ThemedView>
