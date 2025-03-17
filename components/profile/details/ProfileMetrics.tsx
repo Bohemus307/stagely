@@ -23,12 +23,12 @@ const ProfileMetrics: React.FC<ProfileMetricsProps> = ({
   }, [propertiesCount, teamMembersCount, activeTasksCount]);
 
   return (
-    <Box className="p-2 rounded-2xl flex flex-col items-center justify-center mt-2 mb-4">
-      <HStack className="justify-center px-2 w-full gap-2">
+    <Box className="p-2 rounded-2xl flex flex-col items-center justify-center mr-4 mt-2 mb-0">
+      <HStack className="justify-between px-2 w-full gap-2">
         {metrics.map((item, index) => (
           <Box
             key={index}
-            className="min-h-20 w-1/3 p-3 rounded-lg flex flex-col justify-center shadow-sm bg-white"
+            className="h-16 w-1/3 p-2 rounded-lg flex flex-col justify-center shadow-sm bg-white"
           >
             <ThemedText className="text-left text-black font-semibold font-roboto mb-1">
               {item.title}

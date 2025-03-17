@@ -1,7 +1,6 @@
 import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
 import { Divider } from "@/components/ui/divider";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { router } from "expo-router";
 import React from "react";
 import { ScrollView } from "react-native";
@@ -11,6 +10,8 @@ import ProfileMetrics from "@/components/profile/details/ProfileMetrics";
 import ProfileHeader from "@/components/profile/details/ProfileHeader";
 import ProfileMenuItem from "@/components/profile/details/ProfileMenuItem";
 import { Spinner } from "@/components/ui/spinner";
+import Header from "@/components/Header";
+import { ThemedView } from "@/components/ThemedView";
 
 const ProfileScreen = () => {
   const { user, clearSession, isLoading } = useAuth0();
@@ -85,15 +86,14 @@ const ProfileScreen = () => {
   };
 
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#042C44", dark: "#1D3D47" }}
-    >
+    <ThemedView className="flex-1">
+      <Header />
       <ScrollView
         showsVerticalScrollIndicator={true}
         contentContainerStyle={{ paddingBottom: 40 }}
         bounces={true}
       >
-        <Box className="relative bg-primary-50">
+        <Box className="relative">
           {/* Profile Header */}
           <ProfileHeader
             name={userData.name || ""}
@@ -109,7 +109,7 @@ const ProfileScreen = () => {
           />
 
           {/* Account Settings Section */}
-          <ThemedText type="defaultSemiBold" className="px-4 pt-2">
+          <ThemedText type="defaultSemiBold" className="px-5 pt-2">
             ACCOUNT SETTINGS
           </ThemedText>
 
@@ -135,7 +135,7 @@ const ProfileScreen = () => {
           <Divider />
 
           {/* Team Management Section */}
-          <ThemedText type="defaultSemiBold" className="px-4 pt-2">
+          <ThemedText type="defaultSemiBold" className="px-5 pt-2">
             TEAM MANAGEMENT
           </ThemedText>
 
@@ -154,7 +154,7 @@ const ProfileScreen = () => {
           <Divider />
 
           {/* Preferences Section */}
-          <ThemedText type="defaultSemiBold" className="px-4 pt-2">
+          <ThemedText type="defaultSemiBold" className="px-5 pt-2">
             PREFERENCES
           </ThemedText>
           <ProfileMenuItem
@@ -172,7 +172,7 @@ const ProfileScreen = () => {
           <Divider />
 
           {/* Support Section */}
-          <ThemedText type="defaultSemiBold" className="px-4 pt-2">
+          <ThemedText type="defaultSemiBold" className="px-5 pt-2">
             SUPPORT
           </ThemedText>
           <ProfileMenuItem
@@ -190,7 +190,7 @@ const ProfileScreen = () => {
           <Divider />
         </Box>
       </ScrollView>
-    </ParallaxScrollView>
+    </ThemedView>
   );
 };
 

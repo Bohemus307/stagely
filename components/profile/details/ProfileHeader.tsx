@@ -23,9 +23,9 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   onEditProfile,
 }) => {
   return (
-    <Box className="p-2 mr-2 ml-2 rounded-2xl flex flex-col shadow-sm bg-white mt-2">
-      <HStack className="items-center bg-white">
-        <Avatar size="lg" className="mr-4">
+    <Box className="mr-4 ml-4 p-4 mt-2 rounded-lg shadow-lg overflow-hidden bg-white">
+      <HStack className="p-4 justify-between items-center">
+        <Avatar size="md" className="mr-4">
           {picture ? (
             <AvatarImage source={{ uri: picture }} />
           ) : (
