@@ -1,23 +1,40 @@
 import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
-import { Button, ButtonText } from "@/components/ui/button";
 import { Divider } from "@/components/ui/divider";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { router } from "expo-router";
 import React from "react";
-import { ScrollView, View } from "react-native";
+import { ScrollView } from "react-native";
 import { useAuth0 } from "react-native-auth0";
 import { UserMetadata } from "@/components/profile/data/profile";
 import ProfileMetrics from "@/components/profile/details/ProfileMetrics";
 import ProfileHeader from "@/components/profile/details/ProfileHeader";
 import ProfileMenuItem from "@/components/profile/details/ProfileMenuItem";
-import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Spinner } from "@/components/ui/spinner";
 
 const ProfileScreen = () => {
-  const { user, clearSession } = useAuth0();
+  const { user, clearSession, isLoading } = useAuth0();
 
-  // Only proceed if we have a valid user
-  const metadata = (user?.user_metadata as UserMetadata) || {};
+  if (isLoading) {
+    return (
+      <Box className="flex-1 justify-center items-center">
+        <Spinner size="large" />
+      </Box>
+    );
+  }
+
+  // If no user after loading completes, redirect to login
+  if (!user) {
+    router.replace("/");
+    return (
+      <Box className="flex-1 justify-center items-center">
+        <Spinner size="large" />
+      </Box>
+    );
+  }
+
+  const userData = user!;
+  const metadata = (userData.user_metadata as UserMetadata) || {};
   const propertiesCount = metadata.properties || 0;
   const teamMembersCount = metadata.teamMembers || 0;
   const activeTasksCount = metadata.activeTasks || 0;
@@ -52,7 +69,7 @@ const ProfileScreen = () => {
   };
 
   const navigateToHelp = () => {
-    console.log("Settings Button Pushed");
+    console.log("Help Button Pushed");
   };
 
   const navigateToPreferences = () => {
@@ -67,34 +84,6 @@ const ProfileScreen = () => {
     router.push("/(tabs)/(profile)/edit");
   };
 
-  const navigateToLogin = () => {
-    router.replace("/");
-  };
-
-  // Error screen when no user is found
-  if (!user) {
-    return (
-      <ParallaxScrollView
-        headerBackgroundColor={{ light: "#042C44", dark: "#1D3D47" }}
-      >
-        <View className="flex-1 justify-center items-center p-8">
-          <IconSymbol name="exclamationmark.circle" size={64} color="#ff3b30" />
-          <ThemedText type="title" className="text-center mt-6 mb-4">
-            Authentication Error
-          </ThemedText>
-          <ThemedText className="text-center mb-8">
-            Your session may have expired or you're not logged in. Please sign
-            in to view your profile.
-          </ThemedText>
-          <Button className="w-full rounded-2xl mb-4" onPress={navigateToLogin}>
-            <ButtonText className="text-white">Go to Login</ButtonText>
-          </Button>
-        </View>
-      </ParallaxScrollView>
-    );
-  }
-
-  // Regular profile screen when user is available
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: "#042C44", dark: "#1D3D47" }}
@@ -107,8 +96,8 @@ const ProfileScreen = () => {
         <Box className="relative bg-primary-50">
           {/* Profile Header */}
           <ProfileHeader
-            name={user.name || ""}
-            picture={user.picture}
+            name={userData.name || ""}
+            picture={userData.picture}
             onEditProfile={navigateToEditProfile}
           />
 
