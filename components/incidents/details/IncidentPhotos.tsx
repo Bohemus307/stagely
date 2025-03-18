@@ -43,7 +43,7 @@ const IncidentPhotos: React.FC<IncidentPhotosProps> = ({
             onPress={() => onPhotoPress && onPhotoPress(image)}
           >
             <Box className="w-32 h-32 mr-3 rounded-lg overflow-hidden">
-              <Box className="w-full h-full bg-gray-200 rounded-lg items-center justify-center">
+              <Box className="w-full h-full bg-primary-50 rounded-lg items-center justify-center">
                 <IconSymbol name="photo" size={30} color="#9ca3af" />
               </Box>
             </Box>

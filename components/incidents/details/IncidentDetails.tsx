@@ -54,14 +54,14 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({
   const statusOptions = ["Open", "In Progress", "Resolved", "Closed"];
 
   return (
-    <Box className="bg-white mx-4 p-4 rounded-lg shadow-sm mb-4">
-      <ThemedText className="font-bold text-lg mb-3">
+    <Box className="bg-primary-50 mx-4 p-4 rounded-lg shadow-sm mb-4">
+      <ThemedText type="defaultSemiBold" className=" mb-3">
         {incident.incident_type}
       </ThemedText>
       {property && (
         <HStack className="items-center space-x-1 mb-3">
           <IconSymbol name="building.2.fill" size={14} color={"#6b7280"} />
-          <ThemedText>
+          <ThemedText type="default">
             {property.address}, {property.city}
           </ThemedText>
         </HStack>
@@ -88,6 +88,7 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({
         <Button
           size="sm"
           variant="outline"
+          className="bg-white"
           onPress={() => setShowStatusEditor(!showStatusEditor)}
         >
           <ButtonText>
@@ -131,48 +132,36 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({
       )}
 
       <Box className="mt-4">
-        <ThemedText>{incident.description}</ThemedText>
+        <ThemedText type="default">{incident.description}</ThemedText>
       </Box>
 
       <Divider className="my-3 bg-gray-200" />
 
       <VStack className="space-y-3">
         <HStack className="justify-between">
-          <ThemedText className="text-gray-500">Priority</ThemedText>
+          <ThemedText>Priority</ThemedText>
           <Badge className={getSeverityBadge(incident.severity)}>
-            <ThemedText className="text-xs">{incident.severity}</ThemedText>
+            <ThemedText>{incident.severity}</ThemedText>
           </Badge>
         </HStack>
 
-        <Divider className="bg-gray-200" />
-
         <HStack className="justify-between">
-          <ThemedText className="text-gray-500">Reported On</ThemedText>
-          <ThemedText className="font-medium">
-            {formatDate(incident.reported_at)}
-          </ThemedText>
+          <ThemedText>Reported On</ThemedText>
+          <ThemedText>{formatDate(incident.reported_at)}</ThemedText>
         </HStack>
-
-        <Divider className="bg-gray-200" />
 
         {incident.resolved_at && (
           <>
             <HStack className="justify-between">
-              <ThemedText className="text-gray-500">Resolved On</ThemedText>
-              <ThemedText className="font-medium">
-                {formatDate(incident.resolved_at)}
-              </ThemedText>
+              <ThemedText>Resolved On</ThemedText>
+              <ThemedText>{formatDate(incident.resolved_at)}</ThemedText>
             </HStack>
           </>
         )}
 
-        <Divider className="bg-gray-200" />
-
         <HStack className="justify-between">
-          <ThemedText className="text-gray-500">Incident ID</ThemedText>
-          <ThemedText className="font-medium">
-            #{incident.incident_id}
-          </ThemedText>
+          <ThemedText>Incident ID</ThemedText>
+          <ThemedText>#{incident.incident_id}</ThemedText>
         </HStack>
       </VStack>
     </Box>
