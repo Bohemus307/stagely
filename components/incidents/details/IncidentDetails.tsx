@@ -51,7 +51,6 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({
     setShowStatusEditor(false);
   };
 
-  // Status options
   const statusOptions = ["Open", "In Progress", "Resolved", "Closed"];
 
   return (
@@ -101,7 +100,6 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({
         <Box className="mt-3 mb-3">
           <ThemedText className="mb-2">Select New Status:</ThemedText>
 
-          {/* Using a more direct approach with buttons instead of Select */}
           <VStack space="sm" className="mb-3">
             {statusOptions.map((status) => (
               <Button

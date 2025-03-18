@@ -36,7 +36,7 @@ const IncidentsDetailsScreen = () => {
   const [showNoteEditor, setShowNoteEditor] = useState(false);
 
   useEffect(() => {
-    //Fetch incident data
+    //Fetch incident
     const fetchData = async () => {
       setLoading(true);
       try {
@@ -115,7 +115,9 @@ const IncidentsDetailsScreen = () => {
   }
 
   function handlePhotoPress(image: IncidentImage): void {
-    throw new Error("Function not implemented.");
+    router.push({
+      pathname: "/(tabs)/(incidents)/photos",
+    });
   }
 
   return (
@@ -125,8 +127,7 @@ const IncidentsDetailsScreen = () => {
       <ThemedView className="flex-1">
         <SafeAreaView className="flex-1">
           <BackButton />
-
-          <ScrollView className="flex-1">
+          <ScrollView className="flex-1 bg-primary-50">
             {/* Incident Details */}
             <IncidentDetails incident={incident} />
 
