@@ -11,8 +11,13 @@ import ProfileMenuItem from "@/components/profile/details/ProfileMenuItem";
 import { Spinner } from "@/components/ui/spinner";
 import Header from "@/components/Header";
 import { ThemedView } from "@/components/ThemedView";
+import { useAuthUser } from "@/hooks/useAuthUser";
 
 const ProfileScreen = () => {
+  const authUser = useAuthUser();
+
+  console.log("AUTH USER", authUser);
+
   const { user, clearSession, isLoading } = useAuth0();
 
   if (isLoading) {
@@ -88,7 +93,7 @@ const ProfileScreen = () => {
       <Header />
       <ScrollView
         showsVerticalScrollIndicator={true}
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
         bounces={true}
       >
         <Box className="relative">
