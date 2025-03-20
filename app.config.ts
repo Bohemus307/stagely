@@ -93,6 +93,8 @@ export default {
       domain: process.env.EXPO_PUBLIC_DOMAIN,
       clientId: process.env.EXPO_PUBLIC_CLIENT_ID,
       googleMapsKey: process.env.GOOGLE_MAPS_API_KEY,
+      stagelyApiUrl: process.env.STAGELY_API_URL,
+      stagelyAudience: process.env.STAGELY_AUDIENCE,
     },
     experiments: {
       typedRoutes: true,
