@@ -39,16 +39,18 @@ const IncidentNotes: React.FC<IncidentNoteProps> = ({
   };
 
   return (
-    <Box className="bg-primary-50 mx-4 p-4 rounded-lg shadow-sm mb-4">
+    <Box className="bg-white mx-4 p-4 rounded-lg shadow-sm mb-4">
       <HStack className="justify-between items-center mb-3">
         <ThemedText type="defaultSemiBold">Notes & Updates</ThemedText>
         <Button
           size="sm"
           variant="outline"
-          className="bg-white"
+          className="bg-primary-500 py-2 rounded-md"
           onPress={() => setShowNoteEditor(!showNoteEditor)}
         >
-          <ButtonText>{showNoteEditor ? "Cancel" : "Add Note"}</ButtonText>
+          <ButtonText className="text-white">
+            {showNoteEditor ? "Cancel" : "Add Note"}
+          </ButtonText>
         </Button>
       </HStack>
 

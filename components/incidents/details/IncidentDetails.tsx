@@ -13,6 +13,7 @@ import { properties } from "@/components/properties/data/properties";
 import { Alert } from "react-native";
 import { ButtonText } from "@/components/ui/button";
 import { Button } from "@/components/ui/button";
+import { getIncidentStatusBadge } from "../lib/utils/incidentHelpers";
 
 export interface IncidentDetailsProps {
   incident: Incident;
@@ -53,11 +54,19 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({
 
   const statusOptions = ["Open", "In Progress", "Resolved", "Closed"];
 
+  const isUrgent =
+    incident.severity === "High" || incident.severity === "Critical";
+  const displayStatus = isUrgent ? "Urgent" : incident.status;
+  const badgeClass = getIncidentStatusBadge(displayStatus);
+
   return (
-    <Box className="bg-primary-50 mx-4 p-4 rounded-lg shadow-sm mb-4">
-      <ThemedText type="defaultSemiBold" className=" mb-3">
-        {incident.incident_type}
-      </ThemedText>
+    <Box className="bg-white mx-4 p-4 mt-2 rounded-lg shadow-sm mb-4">
+      <HStack className="items-center justify-between mb-3">
+        <ThemedText type="defaultSemiBold">{incident.incident_type}</ThemedText>
+        <Badge className={badgeClass}>
+          <ThemedText>{displayStatus}</ThemedText>
+        </Badge>
+      </HStack>
       {property && (
         <HStack className="items-center space-x-1 mb-3">
           <IconSymbol name="building.2.fill" size={14} color={"#6b7280"} />
@@ -68,30 +77,13 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({
       )}
 
       <HStack className="justify-between items-center">
-        <Badge
-          className={
-            incident.severity === "High" || incident.severity === "Critical"
-              ? "bg-red-500 text-white"
-              : incident.status === "Resolved"
-                ? "bg-green-500 text-white"
-                : "bg-amber-500 text-white"
-          }
-          size="lg"
-        >
-          <ThemedText className="text-white">
-            {incident.severity === "High" || incident.severity === "Critical"
-              ? "Urgent"
-              : incident.status}
-          </ThemedText>
-        </Badge>
-
         <Button
           size="sm"
           variant="outline"
-          className="bg-white"
+          className="flex-1 bg-primary-500 py-2 rounded-md"
           onPress={() => setShowStatusEditor(!showStatusEditor)}
         >
-          <ButtonText>
+          <ButtonText className="text-white">
             {showStatusEditor ? "Cancel" : "Update Status"}
           </ButtonText>
         </Button>

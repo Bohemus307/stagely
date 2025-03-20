@@ -16,7 +16,7 @@ const IncidentPhotos: React.FC<IncidentPhotosProps> = ({
 }) => {
   if (!images || images.length === 0) {
     return (
-      <Box className="rounded-lg shadow-lg overflow-hidden bg-white">
+      <Box className="rounded-lg shadow-lg overflow-hidden bg-primary-50">
         <ThemedText className="font-bold text-lg mb-3">Photos</ThemedText>
         <Box className="h-32 bg-gray-100 rounded-lg items-center justify-center">
           <IconSymbol name="photo" size={30} color="#9ca3af" />
@@ -29,8 +29,10 @@ const IncidentPhotos: React.FC<IncidentPhotosProps> = ({
   }
 
   return (
-    <Box className="bg-white mx-4 p-4 rounded-lg shadow-sm mb-4">
-      <ThemedText className="font-bold text-lg mb-3">Photos</ThemedText>
+    <Box className="bg-primary-50 mx-4 p-4 rounded-lg shadow-sm mb-4">
+      <ThemedText type="defaultSemiBold" className="mb-3">
+        Photos
+      </ThemedText>
 
       <ScrollView
         horizontal
@@ -43,7 +45,7 @@ const IncidentPhotos: React.FC<IncidentPhotosProps> = ({
             onPress={() => onPhotoPress && onPhotoPress(image)}
           >
             <Box className="w-32 h-32 mr-3 rounded-lg overflow-hidden">
-              <Box className="w-full h-full bg-primary-50 rounded-lg items-center justify-center">
+              <Box className="w-full h-full bg-white rounded-lg items-center justify-center">
                 <IconSymbol name="photo" size={30} color="#9ca3af" />
               </Box>
             </Box>

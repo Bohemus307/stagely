@@ -22,38 +22,52 @@ const IncidentActions: React.FC<IncidentActionProps> = ({
   onEditIncident,
 }) => {
   return (
-    <Box className="bg-white mx-4 p-4 rounded-lg shadow-sm mb-4">
-      <VStack className="space-y-3 bg-primary-50">
-        <Button variant="outline" onPress={onEscalate}>
+    <Box className="bg-primary-50 mx-4 p-4 rounded-lg shadow-sm mb-4">
+      <VStack className="">
+        <Button
+          className="mb-1 bg-white rounded-lg shadow-sm"
+          variant="outline"
+          onPress={onEscalate}
+        >
           <HStack className="justify-center items-center">
             <IconSymbol
               name="exclamationmark.triangle"
               size={18}
-              color={"ef4444"}
+              color={"blue"}
             />
-            <ButtonText className="text-red-500 ml-2">
-              Escalate Incident
-            </ButtonText>
+            <ButtonText className="ml-2">Escalate Incident</ButtonText>
           </HStack>
         </Button>
 
-        <Button variant="outline" onPress={onContactManager}>
+        <Button
+          className="mb-1 bg-white rounded-lg shadow-sm"
+          variant="outline"
+          onPress={onContactManager}
+        >
           <HStack className="justify-center items-center">
-            <IconSymbol name="message" size={18} color={"#6b7280"} />
+            <IconSymbol name="message" size={18} color={"blue"} />
             <ButtonText className="ml-2">Contact Property Manager</ButtonText>
           </HStack>
         </Button>
 
-        <Button variant="outline" onPress={onGenerateReport}>
-          <HStack className="justify-center items-center">
-            <IconSymbol name="message" size={18} color={"#6b7280"} />
+        <Button
+          className="mb-1 bg-white rounded-lg shadow-sm"
+          variant="outline"
+          onPress={onGenerateReport}
+        >
+          <HStack className="justify-center items-center shadow-sm">
+            <IconSymbol name="message" size={18} color={"blue"} />
             <ButtonText className="ml-2">Generate Report</ButtonText>
           </HStack>
         </Button>
 
-        <Button variant="outline" onPress={onEditIncident}>
+        <Button
+          className="mb-1 bg-white rounded-lg shadow-sm"
+          variant="outline"
+          onPress={onEditIncident}
+        >
           <HStack className="justify-center items-center">
-            <IconSymbol name="pencil" size={18} color={"#6b7280"} />
+            <IconSymbol name="pencil" size={18} color={"blue"} />
             <ButtonText className="ml-2">Edit Incident</ButtonText>
           </HStack>
         </Button>

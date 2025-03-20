@@ -86,19 +86,18 @@ const ProfileScreen = () => {
   return (
     <ThemedView className="flex-1">
       <Header />
+      <ProfileHeader
+        name={userData.name || ""}
+        picture={userData.picture}
+        onEditProfile={navigateToEditProfile}
+      />
       <ScrollView
         showsVerticalScrollIndicator={true}
         contentContainerStyle={{ paddingBottom: 40 }}
+        className="pt-40" //Adjust
         bounces={true}
       >
         <Box className="relative">
-          {/* Profile Header */}
-          <ProfileHeader
-            name={userData.name || ""}
-            picture={userData.picture}
-            onEditProfile={navigateToEditProfile}
-          />
-
           {/* Profile Stats */}
           <ProfileMetrics
             propertiesCount={propertiesCount}

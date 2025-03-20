@@ -1,5 +1,5 @@
 import React from "react";
-import { TouchableOpacity } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import {
   Avatar,
@@ -22,25 +22,27 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   onEditProfile,
 }) => {
   return (
-    <Box className="mr-4 ml-4 p-4 mt-4 rounded-lg shadow-lg overflow-hidden bg-white">
-      <HStack className="p-4 justify-between items-center">
-        <Avatar size="md" className="mr-4">
-          {picture ? (
-            <AvatarImage source={{ uri: picture }} />
-          ) : (
-            <AvatarFallbackText>
-              {name ? name.charAt(0) : "?"}
-            </AvatarFallbackText>
-          )}
-        </Avatar>
-        <VStack>
-          <ThemedText type="defaultSemiBold">{name}</ThemedText>
-          <TouchableOpacity onPress={onEditProfile}>
-            <ThemedText type="link">Edit Profile</ThemedText>
-          </TouchableOpacity>
-        </VStack>
-      </HStack>
-    </Box>
+    <View className="absolute top-20 left-0 right-0 z-10 bg-transparent ">
+      <Box className="mr-4 ml-4 p-4 mt-4 rounded-lg shadow-lg overflow-hidden bg-white">
+        <HStack className="p-4 justify-between items-center">
+          <Avatar size="md" className="mr-4">
+            {picture ? (
+              <AvatarImage source={{ uri: picture }} />
+            ) : (
+              <AvatarFallbackText>
+                {name ? name.charAt(0) : "?"}
+              </AvatarFallbackText>
+            )}
+          </Avatar>
+          <VStack>
+            <ThemedText type="defaultSemiBold">{name}</ThemedText>
+            <TouchableOpacity onPress={onEditProfile}>
+              <ThemedText type="link">Edit Profile</ThemedText>
+            </TouchableOpacity>
+          </VStack>
+        </HStack>
+      </Box>
+    </View>
   );
 };
 
