@@ -77,9 +77,7 @@ const MessagesList: React.FC<MessageListProps> = ({
 
   // Fab button
   const handleNewMessage = () => {
-    router.push({
-      pathname: "/(tabs)/(messages)", // Adjust this path
-    });
+    router.push("/(tabs)/(messages)/new");
   };
 
   return (

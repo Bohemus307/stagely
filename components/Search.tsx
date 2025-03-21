@@ -6,18 +6,18 @@ import { View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
 import { Pressable } from "@/components/ui/pressable";
-import { Menu, MenuItem } from "./ui/menu";
-import { Button, ButtonText } from "./ui/button";
+import { Menu, MenuItem } from "@/components/ui/menu";
+import { Button, ButtonText } from "@/components/ui/button";
 import {
   CheckboxGroup,
   Checkbox,
   CheckboxIndicator,
   CheckboxIcon,
   CheckboxLabel,
-} from "./ui/checkbox";
-import { Divider } from "./ui/divider";
-import { HStack } from "./ui/hstack";
-import { VStack } from "./ui/vstack";
+} from "@/components/ui/checkbox";
+import { Divider } from "@/components/ui/divider";
+import { HStack } from "@/components/ui/hstack";
+import { VStack } from "@/components/ui/vstack";
 
 interface FilterOption {
   label: string;

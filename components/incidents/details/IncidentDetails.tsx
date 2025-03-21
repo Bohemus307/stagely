@@ -13,6 +13,7 @@ import { properties } from "@/components/properties/data/properties";
 import { Alert } from "react-native";
 import { ButtonText } from "@/components/ui/button";
 import { Button } from "@/components/ui/button";
+import { getIncidentStatusBadge } from "../lib/utils/incidentHelpers";
 
 export interface IncidentDetailsProps {
   incident: Incident;
@@ -51,47 +52,38 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({
     setShowStatusEditor(false);
   };
 
-  // Status options
   const statusOptions = ["Open", "In Progress", "Resolved", "Closed"];
 
+  const isUrgent =
+    incident.severity === "High" || incident.severity === "Critical";
+  const displayStatus = isUrgent ? "Urgent" : incident.status;
+  const badgeClass = getIncidentStatusBadge(displayStatus);
+
   return (
-    <Box className="bg-white mx-4 p-4 rounded-lg shadow-sm mb-4">
-      <ThemedText className="font-bold text-lg mb-3">
-        {incident.incident_type}
-      </ThemedText>
+    <Box className="bg-white mx-4 p-4 mt-2 rounded-lg shadow-sm mb-4">
+      <HStack className="items-center justify-between mb-3">
+        <ThemedText type="defaultSemiBold">{incident.incident_type}</ThemedText>
+        <Badge className={badgeClass}>
+          <ThemedText>{displayStatus}</ThemedText>
+        </Badge>
+      </HStack>
       {property && (
         <HStack className="items-center space-x-1 mb-3">
           <IconSymbol name="building.2.fill" size={14} color={"#6b7280"} />
-          <ThemedText>
+          <ThemedText type="default">
             {property.address}, {property.city}
           </ThemedText>
         </HStack>
       )}
 
       <HStack className="justify-between items-center">
-        <Badge
-          className={
-            incident.severity === "High" || incident.severity === "Critical"
-              ? "bg-red-500 text-white"
-              : incident.status === "Resolved"
-                ? "bg-green-500 text-white"
-                : "bg-amber-500 text-white"
-          }
-          size="lg"
-        >
-          <ThemedText className="text-white">
-            {incident.severity === "High" || incident.severity === "Critical"
-              ? "Urgent"
-              : incident.status}
-          </ThemedText>
-        </Badge>
-
         <Button
           size="sm"
           variant="outline"
+          className="flex-1 bg-primary-500 py-2 rounded-md"
           onPress={() => setShowStatusEditor(!showStatusEditor)}
         >
-          <ButtonText>
+          <ButtonText className="text-white">
             {showStatusEditor ? "Cancel" : "Update Status"}
           </ButtonText>
         </Button>
@@ -101,7 +93,6 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({
         <Box className="mt-3 mb-3">
           <ThemedText className="mb-2">Select New Status:</ThemedText>
 
-          {/* Using a more direct approach with buttons instead of Select */}
           <VStack space="sm" className="mb-3">
             {statusOptions.map((status) => (
               <Button
@@ -133,48 +124,36 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({
       )}
 
       <Box className="mt-4">
-        <ThemedText>{incident.description}</ThemedText>
+        <ThemedText type="default">{incident.description}</ThemedText>
       </Box>
 
       <Divider className="my-3 bg-gray-200" />
 
       <VStack className="space-y-3">
         <HStack className="justify-between">
-          <ThemedText className="text-gray-500">Priority</ThemedText>
+          <ThemedText>Priority</ThemedText>
           <Badge className={getSeverityBadge(incident.severity)}>
-            <ThemedText className="text-xs">{incident.severity}</ThemedText>
+            <ThemedText>{incident.severity}</ThemedText>
           </Badge>
         </HStack>
 
-        <Divider className="bg-gray-200" />
-
         <HStack className="justify-between">
-          <ThemedText className="text-gray-500">Reported On</ThemedText>
-          <ThemedText className="font-medium">
-            {formatDate(incident.reported_at)}
-          </ThemedText>
+          <ThemedText>Reported On</ThemedText>
+          <ThemedText>{formatDate(incident.reported_at)}</ThemedText>
         </HStack>
-
-        <Divider className="bg-gray-200" />
 
         {incident.resolved_at && (
           <>
             <HStack className="justify-between">
-              <ThemedText className="text-gray-500">Resolved On</ThemedText>
-              <ThemedText className="font-medium">
-                {formatDate(incident.resolved_at)}
-              </ThemedText>
+              <ThemedText>Resolved On</ThemedText>
+              <ThemedText>{formatDate(incident.resolved_at)}</ThemedText>
             </HStack>
           </>
         )}
 
-        <Divider className="bg-gray-200" />
-
         <HStack className="justify-between">
-          <ThemedText className="text-gray-500">Incident ID</ThemedText>
-          <ThemedText className="font-medium">
-            #{incident.incident_id}
-          </ThemedText>
+          <ThemedText>Incident ID</ThemedText>
+          <ThemedText>#{incident.incident_id}</ThemedText>
         </HStack>
       </VStack>
     </Box>

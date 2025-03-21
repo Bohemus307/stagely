@@ -2,7 +2,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
 import { router } from "expo-router";
 import React from "react";
-import { ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useAuth0 } from "react-native-auth0";
 import { UserMetadata } from "@/components/profile/data/profile";
 import ProfileMetrics from "@/components/profile/details/ProfileMetrics";
@@ -91,99 +91,104 @@ const ProfileScreen = () => {
   return (
     <ThemedView className="flex-1">
       <Header />
-      <ScrollView
-        showsVerticalScrollIndicator={true}
-        contentContainerStyle={{ paddingBottom: 100 }}
-        bounces={true}
-      >
-        <Box className="relative">
-          {/* Profile Header */}
-          <ProfileHeader
-            name={userData.name || ""}
-            picture={userData.picture}
-            onEditProfile={navigateToEditProfile}
-          />
+      <View className="flex-1">
+        <View className="absolute left-0 right-0 z-10 shadow-sm">
+          <View className="">
+            <ProfileHeader
+              name={userData.name || ""}
+              picture={userData.picture}
+              onEditProfile={navigateToEditProfile}
+            />
+          </View>
+        </View>
+        <ScrollView
+          showsVerticalScrollIndicator={true}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          className="pt-32"
+          bounces={true}
+        >
+          <Box className="relative">
+            {/* Profile Stats */}
+            <ProfileMetrics
+              propertiesCount={propertiesCount}
+              teamMembersCount={teamMembersCount}
+              activeTasksCount={activeTasksCount}
+            />
 
-          {/* Profile Stats */}
-          <ProfileMetrics
-            propertiesCount={propertiesCount}
-            teamMembersCount={teamMembersCount}
-            activeTasksCount={activeTasksCount}
-          />
+            {/* Account Settings Section */}
+            <ThemedText type="defaultSemiBold" className="px-5 pt-2">
+              ACCOUNT SETTINGS
+            </ThemedText>
 
-          {/* Account Settings Section */}
-          <ThemedText type="defaultSemiBold" className="px-5 pt-2">
-            ACCOUNT SETTINGS
-          </ThemedText>
+            <ProfileMenuItem
+              iconName="person.circle.fill"
+              title="Account Information"
+              onPress={navigateToAccountInfo}
+            />
 
-          <ProfileMenuItem
-            iconName="person.circle.fill"
-            title="Account Information"
-            onPress={navigateToAccountInfo}
-          />
+            <ProfileMenuItem
+              iconName="lock.fill"
+              title="Privacy & Security"
+              onPress={navigateToSecurity}
+            />
 
-          <ProfileMenuItem
-            iconName="lock.fill"
-            title="Privacy & Security"
-            onPress={navigateToSecurity}
-          />
+            <ProfileMenuItem
+              iconName="bell.fill"
+              title="Notifications"
+              onPress={navigateToNotifications}
+            />
 
-          <ProfileMenuItem
-            iconName="bell.fill"
-            title="Notifications"
-            onPress={navigateToNotifications}
-          />
+            {/* Team Management Section */}
+            <ThemedText type="defaultSemiBold" className="px-5 pt-2">
+              TEAM MANAGEMENT
+            </ThemedText>
 
-          {/* Team Management Section */}
-          <ThemedText type="defaultSemiBold" className="px-5 pt-2">
-            TEAM MANAGEMENT
-          </ThemedText>
+            <ProfileMenuItem
+              iconName="person.2.fill"
+              title="Team Members"
+              onPress={navigateToTeamMembers}
+            />
 
-          <ProfileMenuItem
-            iconName="person.2.fill"
-            title="Team Members"
-            onPress={navigateToTeamMembers}
-          />
+            <ProfileMenuItem
+              iconName="person.2.fill"
+              title="Roles & Permissions"
+              onPress={navigateToRoles}
+            />
 
-          <ProfileMenuItem
-            iconName="person.2.fill"
-            title="Roles & Permissions"
-            onPress={navigateToRoles}
-          />
+            {/* Preferences Section */}
+            <ThemedText type="defaultSemiBold" className="px-5 pt-2">
+              PREFERENCES
+            </ThemedText>
+            <ProfileMenuItem
+              iconName="moonphase.new.moon.inverse"
+              title="Appearance"
+              onPress={navigateToPreferences}
+            />
 
-          {/* Preferences Section */}
-          <ThemedText type="defaultSemiBold" className="px-5 pt-2">
-            PREFERENCES
-          </ThemedText>
-          <ProfileMenuItem
-            iconName="moonphase.new.moon.inverse"
-            title="Appearance"
-            onPress={navigateToPreferences}
-          />
+            <ProfileMenuItem
+              iconName="app.badge"
+              title="App Settings"
+              onPress={navigateToSettings}
+            />
 
-          <ProfileMenuItem
-            iconName="app.badge"
-            title="App Settings"
-            onPress={navigateToSettings}
-          />
+            {/* Support Section */}
+            <ThemedText type="defaultSemiBold" className="px-5 pt-2">
+              SUPPORT
+            </ThemedText>
+            <ProfileMenuItem
+              iconName="circle.badge.questionmark"
+              title="Help Center"
+              onPress={navigateToHelp}
+            />
 
-          {/* Support Section */}
-          <ThemedText type="defaultSemiBold" className="px-5 pt-2">
-            SUPPORT
-          </ThemedText>
-          <ProfileMenuItem
-            iconName="circle.badge.questionmark"
-            title="Help Center"
-            onPress={navigateToHelp}
-          />
-
-          <ProfileMenuItem
-            iconName="square.and.arrow.up.on.square"
-            title="Log Out"
-            onPress={handleLogout}
-          />
-        </Box>
-      </ScrollView>
+            <ProfileMenuItem
+              iconName="square.and.arrow.up.on.square"
+              title="Log Out"
+              onPress={handleLogout}
+            />
+          </Box>
+        </ScrollView>
+      </View>
     </ThemedView>
   );
 };

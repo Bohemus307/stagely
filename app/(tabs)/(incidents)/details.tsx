@@ -5,21 +5,21 @@ import {
 } from "@/components/incidents/data/incidents";
 import IncidentDetails from "@/components/incidents/details/IncidentDetails";
 import IncidentPhotos from "@/components/incidents/details/IncidentPhotos";
-import { formatDate } from "@/components/message/lib/utils/timeHelpers";
-import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { Incident } from "@/components/properties/list";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Box } from "@/components/ui/box";
 import { Button, ButtonText } from "@/components/ui/button";
-import { HStack } from "@/components/ui/hstack";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Spinner } from "@/components/ui/spinner";
-import { Textarea, TextareaInput } from "@/components/ui/textarea";
-import { VStack } from "@/components/ui/vstack";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Alert, SafeAreaView, ScrollView } from "react-native";
+import IncidentNotes from "@/components/incidents/details/IncidentNotes";
+import IncidentActions from "@/components/incidents/details/IncidentQuickActions";
+import { properties } from "@/components/properties/data/properties";
+import { Box } from "@/components/ui/box";
+import StreetViewImage from "@/components/properties/details/StreetView";
+import { Badge } from "@/components/ui/badge";
+import { IconSymbol } from "@/components/ui/IconSymbol";
 
 // Extend the Incident interface to include notes
 interface ExtendedIncident extends Incident {
@@ -31,12 +31,11 @@ const IncidentsDetailsScreen = () => {
   const incidentId = parseInt(params.incidentId as string);
   const [incident, setIncident] = useState<ExtendedIncident | null>(null);
   const [loading, setLoading] = useState(true);
-  const [newNote, setNewNote] = useState<string>("");
-  const [notes, setNotes] = useState<{ text: string; timestamp: string }[]>([]);
-  const [showNoteEditor, setShowNoteEditor] = useState(false);
+  const [streetViewError, setStreetViewError] = useState(false);
+  const [property, setProperty] = useState<any>(null);
 
   useEffect(() => {
-    //Fetch incident data
+    //Fetch incident
     const fetchData = async () => {
       setLoading(true);
       try {
@@ -44,20 +43,15 @@ const IncidentsDetailsScreen = () => {
         const foundIncident = incidents.find(
           (inc) => inc.incident_id === incidentId,
         ) as ExtendedIncident;
+
         if (foundIncident) {
           setIncident(foundIncident);
 
-          //Eventually fetch Notes from API
-          setNotes(
-            foundIncident.notes
-              ? [
-                  {
-                    text: foundIncident.notes,
-                    timestamp: foundIncident.reported_at,
-                  },
-                ]
-              : [],
+          const associatedProperty = properties.find(
+            (p) => p.property_id === foundIncident.property_id,
           );
+
+          setProperty(associatedProperty);
         }
       } catch (error) {
         console.error("Error fetching incident details", error);
@@ -72,27 +66,53 @@ const IncidentsDetailsScreen = () => {
     }
   }, [incidentId]);
 
-  const handleAddNote = () => {
-    if (!newNote.trim()) return;
+  const handlePhotoPress = (image: IncidentImage): void => {
+    router.push({
+      pathname: "/(tabs)/(incidents)/photos",
+    });
+  };
 
-    //Eventually API call to add a note
-    const newNoteObj = {
-      text: newNote,
-      timestamp: new Date().toISOString(),
-    };
-
-    setNotes([...notes, newNoteObj]);
-
-    //Update incident with new note
+  const handleAddNote = (note: { text: string; timestamp: string }) => {
     if (incident) {
       setIncident({
         ...incident,
-        notes: newNote,
+        notes: note.text,
       } as ExtendedIncident);
     }
+  };
 
-    setNewNote("");
-    setShowNoteEditor(false);
+  const handleEscalate = () => {
+    Alert.alert("Escalate Incident", "Do you want to Continue?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Escalate",
+        style: "destructive",
+        onPress: () => console.log("Incident escalated"),
+      },
+    ]);
+  };
+
+  const handleContactManager = () => {
+    router.push({
+      pathname: "/(tabs)/(messages)/new",
+    });
+  };
+
+  const handleGenerateReport = () => {
+    Alert.alert("Generate Report", "Report will be generated", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Generate",
+        onPress: () => console.log("Report Generation pressed"),
+      },
+    ]);
+  };
+
+  const handleEditIncident = () => {
+    router.push({
+      pathname: "/(tabs)/(incidents)/edit",
+      params: { incidentId: incident?.incident_id.toString() },
+    });
   };
 
   if (loading) {
@@ -114,110 +134,61 @@ const IncidentsDetailsScreen = () => {
     );
   }
 
-  function handlePhotoPress(image: IncidentImage): void {
-    throw new Error("Function not implemented.");
-  }
-
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#042C44", dark: "#1D3D47" }}
-    >
-      <ThemedView className="flex-1">
-        <SafeAreaView className="flex-1">
-          <BackButton />
-
-          <ScrollView className="flex-1">
-            {/* Incident Details */}
-            <IncidentDetails incident={incident} />
-
-            {/* Photos Section */}
-            <IncidentPhotos
-              images={incident.images}
-              onPhotoPress={handlePhotoPress}
-            />
-
-            {/* Notes Section */}
-            <Box className="bg-white mx-4 p-4 rounded-lg shadow-sm mb-4">
-              <HStack className="justify-between items-center mb-3">
-                <ThemedText>Notes & Updates</ThemedText>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onPress={() => setShowNoteEditor(!showNoteEditor)}
-                >
-                  <ButtonText>
-                    {showNoteEditor ? "Cancel" : "Add Note"}
-                  </ButtonText>
-                </Button>
-              </HStack>
-
-              {showNoteEditor && (
-                <VStack className="space-y-4 mb-4">
-                  <Textarea size="md">
-                    <TextareaInput
-                      placeholder="Enter notes about the incident..."
-                      value={newNote}
-                      onChangeText={setNewNote}
-                    />
-                  </Textarea>
-
-                  <Button onPress={handleAddNote}>
-                    <ButtonText>Save</ButtonText>
-                  </Button>
-                </VStack>
-              )}
-
-              {notes.length > 0 ? (
-                <VStack className="space-y-3">
-                  {notes.map((note, index) => (
-                    <Box key={index} className="p-3 bg-gray-50 rounded-lg">
-                      <ThemedText>{note.text}</ThemedText>
-                      <ThemedText>{formatDate(note.timestamp)}</ThemedText>
-                    </Box>
-                  ))}
-                </VStack>
-              ) : (
-                <ThemedText>No notes have been added yet.</ThemedText>
-              )}
+    <ThemedView className="flex-1">
+      <SafeAreaView className="flex-1">
+        <BackButton />
+        <ScrollView className="flex-1">
+          {/* Street View image */}
+          {property?.location && !streetViewError ? (
+            <Box className="h-48 w-full px-4">
+              <StreetViewImage
+                latitude={property.location.latitude}
+                longitude={property.location.longitude}
+                size={{ width: 600, height: 300 }}
+                onError={() => setStreetViewError(true)}
+              />
+              <Badge className="absolute bottom-2 left-4 py-1 px-2 rounded">
+                <ThemedText>Incident Location</ThemedText>
+              </Badge>
             </Box>
-
-            {/* Action Buttons */}
-            <Box className="mx-4 p-4 mb-8">
-              <VStack className="space-y-3">
-                <Button variant="outline">
-                  <HStack className="justify-center items-center">
-                    <IconSymbol
-                      name="exclamationmark.triangle"
-                      size={18}
-                      color={"ef4444"}
-                    />
-                    <ButtonText className="text-red-500 ml-2">
-                      Escalate Incident
-                    </ButtonText>
-                  </HStack>
-                </Button>
-
-                <Button variant="outline">
-                  <HStack className="justify-center items-center">
-                    <IconSymbol name="message" size={18} color={"#6b7280"} />
-                    <ButtonText className="ml-2">
-                      Contact Property Manager
-                    </ButtonText>
-                  </HStack>
-                </Button>
-
-                <Button variant="outline">
-                  <HStack className="justify-center items-center">
-                    <IconSymbol name="doc.text" size={18} color={"#6b7280"} />
-                    <ButtonText className="ml-2">Generate Report</ButtonText>
-                  </HStack>
-                </Button>
-              </VStack>
+          ) : (
+            <Box className="h-48 w-full flex items-center justify-center">
+              <IconSymbol name="eye.slash" size={32} color={"gray"} />
+              <ThemedText>Location Preview Unavailable</ThemedText>
             </Box>
-          </ScrollView>
-        </SafeAreaView>
-      </ThemedView>
-    </ParallaxScrollView>
+          )}
+
+          {/* Incident Details */}
+          <IncidentDetails incident={incident} />
+
+          {/* Photos Section */}
+          <IncidentPhotos
+            images={incident.images}
+            onPhotoPress={handlePhotoPress}
+          />
+
+          {/* Notes Section */}
+          <IncidentNotes
+            initialNotes={
+              incident.notes
+                ? [{ text: incident.notes, timestamp: incident.reported_at }]
+                : []
+            }
+            onAddNote={handleAddNote}
+          />
+
+          {/* Action Buttons */}
+          <IncidentActions
+            incident={incident}
+            onEscalate={handleEscalate}
+            onContactManager={handleContactManager}
+            onGenerateReport={handleGenerateReport}
+            onEditIncident={handleEditIncident}
+          />
+        </ScrollView>
+      </SafeAreaView>
+    </ThemedView>
   );
 };
 

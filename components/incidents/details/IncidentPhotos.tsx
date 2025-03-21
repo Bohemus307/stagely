@@ -2,8 +2,8 @@ import React from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import { ScrollView, Image } from "react-native";
-import { IncidentImage } from "@/components/incidents/data/incidents"; // Adjust this import path as needed
+import { ScrollView, Pressable } from "react-native";
+import { IncidentImage } from "@/components/incidents/data/incidents";
 
 interface IncidentPhotosProps {
   images: IncidentImage[];
@@ -15,12 +15,24 @@ const IncidentPhotos: React.FC<IncidentPhotosProps> = ({
   onPhotoPress,
 }) => {
   if (!images || images.length === 0) {
-    return null;
+    return (
+      <Box className="rounded-lg shadow-lg overflow-hidden bg-primary-50">
+        <ThemedText className="font-bold text-lg mb-3">Photos</ThemedText>
+        <Box className="h-32 bg-gray-100 rounded-lg items-center justify-center">
+          <IconSymbol name="photo" size={30} color="#9ca3af" />
+          <ThemedText className="text-gray-500 mt-2">
+            No photos available
+          </ThemedText>
+        </Box>
+      </Box>
+    );
   }
 
   return (
-    <Box className="bg-white mx-4 p-4 rounded-lg shadow-sm mb-4">
-      <ThemedText className="font-bold text-lg mb-3">Photos</ThemedText>
+    <Box className="bg-primary-50 mx-4 p-4 rounded-lg shadow-sm mb-4">
+      <ThemedText type="defaultSemiBold" className="mb-3">
+        Photos
+      </ThemedText>
 
       <ScrollView
         horizontal
@@ -28,30 +40,16 @@ const IncidentPhotos: React.FC<IncidentPhotosProps> = ({
         contentContainerStyle={{ paddingVertical: 10 }}
       >
         {images.map((image) => (
-          <Box
+          <Pressable
             key={image.image_id}
-            className="w-32 h-32 mr-3 rounded-lg overflow-hidden"
-            onTouchEnd={() => onPhotoPress && onPhotoPress(image)}
+            onPress={() => onPhotoPress && onPhotoPress(image)}
           >
-            {image.image_url ? (
-              <Image
-                source={{ uri: image.image_url }}
-                className="w-full h-full"
-                resizeMode="cover"
-              />
-            ) : (
-              <Box className="w-full h-full bg-gray-200 rounded-lg items-center justify-center">
-                <IconSymbol name="photo" size={30} color={"#9ca3af"} />
+            <Box className="w-32 h-32 mr-3 rounded-lg overflow-hidden">
+              <Box className="w-full h-full bg-white rounded-lg items-center justify-center">
+                <IconSymbol name="photo" size={30} color="#9ca3af" />
               </Box>
-            )}
-            {image.caption && (
-              <Box className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 p-1">
-                <ThemedText className="text-white text-xs" numberOfLines={1}>
-                  {image.caption}
-                </ThemedText>
-              </Box>
-            )}
-          </Box>
+            </Box>
+          </Pressable>
         ))}
       </ScrollView>
     </Box>
