@@ -75,7 +75,7 @@ const IncidentList: React.FC<IncidentListProps> = ({
       <FlatList
         data={incidents}
         renderItem={renderIncident}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item, index) => item?.id?.toString() || `id#${index}`}
         contentContainerStyle={{
           paddingHorizontal: 15,
           paddingTop: 15,
