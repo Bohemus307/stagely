@@ -12,11 +12,7 @@ import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplet
 import StreetView from "react-native-streetview";
 import Constants from "expo-constants";
 import { Button, ButtonText } from "@/components/ui/button";
-
-interface Location {
-  latitude: number;
-  longitude: number;
-}
+import { Location } from "@/lib/@types/properties";
 
 interface GooglePlaceDetail {
   geometry: {

@@ -6,7 +6,7 @@ import LocationSearchMap from "@/components/LocationSearchMap";
 import BackButton from "@/components/BackButton";
 import { useCreateProperty } from "@/hooks/properties/useCreateProperty";
 
-interface Location {
+export interface Location {
   latitude: number;
   longitude: number;
 }

@@ -1,5 +1,4 @@
 import React from "react";
-import { ThemedView } from "@/components/ThemedView";
 import { CheckIcon, SearchIcon } from "@/components/ui/icon";
 import { Input, InputSlot, InputIcon, InputField } from "@/components/ui/input";
 import { View, Text } from "react-native";

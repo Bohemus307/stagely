@@ -3,16 +3,13 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { HStack } from "@/components/ui/hstack";
 import { Box } from "@/components/ui/box";
-
-interface Property {
-  id: number;
-  name: string;
-}
-
-interface Incident {
-  id: number;
-  description: string;
-}
+import {
+  Property,
+  Incident,
+  IncidentSeverity,
+  IncidentStatus,
+  PropertyStatus,
+} from "@/lib/@types/properties";
 
 interface MetricItem {
   title: string;
@@ -25,13 +22,75 @@ export default function MetricsCard(): JSX.Element {
 
   useEffect(() => {
     setProperties([
-      { id: 1, name: "Property A" },
-      { id: 2, name: "Property B" },
-      { id: 3, name: "Property C" },
+      {
+        id: 1,
+        address: "Property A",
+        propertyId: 0,
+        userId: 0,
+        city: "",
+        country: "",
+        latitude: 0,
+        longitude: 0,
+        status: PropertyStatus.Active,
+        incidentCount: 0,
+        openIncidentCount: 0,
+        createdAt: "",
+        updatedAt: "",
+      },
+      {
+        id: 2,
+        address: "Property B",
+        propertyId: 0,
+        userId: 0,
+        city: "",
+        country: "",
+        latitude: 0,
+        longitude: 0,
+        status: PropertyStatus.Active,
+        incidentCount: 0,
+        openIncidentCount: 0,
+        createdAt: "",
+        updatedAt: "",
+      },
+      {
+        id: 3,
+        address: "Property C",
+        propertyId: 0,
+        userId: 0,
+        city: "",
+        country: "",
+        latitude: 0,
+        longitude: 0,
+        status: PropertyStatus.Active,
+        incidentCount: 0,
+        openIncidentCount: 0,
+        createdAt: "",
+        updatedAt: "",
+      },
     ]);
     setIncidents([
-      { id: 1, description: "Leak in Property A" },
-      { id: 2, description: "Power outage in Property B" },
+      {
+        id: 1,
+        description: "Leak in Property A",
+        propertyId: 0,
+        incidentType: "",
+        reportedAt: "",
+        severity: IncidentSeverity.Low,
+        status: IncidentStatus.Open,
+        createdAt: "",
+        updatedAt: "",
+      },
+      {
+        id: 2,
+        description: "Power outage in Property B",
+        propertyId: 0,
+        incidentType: "",
+        reportedAt: "",
+        severity: IncidentSeverity.Low,
+        status: IncidentStatus.Open,
+        createdAt: "",
+        updatedAt: "",
+      },
     ]);
   }, []);
 

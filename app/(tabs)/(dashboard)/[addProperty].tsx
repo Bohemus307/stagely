@@ -5,12 +5,7 @@ import { ThemedView } from "@/components/ThemedView";
 import LocationSearchMap from "@/components/LocationSearchMap";
 import BackButton from "@/components/BackButton";
 import { useCreateProperty } from "@/hooks/properties/useCreateProperty";
-
-interface Location {
-  latitude: number;
-  longitude: number;
-}
-
+import { Location } from "@/lib/@types/properties";
 export default function AddProperty() {
   // Initialize our property creation mutation hook
   const {

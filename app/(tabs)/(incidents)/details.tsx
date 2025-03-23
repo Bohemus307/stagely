@@ -1,11 +1,7 @@
 import BackButton from "@/components/BackButton";
-import {
-  IncidentImage,
-  incidents,
-} from "@/components/incidents/data/incidents";
 import IncidentDetails from "@/components/incidents/details/IncidentDetails";
 import IncidentPhotos from "@/components/incidents/details/IncidentPhotos";
-import { Incident } from "@/components/properties/list";
+
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Button, ButtonText } from "@/components/ui/button";
@@ -20,8 +16,9 @@ import { Box } from "@/components/ui/box";
 import StreetViewImage from "@/components/properties/details/StreetView";
 import { Badge } from "@/components/ui/badge";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Incident, IncidentImage } from "@/lib/@types/properties";
+import { incidents } from "@/components/incidents/data/incidents";
 
-// Extend the Incident interface to include notes
 interface ExtendedIncident extends Incident {
   notes?: string;
 }
@@ -42,13 +39,13 @@ const IncidentsDetailsScreen = () => {
         //Eventually an Api call to Backend
         const foundIncident = incidents.find(
           (inc) => inc.incident_id === incidentId,
-        ) as ExtendedIncident;
+        ) as unknown as ExtendedIncident;
 
         if (foundIncident) {
           setIncident(foundIncident);
 
           const associatedProperty = properties.find(
-            (p) => p.property_id === foundIncident.property_id,
+            (p) => p.property_id === foundIncident.propertyId,
           );
 
           setProperty(associatedProperty);
@@ -111,7 +108,7 @@ const IncidentsDetailsScreen = () => {
   const handleEditIncident = () => {
     router.push({
       pathname: "/(tabs)/(incidents)/edit",
-      params: { incidentId: incident?.incident_id.toString() },
+      params: { incidentId: incident?.id.toString() },
     });
   };
 
@@ -163,16 +160,18 @@ const IncidentsDetailsScreen = () => {
           <IncidentDetails incident={incident} />
 
           {/* Photos Section */}
-          <IncidentPhotos
-            images={incident.images}
-            onPhotoPress={handlePhotoPress}
-          />
+          {incident?.images && (
+            <IncidentPhotos
+              images={incident?.images}
+              onPhotoPress={handlePhotoPress}
+            />
+          )}
 
           {/* Notes Section */}
           <IncidentNotes
             initialNotes={
               incident.notes
-                ? [{ text: incident.notes, timestamp: incident.reported_at }]
+                ? [{ text: incident.notes, timestamp: incident.reportedAt }]
                 : []
             }
             onAddNote={handleAddNote}

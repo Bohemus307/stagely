@@ -20,8 +20,8 @@ import { Badge } from "@/components/ui/badge";
 import { Image } from "@/components/ui/image";
 
 import { ThemedView } from "@/components/ThemedView";
-import { Property } from "@/components/properties/list";
 import { properties } from "@/components/properties/data/properties";
+import { Property } from "@/lib/@types/properties";
 
 interface ReferencePhoto {
   id: string;

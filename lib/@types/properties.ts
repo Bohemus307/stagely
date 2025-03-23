@@ -100,6 +100,11 @@ export interface PropertySpace {
   images?: PropertyImage[];
 }
 
+export interface Location {
+  latitude: number;
+  longitude: number;
+}
+
 export interface PropertyImage {
   id: number;
   inspectionId: number;
