@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { HStack } from "@/components/ui/hstack";
 import { Box } from "@/components/ui/box";
-import { Property, PropertyStatus } from "./list";
+import { Property, PropertyStatus } from "@/lib/@types/properties";
 
 // Updated to accept properties as a prop
 const PropertyMetrics = ({ properties = [] }: { properties: Property[] }) => {

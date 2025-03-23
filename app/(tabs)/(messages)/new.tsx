@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
 import { SearchIcon } from "@/components/ui/icon";
 import { MessageUser, mockUsers } from "@/components/message/data/messages";
-import { Property } from "@/components/properties/list";
+import { Property } from "@/lib/@types/properties";
 
 const NewMessageScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -98,13 +98,13 @@ const NewMessageScreen = () => {
   const renderPropertyItem = ({ item }: { item: Property }) => (
     <Pressable
       className="p-3 mb-2 bg-white rounded-lg shadow-sm"
-      onPress={() => handlePropertySelect(item.property_id)}
+      onPress={() => handlePropertySelect(item.id)}
     >
       <HStack className="items-center justify-between">
         <VStack>
           <ThemedText type="defaultSemiBold">{item.address}</ThemedText>
           <ThemedText type="default">
-            {item.city}, {item.state} {item.zip_code}
+            {item.city}, {item.state} {item.zipCode}
           </ThemedText>
         </VStack>
 
@@ -155,9 +155,13 @@ const NewMessageScreen = () => {
             </ThemedText>
 
             <FlatList
-              data={properties.filter((p) => p.status !== "Archived")}
+              data={
+                properties.filter(
+                  (p) => p.status !== "Archived",
+                ) as unknown as Property[]
+              } //FIX ME too 🌵
               renderItem={renderPropertyItem}
-              keyExtractor={(item) => item.property_id.toString()}
+              keyExtractor={(item) => item.id.toString()}
               contentContainerStyle={{ paddingBottom: 20 }}
               ListHeaderComponent={
                 <Button

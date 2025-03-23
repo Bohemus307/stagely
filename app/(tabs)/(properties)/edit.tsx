@@ -4,8 +4,8 @@ import { useLocalSearchParams } from "expo-router";
 import { ThemedView } from "@/components/ThemedView";
 import { Spinner } from "@/components/ui/spinner";
 import { properties } from "@/components/properties/data/properties";
-import { Property } from "@/components/properties/list";
 import BackButton from "@/components/BackButton";
+import { Property } from "@/lib/@types/properties";
 
 const PropertyEditScreen = () => {
   const { propertyId } = useLocalSearchParams();
