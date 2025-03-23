@@ -1,9 +1,14 @@
 import React from "react";
 import { render, fireEvent } from "@testing-library/react-native";
 import IncidentList from "@/components/incidents/list/index";
-import { Incident } from "@/components/properties/list";
+
 import { router } from "expo-router";
 import { View, Text, TouchableOpacity } from "react-native";
+import {
+  Incident,
+  IncidentSeverity,
+  IncidentStatus,
+} from "@/lib/@types/properties";
 
 // Mock dependencies
 jest.mock("expo-router", () => ({
@@ -25,7 +30,7 @@ jest.mock("@/components/incidents/list/IncidentCard", () => ({
     onDetailsPress: () => void;
   }) => (
     <View testID="incident-card">
-      <Text testID="incident-title">{incident.incident_type}</Text>
+      <Text testID="incident-title">{incident.incidentType}</Text>
       <TouchableOpacity testID="details-button" onPress={onDetailsPress}>
         <Text>View Details</Text>
       </TouchableOpacity>
@@ -124,24 +129,41 @@ describe("IncidentList", () => {
   const createTestIncident = (
     id: number,
     type: string,
-    status: "Open" | "In Progress" | "Resolved" | "Closed",
-    severity: "Low" | "Medium" | "High" | "Critical",
+    status: IncidentStatus,
+    severity: IncidentSeverity,
   ): Incident => ({
-    incident_id: id,
-    property_id: 123,
-    incident_type: type,
-    description: `Description for ${type}`,
-    reported_at: "2025-02-15T10:30:00Z",
+    id: id,
+    propertyId: 123,
+    incidentType: type,
+    description: type,
+    reportedAt: "2025-02-15T10:30:00Z",
     severity,
     status,
     images: [],
+    createdAt: "",
+    updatedAt: "",
   });
 
   // Sample incidents for testing
   const mockIncidents: Incident[] = [
-    createTestIncident(1, "Water Damage", "Open", "Medium"),
-    createTestIncident(2, "Electrical Issue", "In Progress", "High"),
-    createTestIncident(3, "Broken Window", "Resolved", "Low"),
+    createTestIncident(
+      1,
+      "Water Damage",
+      IncidentStatus.Open,
+      IncidentSeverity.Medium,
+    ),
+    createTestIncident(
+      2,
+      "Electrical Issue",
+      IncidentStatus.InProgress,
+      IncidentSeverity.High,
+    ),
+    createTestIncident(
+      3,
+      "Broken Window",
+      IncidentStatus.Resolved,
+      IncidentSeverity.Low,
+    ),
   ];
 
   beforeEach(() => {

@@ -6,9 +6,9 @@ import { HStack } from "@/components/ui/hstack";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { VStack } from "@/components/ui/vstack";
 import { router } from "expo-router";
-import { Property } from "../list";
-import { Colors } from "react-native/Libraries/NewAppScreen";
 import { ThemedText } from "@/components/ThemedText";
+import { Colors } from "@/constants/Colors";
+import { Property } from "@/lib/@types/properties";
 
 type Props = {
   property: Property;
@@ -25,7 +25,7 @@ const QuickActions = ({ property }: Props) => {
           onPress={() =>
             router.push({
               pathname: "/(tabs)/(properties)/photos",
-              params: { propertyId: property.property_id },
+              params: { propertyId: property.id },
             })
           }
         >
@@ -35,9 +35,7 @@ const QuickActions = ({ property }: Props) => {
               size={18}
               color={Colors.light.tabIconDefault}
             />
-            <ThemedText className="ml-2 text-primary-700">
-              Manage Photos
-            </ThemedText>
+            <ThemedText className="ml-2 text-primary-700">Photos</ThemedText>
           </HStack>
         </Button>
 
@@ -46,7 +44,7 @@ const QuickActions = ({ property }: Props) => {
           onPress={() =>
             router.push({
               pathname: "/(tabs)/(properties)/documents",
-              params: { propertyId: property.property_id },
+              params: { propertyId: property.id },
             })
           }
         >
@@ -56,9 +54,7 @@ const QuickActions = ({ property }: Props) => {
               size={18}
               color={Colors.light.tabIconDefault}
             />
-            <ThemedText className="ml-2 text-primary-700">
-              View Documents
-            </ThemedText>
+            <ThemedText className="ml-2 text-primary-700">Documents</ThemedText>
           </HStack>
         </Button>
 
@@ -67,7 +63,7 @@ const QuickActions = ({ property }: Props) => {
           onPress={() =>
             router.push({
               pathname: "/(tabs)/(properties)/edit",
-              params: { propertyId: property.property_id },
+              params: { propertyId: property.id },
             })
           }
         >
@@ -77,9 +73,7 @@ const QuickActions = ({ property }: Props) => {
               size={18}
               color={Colors.light.tabIconDefault}
             />
-            <ThemedText className="ml-2 text-primary-700">
-              Edit Property
-            </ThemedText>
+            <ThemedText className="ml-2 text-primary-700">Edit</ThemedText>
           </HStack>
         </Button>
       </VStack>

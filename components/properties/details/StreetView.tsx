@@ -26,7 +26,7 @@ const StreetViewImage: React.FC<StreetViewImageProps> = ({
     <Image
       source={{ uri: streetViewUrl }}
       alt="Street View"
-      className="h-full w-full object-cover rounded-md"
+      className="h-full w-full object-cover p-2 rounded-md shadow-sm"
       onError={() => {
         console.log("Street View image failed to load");
         onError && onError();

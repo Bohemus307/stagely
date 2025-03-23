@@ -3,7 +3,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ScrollView, Pressable } from "react-native";
-import { IncidentImage } from "@/components/incidents/data/incidents";
+import { IncidentImage } from "@/lib/@types/properties";
 
 interface IncidentPhotosProps {
   images: IncidentImage[];
@@ -41,7 +41,7 @@ const IncidentPhotos: React.FC<IncidentPhotosProps> = ({
       >
         {images.map((image) => (
           <Pressable
-            key={image.image_id}
+            key={image.id}
             onPress={() => onPhotoPress && onPhotoPress(image)}
           >
             <Box className="w-32 h-32 mr-3 rounded-lg overflow-hidden">

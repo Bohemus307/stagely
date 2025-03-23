@@ -4,7 +4,7 @@ import { HStack } from "@/components/ui/hstack";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { router } from "expo-router";
 import { Button } from "@/components/ui/button";
-import { Property } from "../list";
+import { Incident, Property } from "@/lib/@types/properties";
 
 type Props = {
   property: Property;
@@ -13,16 +13,15 @@ type Props = {
 const PropertyActions = ({ property }: Props) => {
   // Open Maps app with the location
   const openMaps = () => {
-    if (property?.location) {
-      const { latitude, longitude } = property.location;
-      const url = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+    if (property?.latitude && property.longitude) {
+      const url = `https://www.google.com/maps/search/?api=1&query=${property.latitude},${property.longitude}`;
       Linking.openURL(url);
     }
   };
 
   const activeIncidents =
     property.incidents?.filter(
-      (incident) =>
+      (incident: Incident) =>
         incident.status !== "Resolved" && incident.status !== "Closed",
     ).length || 0;
 
@@ -43,7 +42,7 @@ const PropertyActions = ({ property }: Props) => {
         onPress={() =>
           router.push({
             pathname: "/(tabs)/(incidents)",
-            params: { propertyId: property.property_id },
+            params: { propertyId: property.id },
           })
         }
       >

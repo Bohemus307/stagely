@@ -8,7 +8,7 @@ import { Box } from "@/components/ui/box";
 import { Fab, FabIcon } from "@/components/ui/fab";
 import { AddIcon } from "@/components/ui/icon";
 import IncidentCard from "@/components/incidents/list/IncidentCard";
-import { Incident } from "@/components/properties/list";
+import { Incident } from "@/lib/@types/properties";
 
 export interface IncidentListProps {
   incidents: Incident[];
@@ -28,7 +28,7 @@ const IncidentList: React.FC<IncidentListProps> = ({
   const handleDetailsPress = (incident: Incident) => {
     router.push({
       pathname: "/(tabs)/(incidents)/details",
-      params: { incidentId: incident.incident_id },
+      params: { incidentId: incident.id },
     });
   };
 
@@ -75,7 +75,7 @@ const IncidentList: React.FC<IncidentListProps> = ({
       <FlatList
         data={incidents}
         renderItem={renderIncident}
-        keyExtractor={(item) => item.incident_id.toString()}
+        keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={{
           paddingHorizontal: 15,
           paddingTop: 15,

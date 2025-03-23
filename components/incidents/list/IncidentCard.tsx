@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Pressable } from "@/components/ui/pressable";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Box } from "@/components/ui/box";
-import { Incident } from "../data/incidents";
 import { properties } from "@/components/properties/data/properties";
 import { Text } from "react-native";
 import { Image } from "@/components/ui/image";
@@ -15,6 +14,7 @@ import {
   getTimeAgo,
 } from "../lib/utils/incidentHelpers";
 import { Heading } from "@/components/ui/heading";
+import { Incident } from "@/lib/@types/properties";
 
 // Street View Image Component
 interface StreetViewImageProps {
@@ -64,7 +64,7 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
 }) => {
   // Find the associated property
   const property = properties.find(
-    (p) => p.property_id === incident.property_id,
+    (p) => p.property_id === incident.propertyId,
   );
 
   // Initialize street view error state
@@ -79,7 +79,7 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
     if (property) {
       return `${property.address}, ${property.city}`;
     }
-    return `Property #${incident.property_id}`;
+    return `Property #${incident.propertyId}`;
   };
 
   const isUrgent =
@@ -139,7 +139,7 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
 
         <VStack className="flex-1 mr-4">
           <Heading className="text-lg font-semibold">
-            {incident.incident_type}
+            {incident.incidentType}
           </Heading>
 
           <HStack className="items-center text-sm text-primary-500 mt-1">
@@ -151,7 +151,7 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
               <HStack className="items-center">
                 <IconSymbol name="clock" size={12} color="gray" />
                 <Text className="text-xs text-secondary-500 ml-1">
-                  {getTimeAgo(incident.reported_at)}
+                  {getTimeAgo(incident.reportedAt)}
                 </Text>
               </HStack>
             </Badge>

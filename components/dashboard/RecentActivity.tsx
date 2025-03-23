@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
 import { Box } from "@/components/ui/box";
 import { HStack } from "../ui/hstack";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -114,7 +113,7 @@ export default function RecentActivity(): JSX.Element {
         style={{ maxHeight: 250 }}
         contentContainerStyle={{ paddingBottom: 10 }}
       >
-        <ThemedView>
+        <View>
           {recentActivity.length > 0 ? (
             recentActivity.map((activity) => (
               <Box key={activity.id} className="mb-0 pb-3">
@@ -140,7 +139,7 @@ export default function RecentActivity(): JSX.Element {
               No recent activity
             </ThemedText>
           )}
-        </ThemedView>
+        </View>
       </ScrollView>
     </Box>
   );

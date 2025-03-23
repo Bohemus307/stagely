@@ -2,10 +2,10 @@ import React, { useMemo } from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { HStack } from "@/components/ui/hstack";
 import { Box } from "@/components/ui/box";
-import { properties } from "./data/properties";
-import { PropertyStatus } from "./list";
+import { Property, PropertyStatus } from "./list";
 
-const PropertyMetrics: React.FC = () => {
+// Updated to accept properties as a prop
+const PropertyMetrics = ({ properties = [] }: { properties: Property[] }) => {
   const metrics = useMemo(() => {
     // Total count of all properties
     const totalCount = properties.length;
@@ -25,10 +25,10 @@ const PropertyMetrics: React.FC = () => {
       { title: "Active", value: activeCount },
       { title: "Issues", value: withIncidentsCount },
     ];
-  }, []);
+  }, [properties]);
 
   return (
-    <Box className="p-2 rounded-2xl flex flex-col items-center justify-center mr-4 mt-2 mb-0">
+    <Box className="p-2 rounded-2xl flex flex-col items-center justify-center mr-4 mt-2 mb-3">
       <HStack className="justify-between px-2 w-full gap-2">
         {metrics.map((item, index) => (
           <Box

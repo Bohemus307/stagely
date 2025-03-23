@@ -1,9 +1,8 @@
-import { TouchableOpacity, Image } from "react-native";
+import { TouchableOpacity, Image, View } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useAuth0 } from "react-native-auth0";
 import { useRouter } from "expo-router";
 import { ThemedText } from "./ThemedText";
-import { ThemedView } from "@/components/ThemedView";
 import {
   Avatar,
   AvatarBadge,
@@ -16,8 +15,8 @@ function Header() {
   const router = useRouter();
 
   return (
-    <ThemedView className="flex-row justify-between items-center px-2 py-10 pb-1 bg-white mt-4">
-      <ThemedView className="flex-row items-center">
+    <View className="flex-row justify-between items-end px-2 py-2 bg-white h-24">
+      <View className="flex-row items-center">
         <TouchableOpacity
           onPress={() => console.log("Image Pressed!")}
           activeOpacity={0.7}
@@ -28,7 +27,7 @@ function Header() {
           />
         </TouchableOpacity>
         <ThemedText type="default">Stagely</ThemedText>
-      </ThemedView>
+      </View>
 
       <TouchableOpacity
         className="ml-52"
@@ -49,7 +48,7 @@ function Header() {
           <AvatarBadge />
         </Avatar>
       </TouchableOpacity>
-    </ThemedView>
+    </View>
   );
 }
 

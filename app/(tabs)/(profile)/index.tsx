@@ -2,10 +2,8 @@ import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
 import { router } from "expo-router";
 import React from "react";
-import { ScrollView, View } from "react-native";
+import { View } from "react-native";
 import { useAuth0 } from "react-native-auth0";
-import { UserMetadata } from "@/components/profile/data/profile";
-import ProfileMetrics from "@/components/profile/details/ProfileMetrics";
 import ProfileHeader from "@/components/profile/details/ProfileHeader";
 import ProfileMenuItem from "@/components/profile/details/ProfileMenuItem";
 import { Spinner } from "@/components/ui/spinner";
@@ -38,10 +36,7 @@ const ProfileScreen = () => {
   }
 
   const userData = user!;
-  const metadata = (userData.user_metadata as UserMetadata) || {};
-  const propertiesCount = metadata.properties || 0;
-  const teamMembersCount = metadata.teamMembers || 0;
-  const activeTasksCount = metadata.activeTasks || 0;
+  // const metadata = (userData.user_metadata as UserMetadata) || {};
 
   const handleLogout = async () => {
     try {
@@ -50,10 +45,6 @@ const ProfileScreen = () => {
     } catch (error) {
       console.error("Error during logout:", error);
     }
-  };
-
-  const navigateToAccountInfo = () => {
-    console.log("ToAccountInfo Button Pushed");
   };
 
   const navigateToSecurity = () => {
@@ -80,10 +71,6 @@ const ProfileScreen = () => {
     console.log("Preferences Button Pushed");
   };
 
-  const navigateToRoles = () => {
-    console.log("To Roles & permissions Button Pushed");
-  };
-
   const navigateToEditProfile = () => {
     router.push("/(tabs)/(profile)/edit");
   };
@@ -92,7 +79,7 @@ const ProfileScreen = () => {
     <ThemedView className="flex-1">
       <Header />
       <View className="flex-1">
-        <View className="absolute left-0 right-0 z-10 shadow-sm">
+        <View className="mt-4 shadow-sm">
           <View className="">
             <ProfileHeader
               name={userData.name || ""}
@@ -101,30 +88,13 @@ const ProfileScreen = () => {
             />
           </View>
         </View>
-        <ScrollView
-          showsVerticalScrollIndicator={true}
-          contentContainerStyle={{ paddingBottom: 100 }}
-          className="pt-32"
-          bounces={true}
-        >
-          <Box className="relative">
-            {/* Profile Stats */}
-            <ProfileMetrics
-              propertiesCount={propertiesCount}
-              teamMembersCount={teamMembersCount}
-              activeTasksCount={activeTasksCount}
-            />
 
+        <View>
+          <Box className="">
             {/* Account Settings Section */}
             <ThemedText type="defaultSemiBold" className="px-5 pt-2">
               ACCOUNT SETTINGS
             </ThemedText>
-
-            <ProfileMenuItem
-              iconName="person.circle.fill"
-              title="Account Information"
-              onPress={navigateToAccountInfo}
-            />
 
             <ProfileMenuItem
               iconName="lock.fill"
@@ -147,12 +117,6 @@ const ProfileScreen = () => {
               iconName="person.2.fill"
               title="Team Members"
               onPress={navigateToTeamMembers}
-            />
-
-            <ProfileMenuItem
-              iconName="person.2.fill"
-              title="Roles & Permissions"
-              onPress={navigateToRoles}
             />
 
             {/* Preferences Section */}
@@ -187,7 +151,7 @@ const ProfileScreen = () => {
               onPress={handleLogout}
             />
           </Box>
-        </ScrollView>
+        </View>
       </View>
     </ThemedView>
   );

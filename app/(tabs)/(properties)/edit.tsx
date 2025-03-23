@@ -20,7 +20,7 @@ const PropertyEditScreen = () => {
         const fetchedProperty = properties.find((p) => p.property_id === id);
 
         if (fetchedProperty) {
-          setProperty(fetchedProperty);
+          setProperty(fetchedProperty as unknown as Property);
         }
       } catch (error) {
         console.error("Error fetching property:", error);

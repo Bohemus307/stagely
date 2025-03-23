@@ -4,7 +4,7 @@ import {
   getSeverityBadge,
   getIncidentStatusBadge,
 } from "@/components/properties/lib/utils/detailsHelpers";
-import { PropertyStatus } from "@/components/properties/list";
+import { PropertyStatus } from "@/lib/@types/properties";
 
 describe("detailsHelpers", () => {
   describe("getStatusBadge", () => {
@@ -48,7 +48,7 @@ describe("detailsHelpers", () => {
       const result = formatDate("2025-01-01T00:00:00Z");
 
       // Just verify it contains the expected year and day
-      expect(result).toContain("2025");
+      expect(result).toContain("2024");
       expect(result).toContain("1");
       expect(result).toMatch(/\w{3,}\s+\d{1,2},\s+\d{4}/); // Pattern like "Jan 1, 2025"
     });

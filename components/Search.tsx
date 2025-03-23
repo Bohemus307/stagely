@@ -63,7 +63,7 @@ const Search: React.FC<SearchProps> = ({
   };
 
   return (
-    <ThemedView>
+    <View>
       {/* Search Input */}
       <View className="flex flex-row items-center w-full gap-2">
         <Input className="w-11/12 rounded-2xl border">
@@ -178,7 +178,7 @@ const Search: React.FC<SearchProps> = ({
           </Pressable>
         ))}
       </View>
-    </ThemedView>
+    </View>
   );
 };
 

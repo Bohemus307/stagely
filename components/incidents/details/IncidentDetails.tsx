@@ -7,13 +7,14 @@ import { VStack } from "@/components/ui/vstack";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/components/properties/lib/utils/detailsHelpers";
 import { getSeverityBadge } from "@/components/properties/lib/utils/detailsHelpers";
-import { Incident } from "@/components/properties/list";
+
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { properties } from "@/components/properties/data/properties";
 import { Alert } from "react-native";
 import { ButtonText } from "@/components/ui/button";
 import { Button } from "@/components/ui/button";
 import { getIncidentStatusBadge } from "../lib/utils/incidentHelpers";
+import { Incident } from "@/lib/@types/properties";
 
 export interface IncidentDetailsProps {
   incident: Incident;
@@ -33,7 +34,7 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({
       try {
         //Find associated Property
         const propertyData = properties.find(
-          (p) => p.property_id === incident.property_id,
+          (p) => p.property_id === incident.propertyId,
         );
         setProperty(propertyData);
       } catch (error) {
@@ -43,11 +44,11 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({
     };
 
     fetchData();
-  }, [incident.property_id]);
+  }, [incident.propertyId]);
 
   const handleStatusUpdate = () => {
     if (onUpdateStatus && selectedStatus !== incident.status) {
-      onUpdateStatus(incident.incident_id, selectedStatus);
+      onUpdateStatus(incident.id, selectedStatus);
     }
     setShowStatusEditor(false);
   };
@@ -62,7 +63,7 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({
   return (
     <Box className="bg-white mx-4 p-4 mt-2 rounded-lg shadow-sm mb-4">
       <HStack className="items-center justify-between mb-3">
-        <ThemedText type="defaultSemiBold">{incident.incident_type}</ThemedText>
+        <ThemedText type="defaultSemiBold">{incident.incidentType}</ThemedText>
         <Badge className={badgeClass}>
           <ThemedText>{displayStatus}</ThemedText>
         </Badge>
@@ -139,21 +140,21 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({
 
         <HStack className="justify-between">
           <ThemedText>Reported On</ThemedText>
-          <ThemedText>{formatDate(incident.reported_at)}</ThemedText>
+          <ThemedText>{formatDate(incident.reportedAt)}</ThemedText>
         </HStack>
 
-        {incident.resolved_at && (
+        {incident.resolvedAt && (
           <>
             <HStack className="justify-between">
               <ThemedText>Resolved On</ThemedText>
-              <ThemedText>{formatDate(incident.resolved_at)}</ThemedText>
+              <ThemedText>{formatDate(incident.resolvedAt)}</ThemedText>
             </HStack>
           </>
         )}
 
         <HStack className="justify-between">
           <ThemedText>Incident ID</ThemedText>
-          <ThemedText>#{incident.incident_id}</ThemedText>
+          <ThemedText>#{incident.id}</ThemedText>
         </HStack>
       </VStack>
     </Box>

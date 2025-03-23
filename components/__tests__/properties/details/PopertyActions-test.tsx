@@ -2,12 +2,14 @@ import React from "react";
 import { render, fireEvent } from "@testing-library/react-native";
 import { Linking } from "react-native";
 import PropertyActions from "@/components/properties/details/PropertyActions";
+import { router } from "expo-router";
 import {
+  Incident,
+  IncidentSeverity,
+  IncidentStatus,
   Property,
   PropertyStatus,
-  Incident,
-} from "@/components/properties/list";
-import { router } from "expo-router";
+} from "@/lib/@types/properties";
 
 // Mock the dependencies
 jest.mock("expo-router", () => ({
@@ -35,34 +37,37 @@ const createIncident = (
   severity: string,
   resolved_at?: string,
 ): Incident => ({
-  property_id: 12345,
-  incident_id: id,
-  incident_type: type,
+  propertyId: 12345,
+  id: id,
+  incidentType: type,
   description,
-  reported_at: "2025-02-15T10:30:00Z",
-  severity: severity as "Low" | "Medium" | "High" | "Critical",
-  status: status as "Open" | "In Progress" | "Resolved" | "Closed",
+  reportedAt: "2025-02-15T10:30:00Z",
+  severity: severity as IncidentSeverity,
+  status: status as IncidentStatus,
   images: [],
   ...(resolved_at ? { resolved_at } : {}),
+  createdAt: "",
+  updatedAt: "",
 });
 
 // Helper function to create test property
 const createTestProperty = (incidents: Incident[] = []): Property => ({
-  property_id: 12345,
+  id: 12345,
   address: "123 Test Street",
   city: "Test City",
   state: "TS",
-  zip_code: "12345",
+  zipCode: "12345",
   country: "Test Country",
-  location: {
-    latitude: 37.7749,
-    longitude: -122.4194,
-  },
+  latitude: 37.7749,
+  longitude: -122.4194,
   status: PropertyStatus.Active,
-  images: [],
   incidents,
-  created_at: "2025-01-01T00:00:00Z",
-  updated_at: "2025-02-01T00:00:00Z",
+  createdAt: "2025-01-01T00:00:00Z",
+  updatedAt: "2025-02-01T00:00:00Z",
+  propertyId: 0,
+  userId: 0,
+  incidentCount: 0,
+  openIncidentCount: 0,
 });
 
 describe("PropertyActions", () => {
@@ -155,26 +160,6 @@ describe("PropertyActions", () => {
     expect(Linking.openURL).toHaveBeenCalledWith(
       "https://www.google.com/maps/search/?api=1&query=37.7749,-122.4194",
     );
-  });
-
-  test("does not call Linking.openURL when location is missing", () => {
-    const propertyWithoutLocation = {
-      ...mockProperty,
-      location: undefined,
-    };
-
-    const { getByText } = render(
-      <PropertyActions
-        property={propertyWithoutLocation as unknown as Property}
-      />,
-    );
-
-    // Find and press the Maps button
-    const mapsButton = getByText("Open in Maps");
-    fireEvent.press(mapsButton);
-
-    // Check that Linking.openURL was not called
-    expect(Linking.openURL).not.toHaveBeenCalled();
   });
 
   test("navigates to incidents page with correct params when incidents button is pressed", () => {
