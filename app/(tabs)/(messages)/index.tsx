@@ -13,7 +13,7 @@ const MessagesScreen = () => {
     <ThemedView className="flex-1">
       <Header />
       <SafeAreaView className="flex-1 flex-col">
-        <View className="px-4 p-2">
+        <View className="px-4 p-2 bg-white">
           <MessageSearch
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}

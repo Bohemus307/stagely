@@ -1,8 +1,12 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
 import IncidentMetrics from "@/components/incidents/details/IncidentMetrics";
-import { Incident } from "@/components/properties/list";
 import { Text, View } from "react-native";
+import {
+  Incident,
+  IncidentSeverity,
+  IncidentStatus,
+} from "@/lib/@types/properties";
 
 // Mock ThemedText component for React Native testing
 jest.mock("@/components/ThemedText", () => ({
@@ -46,26 +50,28 @@ describe("IncidentMetrics", () => {
   // Sample incident data for testing with proper typing
   const createIncident = (
     id: number,
-    status: "Open" | "In Progress" | "Resolved" | "Closed",
-    severity: "Low" | "Medium" | "High" | "Critical",
+    status: IncidentStatus,
+    severity: IncidentSeverity,
   ): Incident => ({
-    incident_id: id,
-    property_id: 1,
-    incident_type: "Test Incident",
+    id: id,
+    propertyId: 1,
+    incidentType: "Test Incident",
     description: "Test Description",
-    reported_at: "2025-02-15T10:30:00Z",
+    reportedAt: "2025-02-15T10:30:00Z",
     severity,
     status,
     images: [],
+    createdAt: "",
+    updatedAt: "",
   });
 
   const mockIncidents: Incident[] = [
-    createIncident(1, "Open", "Medium"),
-    createIncident(2, "Open", "High"),
-    createIncident(3, "In Progress", "Low"),
-    createIncident(4, "Resolved", "Medium"),
-    createIncident(5, "Closed", "Low"),
-    createIncident(6, "Open", "Critical"),
+    createIncident(1, IncidentStatus.Open, IncidentSeverity.Medium),
+    createIncident(2, IncidentStatus.Open, IncidentSeverity.High),
+    createIncident(3, IncidentStatus.InProgress, IncidentSeverity.Low),
+    createIncident(4, IncidentStatus.Resolved, IncidentSeverity.Medium),
+    createIncident(5, IncidentStatus.Closed, IncidentSeverity.Low),
+    createIncident(6, IncidentStatus.Open, IncidentSeverity.Critical),
   ];
 
   test("renders correctly with incident data", () => {
@@ -96,10 +102,10 @@ describe("IncidentMetrics", () => {
   test("handles different incident status and severities correctly", () => {
     // Custom set of incidents with specific status and severity combinations
     const customIncidents: Incident[] = [
-      createIncident(1, "In Progress", "Medium"), // Not open, not urgent
-      createIncident(2, "Open", "High"), // Open and urgent
-      createIncident(3, "Open", "Low"), // Open, not urgent
-      createIncident(4, "Resolved", "Critical"), // Not open, but would be urgent if open
+      createIncident(1, IncidentStatus.InProgress, IncidentSeverity.Medium), // Not open, not urgent
+      createIncident(2, IncidentStatus.Open, IncidentSeverity.High), // Open and urgent
+      createIncident(3, IncidentStatus.Open, IncidentSeverity.Low), // Open, not urgent
+      createIncident(4, IncidentStatus.Resolved, IncidentSeverity.Critical), // Not open, but would be urgent if open
     ];
 
     const { queryAllByText } = render(
@@ -114,8 +120,8 @@ describe("IncidentMetrics", () => {
   test("correctly counts critical incidents as urgent", () => {
     // Set with only Critical incidents
     const criticalIncidents: Incident[] = [
-      createIncident(1, "Open", "Critical"),
-      createIncident(2, "In Progress", "Critical"),
+      createIncident(1, IncidentStatus.Open, IncidentSeverity.Critical),
+      createIncident(2, IncidentStatus.InProgress, IncidentSeverity.Critical),
     ];
 
     const { queryAllByText } = render(

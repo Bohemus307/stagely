@@ -10,10 +10,10 @@ import {
   getSeverityBadge,
   formatDate,
 } from "../lib/utils/detailsHelpers";
-import { Property } from "../list";
 import { Image } from "@/components/ui/image";
 import { Button } from "@/components/ui/button";
 import { ThemedText } from "@/components/ThemedText";
+import { Incident, Property } from "@/lib/@types/properties";
 
 type Props = {
   property: Property;
@@ -25,11 +25,11 @@ const RecentIncidents = ({ property }: Props) => {
       <Heading className="text-lg font-semibold mb-3">Recent Incidents</Heading>
 
       <VStack className="gap-3">
-        {property?.incidents?.slice(0, 3).map((incident) => (
-          <Box key={incident.incident_id} className="bg-white rounded-lg  p-3">
+        {property?.incidents?.slice(0, 3).map((incident: Incident) => (
+          <Box key={incident.id} className="bg-white rounded-lg  p-3">
             <HStack className="justify-between items-start mb-2">
               <ThemedText className="font-medium">
-                {incident.incident_type}
+                {incident.incidentType}
               </ThemedText>
               <Badge className={getIncidentStatusBadge(incident.status)}>
                 <ThemedText className="text-xs">{incident.status}</ThemedText>
@@ -47,7 +47,7 @@ const RecentIncidents = ({ property }: Props) => {
                 </ThemedText>
               </Badge>
               <ThemedText className="text-xs text-primary-500">
-                {formatDate(incident.reported_at)}
+                {formatDate(incident.reportedAt)}
               </ThemedText>
             </HStack>
 
@@ -56,11 +56,11 @@ const RecentIncidents = ({ property }: Props) => {
               <HStack className="mt-3 space-x-2">
                 {incident.images.slice(0, 3).map((image) => (
                   <Box
-                    key={image.image_id}
+                    key={image.id}
                     className="h-16 w-16 rounded overflow-hidden bg-primary-100"
                   >
                     <Image
-                      source={{ uri: image.image_url }}
+                      source={{ uri: image.imageUrl }}
                       alt={image.caption}
                       className="h-full w-full object-cover"
                     />
@@ -86,7 +86,7 @@ const RecentIncidents = ({ property }: Props) => {
           onPress={() =>
             router.push({
               pathname: "/(tabs)/(incidents)",
-              params: { propertyId: property.property_id },
+              params: { propertyId: property.id },
             })
           }
         >

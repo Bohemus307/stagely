@@ -4,8 +4,8 @@ import { useLocalSearchParams } from "expo-router";
 import { ThemedView } from "@/components/ThemedView";
 import { Spinner } from "@/components/ui/spinner";
 import { incidents } from "@/components/incidents/data/incidents";
-import { Incident } from "@/components/incidents/data/incidents";
 import BackButton from "@/components/BackButton";
+import { Incident } from "@/lib/@types/properties";
 
 const IncidentEditScreen = () => {
   const { incidentId } = useLocalSearchParams();
@@ -20,7 +20,7 @@ const IncidentEditScreen = () => {
         const fetchedIncident = incidents.find((p) => p.property_id === id);
 
         if (fetchedIncident) {
-          setIncident(fetchedIncident);
+          setIncident(fetchedIncident as unknown as Incident); // Fix me 😹
         }
       } catch (error) {
         console.error("Error fetching incident:", error);

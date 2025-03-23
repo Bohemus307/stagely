@@ -15,6 +15,99 @@ jest.mock("expo-router", () => ({
   },
 }));
 
+// Mock React Query
+jest.mock("@tanstack/react-query", () => ({
+  useQuery: jest.fn(() => ({
+    data: {
+      properties: [
+        {
+          property_id: 1,
+          address: "123 Test St",
+          city: "Test City",
+          state: "TS",
+          zip_code: "12345",
+          status: "Active",
+          location: {
+            latitude: 37.7749,
+            longitude: -122.4194,
+          },
+          incidents: [{ status: "Open" }, { status: "In Progress" }],
+          created_at: "2025-01-01T00:00:00Z",
+          updated_at: "2025-02-01T00:00:00Z",
+        },
+        {
+          property_id: 2,
+          address: "456 Sample Ave",
+          city: "Sample City",
+          state: "SS",
+          zip_code: "67890",
+          status: "Maintenance",
+          location: {
+            latitude: 34.0522,
+            longitude: -118.2437,
+          },
+          incidents: [],
+          created_at: "2025-01-01T00:00:00Z",
+          updated_at: "2025-02-01T00:00:00Z",
+        },
+      ],
+      totalCount: 2,
+      pageSize: 10,
+      currentPage: 1,
+    },
+    isLoading: false,
+    isError: false,
+    error: null,
+    refetch: jest.fn(),
+  })),
+  useQueryClient: jest.fn(() => ({
+    invalidateQueries: jest.fn(),
+  })),
+}));
+
+// Mock custom hooks that might be using React Query
+jest.mock("@/hooks/properties/useGetProperties", () => ({
+  useGetProperties: jest.fn().mockImplementation(() => ({
+    properties: {
+      data: [
+        {
+          property_id: 1,
+          address: "123 Test St",
+          city: "Test City",
+          state: "TS",
+          zipCode: "12345",
+          status: "Active",
+          latitude: 37.7749,
+          longitude: -122.4194,
+          incidents: [{ status: "Open" }, { status: "In Progress" }],
+          created_at: "2025-01-01T00:00:00Z",
+          updated_at: "2025-02-01T00:00:00Z",
+        },
+        {
+          property_id: 2,
+          address: "456 Sample Ave",
+          city: "Sample City",
+          state: "SS",
+          zipCode: "67890",
+          status: "Maintenance",
+          latitude: 34.0522,
+          longitude: -118.2437,
+          incidents: [],
+          created_at: "2025-01-01T00:00:00Z",
+          updated_at: "2025-02-01T00:00:00Z",
+        },
+      ],
+      totalCount: 2,
+      pageSize: 10,
+      currentPage: 1,
+    },
+    isLoading: false,
+    isError: false,
+    error: null,
+    refetch: jest.fn(),
+  })),
+}));
+
 // Mock Location API
 jest.mock("expo-location", () => ({
   requestForegroundPermissionsAsync: jest.fn(),
@@ -283,10 +376,17 @@ describe("AddIncidentButton", () => {
   });
 
   test("shows alert when no properties are found nearby", async () => {
-    // Replace the properties mock with an empty array for this test only
-    const propertiesModule = require("@/components/properties/data/properties");
-    const originalProperties = propertiesModule.properties;
-    propertiesModule.properties = [];
+    // Temporarily override the mock for this specific test
+    const { useGetProperties } = require("@/hooks/properties/useGetProperties");
+    useGetProperties.mockReturnValueOnce({
+      properties: {
+        data: [],
+      },
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
 
     const { getByTestId } = render(<AddIncidentButton />);
 
@@ -301,9 +401,6 @@ describe("AddIncidentButton", () => {
       "No properties were found near your current location.",
       expect.anything(),
     );
-
-    // Restore original properties
-    propertiesModule.properties = originalProperties;
   });
 
   test("handles location error gracefully", async () => {
@@ -328,9 +425,6 @@ describe("AddIncidentButton", () => {
   });
 
   test("navigates to properties list when 'All Properties' is clicked", async () => {
-    // This is a simpler approach - we're going to mock the handleViewAllProperties function directly
-
-    // Create a new instance for this test to isolate changes
     const { getByTestId } = render(<AddIncidentButton />);
 
     // Click the button to trigger the location process

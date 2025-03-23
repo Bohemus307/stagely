@@ -7,7 +7,6 @@ import Constants from "expo-constants";
  * additional user details from the backend API
  */
 export const useAuthUser = () => {
-  // Use the correct hook from react-native-auth0
   const { user, getCredentials, isLoading, error } = useAuth0();
 
   const apiUrl =
@@ -28,6 +27,7 @@ export const useAuthUser = () => {
 
       // Get the access token
       const credentials = await getCredentials();
+      // console.log("CREDS", credentials?.accessToken); for BE testing 🚀
 
       if (!credentials?.accessToken) {
         throw new Error("Access token not available");

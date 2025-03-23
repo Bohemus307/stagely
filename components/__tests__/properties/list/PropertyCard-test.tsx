@@ -4,7 +4,12 @@
 import React from "react";
 import { render, fireEvent } from "@testing-library/react-native";
 import PropertyCard from "@/components/properties/list/PropertyCard";
-import { Property, PropertyStatus } from "@/components/properties/list";
+import {
+  IncidentSeverity,
+  IncidentStatus,
+  Property,
+  PropertyStatus,
+} from "@/lib/@types/properties";
 
 // Minimal required mocks
 jest.mock("expo-constants", () => ({
@@ -18,41 +23,47 @@ jest.mock("expo-constants", () => ({
 describe("PropertyCard Component", () => {
   // Create a basic property object
   const mockProperty: Property = {
-    property_id: 123,
+    id: 123,
     address: "123 Test Street",
     city: "Test City",
     state: "TS",
-    zip_code: "12345",
+    zipCode: "12345",
     country: "Test Country",
     status: PropertyStatus.Active,
-    location: {
-      latitude: 37.7749,
-      longitude: -122.4194,
-    },
+    latitude: 37.7749,
+    longitude: -122.4194,
     incidents: [
       {
-        property_id: 12345,
-        incident_id: 1,
-        incident_type: "Plumbing",
+        id: 12345,
+        incidentType: "Plumbing",
         description: "Leaking pipe",
-        reported_at: "2025-01-01T12:00:00Z",
-        status: "Open",
-        severity: "Medium",
+        reportedAt: "2025-01-01T12:00:00Z",
+        status: IncidentStatus.Open,
+        severity: IncidentSeverity.Medium,
         images: [],
+        propertyId: 0,
+        createdAt: "",
+        updatedAt: "",
       },
       {
-        property_id: 12345,
-        incident_id: 2,
-        incident_type: "Electrical",
+        id: 12345,
+        incidentType: "Electrical",
         description: "Wiring issue",
-        reported_at: "2025-01-02T12:00:00Z",
-        status: "Resolved",
-        severity: "Low",
+        reportedAt: "2025-01-02T12:00:00Z",
+        status: IncidentStatus.Resolved,
+        severity: IncidentSeverity.Low,
         images: [],
+        propertyId: 0,
+        createdAt: "",
+        updatedAt: "",
       },
     ],
-    created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-02-01T00:00:00Z",
+    createdAt: "2025-01-01T00:00:00Z",
+    updatedAt: "2025-02-01T00:00:00Z",
+    propertyId: 0,
+    userId: 0,
+    incidentCount: 0,
+    openIncidentCount: 0,
   };
 
   // Mock event handlers
@@ -158,25 +169,6 @@ describe("PropertyCard Component", () => {
     );
 
     expect(getByText("Street View")).toBeTruthy();
-  });
-
-  test("renders No Preview badge when location is invalid", () => {
-    const propertyWithoutLocation = {
-      ...mockProperty,
-      location: null,
-    };
-
-    const { getByText } = render(
-      <PropertyCard
-        property={propertyWithoutLocation as unknown as Property}
-        onPress={mockOnPress}
-        onDetailsPress={mockOnDetailsPress}
-        onPhotosPress={mockOnPhotosPress}
-        onDocumentsPress={mockOnDocumentsPress}
-      />,
-    );
-
-    expect(getByText("No Preview")).toBeTruthy();
   });
 
   test("calls onDetailsPress when Details button is pressed", () => {

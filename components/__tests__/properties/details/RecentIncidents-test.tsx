@@ -4,11 +4,13 @@ import RecentIncidents from "@/components/properties/details/RecentIncidents";
 import { router } from "expo-router";
 import { fireEvent } from "@testing-library/react-native";
 import {
-  Incident,
   IncidentImage,
+  Incident,
   Property,
   PropertyStatus,
-} from "@/components/properties/list";
+  IncidentStatus,
+  IncidentSeverity,
+} from "@/lib/@types/properties";
 
 // Just mock router for navigation testing
 jest.mock("expo-router", () => ({
@@ -23,33 +25,53 @@ describe("RecentIncidents Component", () => {
     id: number,
     type: string,
     description: string,
-    status: "Open" | "In Progress" | "Resolved" | "Closed",
-    severity: "Low" | "Medium" | "High" | "Critical",
+    status: IncidentStatus,
+    severity: IncidentSeverity,
     images: IncidentImage[] = [],
   ): Incident => ({
-    property_id: 12345,
-    incident_id: id,
-    incident_type: type,
+    propertyId: 12345,
+    id: id,
+    incidentType: type,
     description,
-    reported_at: "2025-02-15T10:30:00Z",
+    reportedAt: "2025-02-15T10:30:00Z",
     severity,
     status,
     images,
+    createdAt: "",
+    updatedAt: "",
   });
 
   // Create multiple incidents
   const mockIncidents: Incident[] = [
-    createIncident(101, "Plumbing", "Water leak in bathroom", "Open", "Medium"),
+    createIncident(
+      101,
+      "Plumbing",
+      "Water leak in bathroom",
+      IncidentStatus.Open,
+      IncidentSeverity.Medium,
+    ),
     createIncident(
       102,
       "Electrical",
       "Power outage in living room",
-      "Resolved",
-      "High",
+      IncidentStatus.Resolved,
+      IncidentSeverity.High,
       [],
     ),
-    createIncident(103, "HVAC", "AC not working", "In Progress", "Low"),
-    createIncident(104, "Structural", "Crack in ceiling", "Open", "High"),
+    createIncident(
+      103,
+      "HVAC",
+      "AC not working",
+      IncidentStatus.InProgress,
+      IncidentSeverity.Low,
+    ),
+    createIncident(
+      104,
+      "Structural",
+      "Crack in ceiling",
+      IncidentStatus.Open,
+      IncidentSeverity.High,
+    ),
   ];
 
   // Create an incident with images
@@ -57,53 +79,66 @@ describe("RecentIncidents Component", () => {
     105,
     "Damage",
     "Wall damage in living room",
-    "Open",
-    "Medium",
+    IncidentStatus.Open,
+    IncidentSeverity.Medium,
     [
       {
-        image_id: 201,
-        image_url: "https://example.com/image1.jpg",
+        id: 201,
+        imageUrl: "https://example.com/image1.jpg",
         caption: "Image 1",
-        taken_at: "2025-02-18T11:25:00Z",
+        takenAt: "2025-02-18T11:25:00Z",
+        incidentId: 0,
+        createdAt: "",
+        updatedAt: "",
       },
       {
-        image_id: 202,
-        image_url: "https://example.com/image2.jpg",
+        id: 202,
+        imageUrl: "https://example.com/image2.jpg",
         caption: "Image 2",
-        taken_at: "2025-02-18T11:25:00Z",
+        takenAt: "2025-02-18T11:25:00Z",
+        incidentId: 0,
+        createdAt: "",
+        updatedAt: "",
       },
       {
-        image_id: 203,
-        image_url: "https://example.com/image3.jpg",
+        id: 203,
+        imageUrl: "https://example.com/image3.jpg",
         caption: "Image 3",
-        taken_at: "2025-02-18T11:25:00Z",
+        takenAt: "2025-02-18T11:25:00Z",
+        incidentId: 0,
+        createdAt: "",
+        updatedAt: "",
       },
       {
-        image_id: 204,
-        image_url: "https://example.com/image4.jpg",
+        id: 204,
+        imageUrl: "https://example.com/image4.jpg",
         caption: "Image 4",
-        taken_at: "2025-02-18T11:25:00Z",
+        takenAt: "2025-02-18T11:25:00Z",
+        incidentId: 0,
+        createdAt: "",
+        updatedAt: "",
       },
     ],
   );
 
   // Create base property
   const createProperty = (incidents: Incident[] = []): Property => ({
-    property_id: 12345,
+    id: 12345,
     address: "123 Test Street",
     city: "Test City",
     state: "TS",
-    zip_code: "12345",
+    zipCode: "12345",
     country: "Test Country",
-    location: {
-      latitude: 37.7749,
-      longitude: -122.4194,
-    },
+    latitude: 37.7749,
+    longitude: -122.4194,
     status: PropertyStatus.Active,
-    images: [],
     incidents,
-    created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-02-01T00:00:00Z",
+    createdAt: "2025-01-01T00:00:00Z",
+    updatedAt: "2025-02-01T00:00:00Z",
+    propertyId: 0,
+    userId: 0,
+    incidentCount: 0,
+    openIncidentCount: 0,
   });
 
   const mockProperty = createProperty([

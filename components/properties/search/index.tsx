@@ -1,8 +1,7 @@
-import React, { useState } from "react";
-import { ThemedView } from "@/components/ThemedView";
+import React, { useState, useEffect } from "react";
 import { SearchIcon, CheckIcon } from "@/components/ui/icon";
 import { Input, InputSlot, InputIcon, InputField } from "@/components/ui/input";
-import { View, Text } from "react-native";
+import { View, Text, ActivityIndicator, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable } from "@/components/ui/pressable";
 import { Colors } from "@/constants/Colors";
@@ -18,6 +17,7 @@ import {
 import { HStack } from "@/components/ui/hstack";
 import { Divider } from "@/components/ui/divider";
 import { VStack } from "@/components/ui/vstack";
+import { usePropertySearch } from "@/hooks/properties/usePropertiesSearch";
 
 // Define filter types
 type FilterId = "recent" | "active" | "maintenance" | "archived" | null;
@@ -31,7 +31,16 @@ interface Filter {
 type IncidentSeverity = "Low" | "Medium" | "High" | "Critical";
 type IncidentStatus = "Open" | "In Progress" | "Resolved" | "Closed";
 
-const PropertySearch: React.FC = () => {
+// Props interface for PropertySearch
+interface PropertySearchProps {
+  onSearchResults?: (properties: any[]) => void;
+  onSearchCleared?: () => void;
+}
+
+const PropertySearch: React.FC<PropertySearchProps> = ({
+  onSearchResults,
+  onSearchCleared,
+}) => {
   const [activeFilter, setActiveFilter] = useState<FilterId>("recent");
   const [incidentSeverityValues, setIncidentSeverityValues] = useState<
     string[]
@@ -39,6 +48,33 @@ const PropertySearch: React.FC = () => {
   const [incidentStatusValues, setIncidentStatusValues] = useState<string[]>(
     [],
   );
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [debouncedQuery, setDebouncedQuery] = useState<string>("");
+
+  // Use the property search hook - don't load on initial render unless there's a query
+  const { properties, isLoading, error, refetch } = usePropertySearch(
+    debouncedQuery,
+    1,
+    10,
+  );
+
+  // Debounce search query to avoid excessive API calls
+  useEffect(() => {
+    const timerId = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(timerId);
+  }, [searchQuery]);
+
+  // Update parent component with search results
+  useEffect(() => {
+    if (debouncedQuery && properties && onSearchResults) {
+      onSearchResults(properties);
+    } else if (!debouncedQuery && onSearchCleared) {
+      onSearchCleared();
+    }
+  }, [properties, debouncedQuery, onSearchResults, onSearchCleared]);
 
   const filters: Filter[] = [
     { id: "recent", label: "Recent" },
@@ -49,20 +85,40 @@ const PropertySearch: React.FC = () => {
 
   const handleFilterPress = (filterId: Exclude<FilterId, null>): void => {
     setActiveFilter(activeFilter === filterId ? null : filterId);
-    // Here you would eventually implement the actual filtering logic
+    // Refetch with current query and updated filter
+    if (debouncedQuery) {
+      refetch();
+    }
   };
 
   const applyFilters = (): void => {
-    // Here you would implement the logic to apply the filters
+    // Apply the filters and refetch
     console.log("Applying filters:", {
       incidentSeverity: incidentSeverityValues,
       incidentStatus: incidentStatusValues,
     });
+
+    // Refetch with current query and filters
+    if (debouncedQuery) {
+      refetch();
+    }
   };
 
   const resetFilters = (): void => {
     setIncidentSeverityValues([]);
     setIncidentStatusValues([]);
+  };
+
+  const handleSearchInputChange = (text: string) => {
+    setSearchQuery(text);
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
+    setDebouncedQuery("");
+    if (onSearchCleared) {
+      onSearchCleared();
+    }
   };
 
   const incidentSeverities: IncidentSeverity[] = [
@@ -79,13 +135,28 @@ const PropertySearch: React.FC = () => {
   ];
 
   return (
-    <ThemedView>
+    <View>
       <View className="flex flex-row items-center w-full gap-2">
         <Input className="w-11/12 rounded-2xl border">
           <InputSlot className="pl-3">
-            <InputIcon as={SearchIcon} />
+            {isLoading ? (
+              <ActivityIndicator size="small" color={Colors.light.tint} />
+            ) : (
+              <InputIcon as={SearchIcon} />
+            )}
           </InputSlot>
-          <InputField placeholder="Search Properties..." />
+          <InputField
+            placeholder="Search Properties..."
+            value={searchQuery}
+            onChangeText={handleSearchInputChange}
+          />
+          {searchQuery ? (
+            <InputSlot>
+              <TouchableOpacity onPress={clearSearch}>
+                <Ionicons name="close-circle" size={18} color="gray" />
+              </TouchableOpacity>
+            </InputSlot>
+          ) : null}
         </Input>
 
         <Menu
@@ -190,7 +261,13 @@ const PropertySearch: React.FC = () => {
           </Pressable>
         ))}
       </View>
-    </ThemedView>
+
+      {error && (
+        <Text className="text-red-500 mt-2 px-1">
+          Error searching properties: {error.message}
+        </Text>
+      )}
+    </View>
   );
 };
 

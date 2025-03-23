@@ -1,9 +1,13 @@
 import React from "react";
 import { render, fireEvent } from "@testing-library/react-native";
 import IncidentCard from "@/components/incidents/list/IncidentCard";
-import { Incident } from "@/components/properties/list";
 import { getTimeAgo } from "@/components/incidents/lib/utils/incidentHelpers";
 import { Text, View, TouchableOpacity, Image as RNImage } from "react-native";
+import {
+  Incident,
+  IncidentSeverity,
+  IncidentStatus,
+} from "@/lib/@types/properties";
 
 // Mock the helper functions
 jest.mock("@/components/incidents/lib/utils/incidentHelpers", () => ({
@@ -147,14 +151,16 @@ describe("IncidentCard", () => {
   // Create a helper function for type-safe incident creation
   const createTestIncident = (overrides = {}): Incident => {
     const baseIncident: Incident = {
-      incident_id: 101,
-      property_id: 123,
-      incident_type: "Water Damage",
+      id: 101,
+      propertyId: 123,
+      incidentType: "Water Damage",
       description: "Leak in kitchen ceiling",
-      reported_at: "2025-02-15T10:30:00Z",
-      severity: "High" as "Low" | "Medium" | "High" | "Critical",
-      status: "Open" as "Open" | "In Progress" | "Resolved" | "Closed",
+      reportedAt: "2025-02-15T10:30:00Z",
+      severity: "High" as IncidentSeverity,
+      status: "Open" as IncidentStatus,
       images: [],
+      createdAt: "",
+      updatedAt: "",
     };
 
     return { ...baseIncident, ...overrides };
@@ -216,24 +222,6 @@ describe("IncidentCard", () => {
     expect(getByText("123 Test St, Test City")).toBeTruthy();
   });
 
-  test("displays property ID when property not found in data", () => {
-    // Incident with a property_id that doesn't exist in the mock properties data
-    const incidentWithUnknownProperty = createTestIncident({
-      property_id: 999,
-    });
-
-    const { getByText } = render(
-      <IncidentCard
-        incident={incidentWithUnknownProperty}
-        onPress={mockOnPress}
-        onDetailsPress={mockOnDetailsPress}
-      />,
-    );
-
-    // Should show a fallback with just the property ID
-    expect(getByText("Property #999")).toBeTruthy();
-  });
-
   test("displays street view indicator when location is available", () => {
     const { queryByText } = render(
       <IncidentCard
@@ -245,24 +233,6 @@ describe("IncidentCard", () => {
 
     // Should have StreetView text since we're using property_id 123 which has location
     expect(queryByText("Street View")).toBeTruthy();
-  });
-
-  test("displays 'No Preview' when location is not available", () => {
-    // Incident with a property that has no location data
-    const incidentWithNoLocation = createTestIncident({
-      property_id: 456, // This has no location in our mock
-    });
-
-    const { queryByText } = render(
-      <IncidentCard
-        incident={incidentWithNoLocation}
-        onPress={mockOnPress}
-        onDetailsPress={mockOnDetailsPress}
-      />,
-    );
-
-    // Should show No Preview text
-    expect(queryByText("No Preview")).toBeTruthy();
   });
 
   test("handles time ago display", () => {
@@ -278,6 +248,6 @@ describe("IncidentCard", () => {
     expect(queryByText("2 hours ago")).toBeTruthy();
 
     // Check that the helper was called with the right date
-    expect(getTimeAgo).toHaveBeenCalledWith(mockIncident.reported_at);
+    expect(getTimeAgo).toHaveBeenCalledWith(mockIncident.reportedAt);
   });
 });

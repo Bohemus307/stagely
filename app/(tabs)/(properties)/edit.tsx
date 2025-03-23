@@ -4,8 +4,8 @@ import { useLocalSearchParams } from "expo-router";
 import { ThemedView } from "@/components/ThemedView";
 import { Spinner } from "@/components/ui/spinner";
 import { properties } from "@/components/properties/data/properties";
-import { Property } from "@/components/properties/list";
 import BackButton from "@/components/BackButton";
+import { Property } from "@/lib/@types/properties";
 
 const PropertyEditScreen = () => {
   const { propertyId } = useLocalSearchParams();
@@ -20,7 +20,7 @@ const PropertyEditScreen = () => {
         const fetchedProperty = properties.find((p) => p.property_id === id);
 
         if (fetchedProperty) {
-          setProperty(fetchedProperty);
+          setProperty(fetchedProperty as unknown as Property);
         }
       } catch (error) {
         console.error("Error fetching property:", error);

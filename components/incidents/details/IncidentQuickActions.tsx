@@ -1,10 +1,10 @@
 import React from "react";
-import { Incident } from "../data/incidents";
 import { Box } from "@/components/ui/box";
 import { VStack } from "@/components/ui/vstack";
 import { HStack } from "@/components/ui/hstack";
 import { Button, ButtonText } from "@/components/ui/button";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Incident } from "@/lib/@types/properties";
 
 interface IncidentActionProps {
   incident: Incident;

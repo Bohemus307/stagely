@@ -9,7 +9,7 @@ import { Pressable } from "@/components/ui/pressable";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Box } from "@/components/ui/box";
 import Constants from "expo-constants";
-import { Property } from ".";
+import { Property } from "@/lib/@types/properties";
 
 // Props for components
 interface PropertyCardProps {
@@ -64,16 +64,15 @@ const StreetViewImage: React.FC<StreetViewImageProps> = ({
 
 const PropertyCard: React.FC<PropertyCardProps> = ({
   property,
-  onPress,
   onDetailsPress,
   onPhotosPress,
   onDocumentsPress,
 }) => {
   // Initialize with true if there's no valid location data
   const [streetViewError, setStreetViewError] = useState(
-    !property.location ||
-      typeof property.location.latitude !== "number" ||
-      typeof property.location.longitude !== "number",
+    !property.latitude ||
+      typeof property.latitude !== "number" ||
+      typeof property.longitude !== "number",
   );
 
   // Count active incidents
@@ -82,10 +81,6 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
       (incident) =>
         incident.status !== "Resolved" && incident.status !== "Closed",
     ).length || 0;
-
-  // For debugging
-  console.log("Property location:", property.location);
-  console.log("Street View Error State:", streetViewError);
 
   // Determine status badge color and text based on property status
   const getStatusBadge = () => {
@@ -109,13 +104,13 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
     console.log("Rendering property image");
 
     // If we have location and street view hasn't errored
-    if (property.location && !streetViewError) {
+    if (property.latitude && !streetViewError) {
       console.log("Attempting to use Street View");
       return (
         <Box className="relative h-full w-full">
           <StreetViewImage
-            latitude={property.location.latitude}
-            longitude={property.location.longitude}
+            latitude={property.latitude}
+            longitude={property.longitude}
             size={{ width: 200, height: 200 }}
             onError={() => {
               console.log("Setting street view error to true");
@@ -131,9 +126,6 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
     return (
       <Box className="h-full w-full bg-secondary-100 flex items-center justify-center flex-col">
         <IconSymbol name="eye.slash" size={24} color="gray" />
-        <Text className="text-xs text-gray-500 mt-1 text-center">
-          Preview Unavailable
-        </Text>
       </Box>
     );
   };
@@ -147,7 +139,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           {renderPropertyImage()}
 
           {/* Show Street View indicator if using street view */}
-          {!streetViewError && property.location && (
+          {!streetViewError && property.latitude && (
             <Badge className="absolute bottom-0 left-0 bg-primary-400/70 text-white text-xs py-0.5 px-1 rounded-tr">
               <Text className="text-white text-xs">Street View</Text>
             </Badge>
@@ -167,13 +159,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
             {property.address}
           </Heading>
           <HStack className="items-center text-sm text-primary-500 mt-1">
-            {/* <IconSymbol
-              name="location.fill"
-              size={14}
-              color={Colors.light.tabIconDefault}
-            /> */}
             <Text className="ml-1">
-              {property.city}, {property.state} {property.zip_code}
+              {property.city}, {property.state} {property.zipCode}
             </Text>
           </HStack>
           <HStack className="items-center mt-2 space-x-2">

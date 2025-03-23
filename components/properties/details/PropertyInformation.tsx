@@ -3,14 +3,14 @@ import { Badge } from "@/components/ui/badge";
 import { Box } from "@/components/ui/box";
 import { Heading } from "@/components/ui/heading";
 import { HStack } from "@/components/ui/hstack";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import PropertyActions from "./PropertyActions";
 import PropertyDetails from "./PropertyDetails";
 import QuickActions from "./QuickActions";
 import RecentIncidents from "./RecentIncidents";
-import { Property } from "../list";
+
 import { getStatusBadge } from "../lib/utils/detailsHelpers";
 import { ThemedText } from "@/components/ThemedText";
+import { Property } from "@/lib/@types/properties";
 
 type Props = {
   property: Property;
@@ -21,22 +21,13 @@ const PropertyInformation = ({ property }: Props) => {
 
   return (
     <Box className="p-4">
-      <HStack className="justify-between items-start mb-2">
-        <Heading className="text-xl font-bold">
+      <HStack className="justify-between items-start mb-4">
+        <Heading className="text-lg w-3/4 font-bold">
           <ThemedText>{property.address}</ThemedText>
         </Heading>
         <Badge className={`${statusBadge.color} py-1 px-3 rounded-full`}>
           <ThemedText>{statusBadge.text}</ThemedText>
         </Badge>
-      </HStack>
-
-      <HStack className="items-center mb-4">
-        <IconSymbol name="location.fill" size={16} color="gray" />
-        <ThemedText className="ml-1 text-gray-700">
-          {property.city}
-          {property.state ? `, ${property.state}` : ""} {property.zip_code},{" "}
-          {property.country}
-        </ThemedText>
       </HStack>
 
       {/* Property Actions */}

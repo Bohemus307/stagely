@@ -1,39 +1,42 @@
-import { PropertyStatus } from "../../list";
 // Determine status badge color and text based on property status
-export const getStatusBadge = (status: PropertyStatus) => {
+export const getStatusBadge = (status: string) => {
   switch (status) {
-    case PropertyStatus.Archived:
+    case "Archived":
       return { text: "Archived", color: "bg-gray-400/80" };
-    case PropertyStatus.Maintenance:
+    case "Maintenance":
       return { text: "Maintenance", color: "bg-amber-400/80" };
-    case PropertyStatus.Active:
+    case "Active":
     default:
       return { text: "Active", color: "bg-green-400/80" };
   }
 };
 
-// Format date for display with timezone handling
-export const formatDate = (dateString: string) => {
+/**
+ * Format date for display
+ * Handles ISO date strings like "2025-03-20T15:59:43.516Z"
+ */
+export const formatDate = (dateString: string): string => {
+  // Return early if dateString is empty or undefined
+  if (!dateString) return "Unknown date";
+
   try {
-    // Parse the date and ensure it's treated as UTC
+    // Create a date object from the string
     const date = new Date(dateString);
 
-    // For ISO format strings that don't specify timezone, force UTC interpretation
-    if (dateString.indexOf("Z") === -1 && dateString.indexOf("+") === -1) {
-      // Adjust the date by adding the local timezone offset
-      const userTimezoneOffset = date.getTimezoneOffset() * 60000;
-      date.setTime(date.getTime() + userTimezoneOffset);
+    // Validate the date - if invalid, throw an error to trigger the catch block
+    if (isNaN(date.getTime())) {
+      throw new Error("Invalid date format");
     }
 
+    // Format using toLocaleDateString with desired options
     return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
-      timeZone: "UTC", // Always use UTC for display to ensure consistency
     });
   } catch (error) {
-    console.error("Error formatting date:", error);
-    return "Invalid date";
+    console.error("Error formatting date:", error, "for string:", dateString);
+    return dateString; // Return the original string as fallback
   }
 };
 

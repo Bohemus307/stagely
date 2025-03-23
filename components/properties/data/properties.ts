@@ -1,6 +1,6 @@
-import { Property, PropertyStatus } from "../list";
+import { PropertyStatus } from "@/lib/@types/properties";
 
-export const properties: Property[] = [
+export const properties = [
   {
     property_id: 1,
     address: "588 Cortez St",

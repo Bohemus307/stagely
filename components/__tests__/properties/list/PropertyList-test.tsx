@@ -3,11 +3,10 @@
  */
 import React from "react";
 import { render, fireEvent } from "@testing-library/react-native";
-import PropertyList, {
-  Property,
-  PropertyStatus,
-} from "@/components/properties/list";
+
 import { router } from "expo-router";
+import PropertyList from "@/components/properties/list";
+import { PropertyStatus, Property } from "@/lib/@types/properties";
 
 // Mock dependencies
 jest.mock("expo-router", () => ({
@@ -26,21 +25,22 @@ describe("PropertyList Component", () => {
     id: number,
     status = PropertyStatus.Active,
   ): Property => ({
-    property_id: id,
+    id: id,
     address: `${id} Test Street`,
     city: "Test City",
     state: "TS",
-    zip_code: "12345",
+    zipCode: "12345",
     country: "Test Country",
-    location: {
-      latitude: 37.7749,
-      longitude: -122.4194,
-    },
+    latitude: 37.7749,
+    longitude: -122.4194,
     status,
-    images: [],
     incidents: [],
-    created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-02-01T00:00:00Z",
+    createdAt: "2025-01-01T00:00:00Z",
+    updatedAt: "2025-02-01T00:00:00Z",
+    propertyId: 0,
+    userId: 0,
+    incidentCount: 0,
+    openIncidentCount: 0,
   });
 
   const mockProperties = [
@@ -96,7 +96,7 @@ describe("PropertyList Component", () => {
 
     expect(router.push).toHaveBeenCalledWith({
       pathname: "/(tabs)/(properties)/details",
-      params: { propertyId: mockProperties[1].property_id },
+      params: { propertyId: mockProperties[1].id },
     });
   });
 
@@ -111,7 +111,7 @@ describe("PropertyList Component", () => {
 
     expect(router.push).toHaveBeenCalledWith({
       pathname: "/(tabs)/(properties)/photos",
-      params: { propertyId: mockProperties[2].property_id },
+      params: { propertyId: mockProperties[2].id },
     });
   });
 

@@ -2,7 +2,7 @@ import React from "react";
 import { render } from "@testing-library/react-native";
 import PropertyDetails from "@/components/properties/details/PropertyDetails";
 import { formatDate } from "@/components/properties/lib/utils/detailsHelpers";
-import { Property, PropertyStatus } from "@/components/properties/list";
+import { Property, PropertyStatus } from "@/lib/@types/properties";
 
 // Mock the formatDate helper
 jest.mock("@/components/properties/lib/utils/detailsHelpers.ts", () => ({
@@ -17,21 +17,22 @@ describe("PropertyDetails", () => {
 
   // Sample property data
   const mockProperty: Property = {
-    property_id: 12345,
+    id: 12345,
     address: "123 Test Street",
     city: "Test City",
     state: "TS",
-    zip_code: "12345",
+    zipCode: "12345",
     country: "Test Country",
-    location: {
-      latitude: 37.7749,
-      longitude: -122.4194,
-    },
+    latitude: 37.7749,
+    longitude: -122.4194,
     status: PropertyStatus.Active,
-    images: [],
     incidents: [],
-    created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-02-01T00:00:00Z",
+    createdAt: "2025-01-01T00:00:00Z",
+    updatedAt: "2025-02-01T00:00:00Z",
+    propertyId: 0,
+    userId: 0,
+    incidentCount: 0,
+    openIncidentCount: 0,
   };
 
   test("renders correctly with property data", () => {
@@ -81,7 +82,7 @@ describe("PropertyDetails", () => {
   test("renders with extremely large property ID", () => {
     const propertyWithLargeId = {
       ...mockProperty,
-      property_id: 999999999999999,
+      id: 999999999999999,
     };
 
     const { getByText } = render(
@@ -102,7 +103,7 @@ describe("PropertyDetails", () => {
     render(<PropertyDetails property={propertyWithStringDates as Property} />);
 
     // Verify formatDate was called with the string dates
-    expect(formatDate).toHaveBeenNthCalledWith(1, "January 1, 2025");
-    expect(formatDate).toHaveBeenNthCalledWith(2, "February 1, 2025");
+    expect(formatDate).toHaveBeenNthCalledWith(1, "2025-01-01T00:00:00Z");
+    expect(formatDate).toHaveBeenNthCalledWith(2, "2025-02-01T00:00:00Z");
   });
 });

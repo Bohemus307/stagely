@@ -7,59 +7,7 @@ import { Colors } from "@/constants/Colors";
 import { Fab, FabIcon } from "@/components/ui/fab";
 import { AddIcon } from "@/components/ui/icon";
 import { Box } from "@/components/ui/box";
-
-// Types for data structure
-export interface Location {
-  latitude: number;
-  longitude: number;
-}
-
-export interface PropertyImage {
-  image_id: number;
-  image_url: string;
-  caption?: string;
-  taken_at: string;
-}
-
-export interface IncidentImage {
-  image_id: number;
-  image_url: string;
-  caption?: string;
-  taken_at: string;
-}
-
-export interface Incident {
-  property_id: number;
-  incident_id: number;
-  incident_type: string;
-  description: string;
-  reported_at: string;
-  resolved_at?: string;
-  severity: "Low" | "Medium" | "High" | "Critical";
-  status: "Open" | "In Progress" | "Resolved" | "Closed";
-  images: IncidentImage[];
-}
-
-export interface Property {
-  property_id: number;
-  address: string;
-  city: string;
-  state: string;
-  zip_code: string;
-  country: string;
-  location: Location;
-  status: PropertyStatus;
-  images?: PropertyImage[];
-  incidents?: Incident[];
-  created_at: string;
-  updated_at: string;
-}
-
-export enum PropertyStatus {
-  Active = "Active",
-  Maintenance = "Maintenance",
-  Archived = "Archived",
-}
+import { Property } from "@/lib/@types/properties";
 
 export interface PropertyListProps {
   properties: Property[];
@@ -67,9 +15,12 @@ export interface PropertyListProps {
 }
 
 const PropertyList: React.FC<PropertyListProps> = ({
-  properties,
+  properties = [],
   onSelectProperty,
 }) => {
+  // Make sure properties is an array before logging length
+  const safeProperties = Array.isArray(properties) ? properties : [];
+
   const handlePropertyPress = (property: Property) => {
     if (onSelectProperty) {
       onSelectProperty(property);
@@ -77,41 +28,45 @@ const PropertyList: React.FC<PropertyListProps> = ({
   };
 
   const handleDetailsPress = (property: Property) => {
-    console.log("PROPS", property);
+    console.log("Navigate to details for property:", property.id);
     router.push({
       pathname: "/(tabs)/(properties)/details",
-      params: { propertyId: property.property_id },
+      params: { propertyId: property.id },
     });
   };
 
   const handlePhotosPress = (property: Property) => {
-    console.log("PROPS", property);
+    console.log("Navigate to photos for property:", property.id);
     router.push({
       pathname: "/(tabs)/(properties)/photos",
-      params: { propertyId: property.property_id },
+      params: { propertyId: property.id },
     });
   };
 
   const handleDocumentsPress = (property: Property) => {
-    console.log("PROPS", property);
+    console.log("Navigate to documents");
     router.push("/(tabs)/(properties)/documents");
   };
 
   const handleAddProperty = () => {
+    console.log("Navigate to add property");
     router.push("/(tabs)/(properties)/addProperty");
   };
 
-  const renderProperty = ({ item }: { item: Property }) => (
-    <View className="mb-4">
-      <PropertyCard
-        property={item}
-        onPress={() => handlePropertyPress(item)}
-        onDetailsPress={handleDetailsPress}
-        onPhotosPress={handlePhotosPress}
-        onDocumentsPress={handleDocumentsPress}
-      />
-    </View>
-  );
+  const renderProperty = ({ item }: { item: Property }) => {
+    console.log("Rendering property:", item.id);
+    return (
+      <View className="mb-4">
+        <PropertyCard
+          property={item}
+          onPress={() => handlePropertyPress(item)}
+          onDetailsPress={() => handleDetailsPress(item)}
+          onPhotosPress={() => handlePhotosPress(item)}
+          onDocumentsPress={() => handleDocumentsPress(item)}
+        />
+      </View>
+    );
+  };
 
   const EmptyListComponent = () => (
     <View className="items-center justify-center p-8 flex-1">
@@ -135,9 +90,9 @@ const PropertyList: React.FC<PropertyListProps> = ({
   return (
     <Box className="flex-1 relative">
       <FlatList
-        data={properties}
+        data={safeProperties}
         renderItem={renderProperty}
-        keyExtractor={(item) => item.property_id.toString()}
+        keyExtractor={(item) => item?.id.toString()}
         contentContainerStyle={{
           paddingHorizontal: 15,
           paddingTop: 15,

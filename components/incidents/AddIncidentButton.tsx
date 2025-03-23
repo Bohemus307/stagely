@@ -21,8 +21,8 @@ import { Badge } from "@/components/ui/badge";
 import { Icon, CloseIcon } from "@/components/ui/icon";
 import { Image } from "@/components/ui/image";
 import Constants from "expo-constants";
-import { properties } from "../properties/data/properties";
-import { Property } from "../properties/list";
+import { useGetProperties } from "@/hooks/properties/useGetProperties";
+import { Property } from "@/lib/@types/properties";
 
 export default function AddIncidentButton() {
   const router = useRouter();
@@ -30,6 +30,16 @@ export default function AddIncidentButton() {
   const [nearestProperty, setNearestProperty] = useState<Property | null>(null);
   const [streetViewError, setStreetViewError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Use the properties hook to fetch data
+  const {
+    properties: propertiesData,
+    isLoading: propertiesLoading,
+    error: propertiesError,
+  } = useGetProperties({
+    status: "Active", // Optionally filter by active properties
+    limit: 100, // Get a reasonable number of properties to search among
+  });
 
   // Get Google Maps API key from Expo Constants
   const GOOGLE_MAPS_API_KEY = Constants.expoConfig?.extra?.googleMapsKey || "";
@@ -39,18 +49,18 @@ export default function AddIncidentButton() {
     latitude: number,
     longitude: number,
   ): Property | null => {
-    if (!properties || properties.length === 0) {
+    if (!propertiesData?.data || propertiesData.data.length === 0) {
       return null;
     }
 
     let nearestProp: Property | null = null;
     let minDistance = Number.MAX_VALUE;
 
-    properties.forEach((property) => {
-      if (property.location) {
+    propertiesData.data.forEach((property: Property) => {
+      if (property.longitude && property.latitude) {
         // Simple distance calculation
-        const latDiff = Math.abs(latitude - property.location.latitude);
-        const lngDiff = Math.abs(longitude - property.location.longitude);
+        const latDiff = Math.abs(latitude - property.latitude);
+        const lngDiff = Math.abs(longitude - property.longitude);
         const distance = latDiff + lngDiff;
 
         if (distance < minDistance) {
@@ -66,6 +76,33 @@ export default function AddIncidentButton() {
   const handlePress = async () => {
     setIsLoading(true);
     setStreetViewError(false);
+
+    // Check if properties are still loading
+    if (propertiesLoading) {
+      Alert.alert(
+        "Please Wait",
+        "Still loading property data. Please try again in a moment.",
+      );
+      setIsLoading(false);
+      return;
+    }
+
+    // Check if there was an error loading properties
+    if (propertiesError) {
+      Alert.alert(
+        "Data Error",
+        "There was a problem loading property data. Please try again later.",
+        [
+          {
+            text: "View All Properties",
+            onPress: () => router.push("/(tabs)/(properties)"),
+          },
+          { text: "Cancel", style: "cancel" },
+        ],
+      );
+      setIsLoading(false);
+      return;
+    }
 
     try {
       // Request permission to access location
@@ -100,9 +137,10 @@ export default function AddIncidentButton() {
 
         // Pre-check if the property has valid location data
         setStreetViewError(
-          !nearest.location ||
-            typeof nearest.location.latitude !== "number" ||
-            typeof nearest.location.longitude !== "number",
+          !nearest.latitude ||
+            !nearest.longitude ||
+            typeof nearest.latitude !== "number" ||
+            typeof nearest.longitude !== "number",
         );
 
         setShowModal(true);
@@ -154,8 +192,12 @@ export default function AddIncidentButton() {
 
   // Function to render the property image or unavailable placeholder
   const renderPropertyImage = () => {
-    if (nearestProperty?.location && !streetViewError) {
-      const streetViewUrl = `https://maps.googleapis.com/maps/api/streetview?size=200x200&location=${nearestProperty.location.latitude},${nearestProperty.location.longitude}&key=${GOOGLE_MAPS_API_KEY}`;
+    if (
+      nearestProperty?.latitude &&
+      nearestProperty?.longitude &&
+      !streetViewError
+    ) {
+      const streetViewUrl = `https://maps.googleapis.com/maps/api/streetview?size=200x200&location=${nearestProperty.latitude},${nearestProperty.longitude}&key=${GOOGLE_MAPS_API_KEY}`;
 
       return (
         <Box className="relative h-full w-full">
@@ -196,6 +238,7 @@ export default function AddIncidentButton() {
       <Button
         className="h-16 w-1/2 rounded-lg flex flex-col items-center justify-center shadow-sm bg-background-50"
         onPress={handlePress}
+        isDisabled={propertiesLoading} // Disable button while properties are loading
       >
         <VStack className="items-center justify-center">
           <IconSymbol
@@ -204,24 +247,14 @@ export default function AddIncidentButton() {
             color="grey"
           />
           <ButtonText className="text-primary-500 mt-1">
-            {isLoading ? "Locating..." : "New Incident"}
+            {isLoading
+              ? "Locating..."
+              : propertiesLoading
+                ? "Loading..."
+                : "New Incident"}
           </ButtonText>
         </VStack>
       </Button>
-      {/* <Button
-        className="h-16 w-1/2 rounded-lg flex flex-col items-center justify-center shadow-sm bg-background-50"
-        onPress={handlePress}
-        isDisabled={isLoading}
-      >
-        <IconSymbol
-          size={18}
-          name="exclamationmark.triangle.fill"
-          color="grey"
-        />
-        <ButtonText className="text-primary-700">
-          {isLoading ? "Locating..." : "New Incident"}
-        </ButtonText>
-      </Button> */}
 
       {/* Property Confirmation Modal */}
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} size="md">
@@ -256,7 +289,7 @@ export default function AddIncidentButton() {
                     </Heading>
                     <Text className="text-typography-500 text-sm">
                       {nearestProperty.city}, {nearestProperty.state}{" "}
-                      {nearestProperty.zip_code}
+                      {nearestProperty.zipCode}
                     </Text>
 
                     <HStack className="mt-2 space-x-2">
@@ -264,10 +297,10 @@ export default function AddIncidentButton() {
                         <Badge
                           className={
                             nearestProperty.status === "Active"
-                              ? "bg-green-500"
+                              ? "bg-green-500 rounded-2xl"
                               : nearestProperty.status === "Maintenance"
-                                ? "bg-amber-500"
-                                : "bg-gray-500"
+                                ? "bg-amber-500 rounded-2xl"
+                                : "bg-gray-500 rounded-2xl"
                           }
                         >
                           <Text className="text-white text-xs">

@@ -1,26 +1,5 @@
-//Types for Data Structure
-export interface IncidentImage {
-  image_id: number;
-  image_url: string;
-  caption?: string;
-  taken_at: string;
-}
-
-export interface Incident {
-  incident_id: number;
-  property_id: number; // Reference to the property
-  incident_type: string;
-  description: string;
-  reported_at: string;
-  resolved_at?: string;
-  severity: "Low" | "Medium" | "High" | "Critical";
-  status: "Open" | "In Progress" | "Resolved" | "Closed";
-  images: IncidentImage[];
-  assigned_to?: string;
-  notes?: string;
-}
 // Sample incidents data
-export const incidents: Incident[] = [
+export const incidents = [
   {
     incident_id: 1,
     property_id: 1,
