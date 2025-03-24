@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { SafeAreaView, Text } from "react-native";
+import { SafeAreaView, Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import { ThemedView } from "@/components/ThemedView";
 import { Badge } from "@/components/ui/badge";
 import { Box } from "@/components/ui/box";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -23,15 +22,15 @@ const PropertyDetailsScreen = () => {
   console.log("PROPERTY", property, "ID", propertyId);
   if (isLoading) {
     return (
-      <ThemedView className="flex-1 justify-center items-center">
+      <View className="flex-1 justify-center items-center">
         <Spinner size={"large"} />
-      </ThemedView>
+      </View>
     );
   }
 
   if (error || !property) {
     return (
-      <ThemedView className="flex-1 justify-center items-center">
+      <View className="flex-1 justify-center items-center">
         <Text>
           {error
             ? `Error: ${error.message}`
@@ -43,41 +42,39 @@ const PropertyDetailsScreen = () => {
         >
           <Text className="text-white">Go Back</Text>
         </Button>
-      </ThemedView>
+      </View>
     );
   }
 
   return (
-    <ThemedView className="flex-1">
-      <SafeAreaView className="flex-1">
-        <BackButton />
+    <SafeAreaView className="flex-1">
+      <BackButton />
 
-        {/* Street View Image */}
-        {property.latitude && property.longitude && !streetViewError ? (
-          <Box className="h-48 w-full px-2">
-            <StreetViewImage
-              latitude={property.latitude}
-              longitude={property.longitude}
-              size={{ width: 600, height: 300 }}
-              onError={() => setStreetViewError(true)}
-            />
-            <Badge className="absolute bottom-2 left-4 py-1 px-2 rounded">
-              <Text className=" text-xs">Street View</Text>
-            </Badge>
-          </Box>
-        ) : (
-          <Box className="h-48 w-full flex items-center justify-center">
-            <IconSymbol name="eye.slash" size={32} color="gray" />
-            <Text className="text-sm text-gray-500 mt-2">
-              Preview Unavailable
-            </Text>
-          </Box>
-        )}
+      {/* Street View Image */}
+      {property.latitude && property.longitude && !streetViewError ? (
+        <Box className="h-48 w-full px-2">
+          <StreetViewImage
+            latitude={property.latitude}
+            longitude={property.longitude}
+            size={{ width: 600, height: 300 }}
+            onError={() => setStreetViewError(true)}
+          />
+          <Badge className="absolute bottom-2 left-4 py-1 px-2 rounded">
+            <Text className=" text-xs">Street View</Text>
+          </Badge>
+        </Box>
+      ) : (
+        <Box className="h-48 w-full flex items-center justify-center">
+          <IconSymbol name="eye.slash" size={32} color="gray" />
+          <Text className="text-sm text-gray-500 mt-2">
+            Preview Unavailable
+          </Text>
+        </Box>
+      )}
 
-        {/* Property Information */}
-        <PropertyInformation property={property} />
-      </SafeAreaView>
-    </ThemedView>
+      {/* Property Information */}
+      <PropertyInformation property={property} />
+    </SafeAreaView>
   );
 };
 

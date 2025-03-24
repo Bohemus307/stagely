@@ -19,7 +19,6 @@ import { Heading } from "@/components/ui/heading";
 import { Badge } from "@/components/ui/badge";
 import { Image } from "@/components/ui/image";
 
-import { ThemedView } from "@/components/ThemedView";
 import { properties } from "@/components/properties/data/properties";
 import { Property } from "@/lib/@types/properties";
 
@@ -305,35 +304,31 @@ export default function SmartPhotoCapture(): React.ReactElement {
   // If permissions still loading
   if (!permission) {
     return (
-      <ThemedView className="flex-1">
-        <SafeAreaView className="flex-1 flex-col">
-          <View className="flex-1 justify-center items-center">
-            <Text className="text-typography-700">
-              Requesting camera permissions...
-            </Text>
-          </View>
-        </SafeAreaView>
-      </ThemedView>
+      <SafeAreaView className="flex-1 flex-col">
+        <View className="flex-1 justify-center items-center">
+          <Text className="text-typography-700">
+            Requesting camera permissions...
+          </Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   // If permissions denied
   if (!permission.granted) {
     return (
-      <ThemedView className="flex-1">
-        <SafeAreaView className="flex-1 flex-col">
-          <View className="flex-1 justify-center items-center">
-            {/* <IconSymbol name="camera.slash" size={48} color="gray" /> */}
-            <Text className="text-typography-700 mt-4">
-              Camera access denied. Please enable camera permissions in your
-              device settings.
-            </Text>
-            <Button className="mt-4" onPress={requestPermission}>
-              <ButtonText>Grant Permission</ButtonText>
-            </Button>
-          </View>
-        </SafeAreaView>
-      </ThemedView>
+      <SafeAreaView className="flex-1 flex-col">
+        <View className="flex-1 justify-center items-center">
+          {/* <IconSymbol name="camera.slash" size={48} color="gray" /> */}
+          <Text className="text-typography-700 mt-4">
+            Camera access denied. Please enable camera permissions in your
+            device settings.
+          </Text>
+          <Button className="mt-4" onPress={requestPermission}>
+            <ButtonText>Grant Permission</ButtonText>
+          </Button>
+        </View>
+      </SafeAreaView>
     );
   }
 

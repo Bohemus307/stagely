@@ -110,7 +110,7 @@ const ConversationScreen = () => {
 
       return `${hours}:${formattedMinutes} ${ampm}`;
     } catch (e) {
-      return "";
+      return `Error: ${e}`;
     }
   };
 

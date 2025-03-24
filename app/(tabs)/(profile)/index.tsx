@@ -7,9 +7,8 @@ import { useAuth0 } from "react-native-auth0";
 import ProfileHeader from "@/components/profile/details/ProfileHeader";
 import ProfileMenuItem from "@/components/profile/details/ProfileMenuItem";
 import { Spinner } from "@/components/ui/spinner";
-import Header from "@/components/Header";
-import { ThemedView } from "@/components/ThemedView";
 import { useAuthUser } from "@/hooks/useAuthUser";
+import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
 
 const ProfileScreen = () => {
   const authUser = useAuthUser();
@@ -76,8 +75,7 @@ const ProfileScreen = () => {
   };
 
   return (
-    <ThemedView className="flex-1">
-      <Header />
+    <ResponsiveScreenWrapper>
       <View className="flex-1">
         <View className="mt-4 shadow-sm">
           <View className="">
@@ -153,7 +151,7 @@ const ProfileScreen = () => {
           </Box>
         </View>
       </View>
-    </ThemedView>
+    </ResponsiveScreenWrapper>
   );
 };
 

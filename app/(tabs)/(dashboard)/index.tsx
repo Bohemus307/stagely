@@ -1,19 +1,14 @@
-import ParallaxScrollView from "@/components/ParallaxScrollView";
 import MetricsCard from "@/components/dashboard/MetricsCard";
 import RecentActivity from "@/components/dashboard/RecentActivity";
 import QuickActions from "@/components/dashboard/QuickActions";
-import { ThemedView } from "@/components/ThemedView";
+import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
 
 export default function HomeScreen() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: "#DBE5EA", dark: "#1D3D47" }}
-    >
-      <ThemedView>
-        <MetricsCard />
-        <RecentActivity />
-        <QuickActions />
-      </ThemedView>
-    </ParallaxScrollView>
+    <ResponsiveScreenWrapper>
+      <MetricsCard />
+      <RecentActivity />
+      <QuickActions />
+    </ResponsiveScreenWrapper>
   );
 }
