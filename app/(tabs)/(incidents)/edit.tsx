@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, Text } from "react-native";
+import { SafeAreaView, Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
-import { ThemedView } from "@/components/ThemedView";
 import { Spinner } from "@/components/ui/spinner";
 import { incidents } from "@/components/incidents/data/incidents";
 import BackButton from "@/components/BackButton";
@@ -35,28 +34,28 @@ const IncidentEditScreen = () => {
 
   if (loading) {
     return (
-      <ThemedView className="flex-1 justify-center items-center">
+      <View className="flex-1 justify-center items-center">
         <Spinner size={"large"} />
-      </ThemedView>
+      </View>
     );
   }
 
   if (!incident) {
     return (
-      <ThemedView className="flex-1 justify-center items-center">
+      <View className="flex-1 justify-center items-center">
         <BackButton />
         <Text>Incident not found</Text>
-      </ThemedView>
+      </View>
     );
   }
 
   return (
-    <ThemedView className="flex-1">
+    <View className="flex-1">
       <SafeAreaView className="flex-1">
         <BackButton />
         <Text>EDIT</Text>
       </SafeAreaView>
-    </ThemedView>
+    </View>
   );
 };
 

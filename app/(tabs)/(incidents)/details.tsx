@@ -2,13 +2,11 @@ import BackButton from "@/components/BackButton";
 import IncidentDetails from "@/components/incidents/details/IncidentDetails";
 import IncidentPhotos from "@/components/incidents/details/IncidentPhotos";
 
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Alert, SafeAreaView, ScrollView } from "react-native";
+import { Alert, SafeAreaView, ScrollView, View, Text } from "react-native";
 import IncidentNotes from "@/components/incidents/details/IncidentNotes";
 import IncidentActions from "@/components/incidents/details/IncidentQuickActions";
 import { properties } from "@/components/properties/data/properties";
@@ -114,25 +112,25 @@ const IncidentsDetailsScreen = () => {
 
   if (loading) {
     return (
-      <ThemedView className="flex-1 justify-center items-center">
+      <View className="flex-1 justify-center items-center">
         <Spinner size={"large"} />
-      </ThemedView>
+      </View>
     );
   }
 
   if (!incident) {
     return (
-      <ThemedView className="flex-1 justify-center items-center">
-        <ThemedText>Incident not found</ThemedText>
+      <View className="flex-1 justify-center items-center">
+        <Text>Incident not found</Text>
         <Button className="mt-4" onPress={() => router.back()}>
           <ButtonText>Go Back</ButtonText>
         </Button>
-      </ThemedView>
+      </View>
     );
   }
 
   return (
-    <ThemedView className="flex-1">
+    <View className="flex-1">
       <SafeAreaView className="flex-1">
         <BackButton />
         <ScrollView className="flex-1">
@@ -146,13 +144,13 @@ const IncidentsDetailsScreen = () => {
                 onError={() => setStreetViewError(true)}
               />
               <Badge className="absolute bottom-2 left-4 py-1 px-2 rounded">
-                <ThemedText>Incident Location</ThemedText>
+                <Text>Incident Location</Text>
               </Badge>
             </Box>
           ) : (
             <Box className="h-48 w-full flex items-center justify-center">
               <IconSymbol name="eye.slash" size={32} color={"gray"} />
-              <ThemedText>Location Preview Unavailable</ThemedText>
+              <Text>Location Preview Unavailable</Text>
             </Box>
           )}
 
@@ -187,7 +185,7 @@ const IncidentsDetailsScreen = () => {
           />
         </ScrollView>
       </SafeAreaView>
-    </ThemedView>
+    </View>
   );
 };
 

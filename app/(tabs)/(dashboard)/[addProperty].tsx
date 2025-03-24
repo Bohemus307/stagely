@@ -1,7 +1,6 @@
 import React from "react";
 import { View, Alert } from "react-native";
 import { router } from "expo-router";
-import { ThemedView } from "@/components/ThemedView";
 import LocationSearchMap from "@/components/LocationSearchMap";
 import BackButton from "@/components/BackButton";
 import { useCreateProperty } from "@/hooks/properties/useCreateProperty";
@@ -77,13 +76,13 @@ export default function AddProperty() {
   }, [isError, error]);
 
   return (
-    <ThemedView className="flex-1">
+    <>
       <View className="px-5 w-full z-10 shadow-sm">
         <BackButton />
       </View>
       <View className="flex-1 w-full">
         <LocationSearchMap onSaveLocation={handleLocationSave} />
       </View>
-    </ThemedView>
+    </>
   );
 }

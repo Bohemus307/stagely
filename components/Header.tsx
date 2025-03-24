@@ -15,7 +15,7 @@ function Header() {
   const router = useRouter();
 
   return (
-    <View className="flex-row justify-between items-end px-2 py-2 bg-white h-24">
+    <View className="flex-row justify-between items-center px-2 py-2 bg-white">
       <View className="flex-row items-center">
         <TouchableOpacity
           onPress={() => console.log("Image Pressed!")}
