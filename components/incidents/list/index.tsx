@@ -91,7 +91,7 @@ const IncidentList: React.FC<IncidentListProps> = ({
         size="lg"
         placement="bottom right"
         onPress={handleAddIncident}
-        className="mb-14 mr-4"
+        className="mb-24 mr-4"
       >
         <FabIcon size="xl" as={AddIcon} />
       </Fab>

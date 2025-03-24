@@ -109,7 +109,7 @@ const PropertyList: React.FC<PropertyListProps> = ({
         size="lg"
         placement="bottom right"
         onPress={handleAddProperty}
-        className="mb-14 mr-4"
+        className="mb-24 mr-4"
       >
         <FabIcon size="xl" as={AddIcon} />
       </Fab>

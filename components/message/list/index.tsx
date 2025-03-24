@@ -22,6 +22,7 @@ const MessagesList: React.FC<MessageListProps> = ({
 }) => {
   const { user } = useAuth0();
   const [messages, setMessages] = useState<Message[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -99,7 +100,7 @@ const MessagesList: React.FC<MessageListProps> = ({
         size="lg"
         placement="bottom right"
         onPress={handleNewMessage}
-        className="mb-14 mr-4"
+        className="mb-24 mr-4"
       >
         <IconSymbol name="message.fill" size={24} color="white" />
       </Fab>
