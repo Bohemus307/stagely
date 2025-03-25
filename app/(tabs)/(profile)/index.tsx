@@ -11,9 +11,7 @@ import { useAuthUser } from "@/hooks/useAuthUser";
 import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
 
 const ProfileScreen = () => {
-  const authUser = useAuthUser();
-
-  console.log("AUTH USER", authUser);
+  const { auth0User, backendUser } = useAuthUser();
 
   const { user, clearSession, isLoading } = useAuth0();
 
@@ -33,9 +31,6 @@ const ProfileScreen = () => {
       </Box>
     );
   }
-
-  const userData = user!;
-  // const metadata = (userData.user_metadata as UserMetadata) || {};
 
   const handleLogout = async () => {
     try {
@@ -80,8 +75,10 @@ const ProfileScreen = () => {
         <View className="mt-4 shadow-sm">
           <View className="">
             <ProfileHeader
-              name={userData.name || ""}
-              picture={userData.picture}
+              name={auth0User?.name || ""}
+              firstName={backendUser?.firstName}
+              lastName={backendUser?.lastName}
+              picture={backendUser?.profilePictureUrl || auth0User?.picture}
               onEditProfile={navigateToEditProfile}
             />
           </View>

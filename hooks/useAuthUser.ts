@@ -1,6 +1,7 @@
 import { useAuth0 } from "react-native-auth0";
 import { useQuery } from "@tanstack/react-query";
 import Constants from "expo-constants";
+import { User } from "@/lib/@types/properties";
 
 /**
  * Custom hook to fetch authenticated user data from Auth0 and then get
@@ -18,7 +19,7 @@ export const useAuthUser = () => {
     isLoading: backendLoading,
     error: backendError,
     refetch,
-  } = useQuery({
+  } = useQuery<User | null>({
     queryKey: ["user", user?.email],
     queryFn: async () => {
       if (!user?.email || !apiUrl) {
