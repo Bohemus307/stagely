@@ -25,8 +25,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   fallbackPicture,
 }) => {
   return (
-    <Box className="p-2 mr-2 ml-2 rounded-2xl flex flex-col shadow-sm bg-white mt-2">
-      <HStack className="items-center bg-white">
+    <Box className="mr-4 ml-4 p-4 rounded-lg shadow-lg overflow-hidden bg-white">
+      <HStack className="p-4 items-center">
         <Avatar size="lg" className="mr-4">
           {user?.profilePictureUrl || fallbackPicture ? (
             <AvatarImage
