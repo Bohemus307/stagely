@@ -75,10 +75,8 @@ const ProfileScreen = () => {
         <View className="mt-4 shadow-sm">
           <View className="">
             <ProfileHeader
-              name={auth0User?.name || ""}
-              firstName={backendUser?.firstName}
-              lastName={backendUser?.lastName}
-              picture={backendUser?.profilePictureUrl || auth0User?.picture}
+              user={backendUser}
+              fallbackPicture={auth0User?.picture}
               onEditProfile={navigateToEditProfile}
             />
           </View>

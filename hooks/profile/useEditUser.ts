@@ -1,7 +1,6 @@
-import { useAuth0 } from "react-native-auth0";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import Constants from "expo-constants";
 import { User } from "@/lib/@types/properties";
+import { useUserMutation } from "@/hooks/profile/useUserMutation";
 
 export interface UserUpdateData {
   email?: string;
@@ -12,41 +11,18 @@ export interface UserUpdateData {
 }
 
 export const useEditUser = (userId: string) => {
-  const { getCredentials } = useAuth0();
   const queryClient = useQueryClient();
 
-  const apiUrl =
-    Constants.expoConfig?.extra?.stagelyApiUrl || process.env.STAGELY_API_URL;
+  // Use the core mutation hook
+  const userMutate = useUserMutation<User, UserUpdateData>({
+    userId,
+    endpoint: "/users/{userId}",
+    method: "PUT",
+  });
 
+  // Wrap the core mutation with React Query's useMutation
   const mutation = useMutation<User, Error, UserUpdateData>({
-    mutationFn: async (userData: UserUpdateData) => {
-      if (!apiUrl) {
-        throw new Error("Api URL not available");
-      }
-
-      const credentials = await getCredentials();
-
-      if (!credentials?.accessToken) {
-        throw new Error("Access token not available");
-      }
-
-      const response = await fetch(`https://${apiUrl}/users/${userId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${credentials.accessToken}`,
-        },
-        body: JSON.stringify(userData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.error?.message || `API error: ${response.status}`,
-        );
-      }
-      return response.json();
-    },
+    mutationFn: userMutate,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user"] });
     },
