@@ -23,7 +23,6 @@ const EditProfileScreen = () => {
     error: userError,
   } = useAuthUser();
 
-  // Use an empty string as fallback if ID is undefined
   const userId = backendUser?.id ? backendUser.id.toString() : "";
 
   const {
@@ -32,7 +31,6 @@ const EditProfileScreen = () => {
     error: updateError,
   } = useEditUser(userId);
 
-  // Add type annotation for updatedData
   const handleSaveProfile = async (updatedData: UserUpdateData) => {
     updateEditUser(updatedData, {
       onSuccess: () => {

@@ -28,7 +28,6 @@ import useS3ImageUpload from "@/hooks/useImageUpload";
 import { User } from "@/lib/@types/properties";
 import { UserUpdateData } from "@/hooks/profile/useEditUser";
 
-// Define the shape of the form data that matches UserUpdateData
 interface FormData {
   firstName: string;
   lastName: string;
@@ -36,7 +35,6 @@ interface FormData {
   phone: string;
 }
 
-// Define props interface that accepts UserUpdateData
 interface ProfileFormProps {
   userData: User;
   onSave: (data: UserUpdateData) => void;
@@ -50,7 +48,6 @@ const ProfileEdit: React.FC<ProfileFormProps> = ({
   isSaving,
   error,
 }) => {
-  // Initialize form data from props
   const [formData, setFormData] = useState<FormData>({
     firstName: userData.firstName || "",
     lastName: userData.lastName || "",
@@ -71,7 +68,6 @@ const ProfileEdit: React.FC<ProfileFormProps> = ({
   } = useS3ImageUpload();
 
   const handleChange = (field: keyof FormData, value: string) => {
-    // Don't allow changing email
     if (field === "email") return;
 
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -97,28 +93,20 @@ const ProfileEdit: React.FC<ProfileFormProps> = ({
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    // Regex for name validation - only letters, spaces, hyphens, and apostrophes
     const nameRegex = /^[A-Za-z\s'-]+$/;
 
-    // Validate firstName
     if (formData.firstName.trim() === "") {
-      // Optional: Check if firstName is empty
-      // newErrors.firstName = "First name is required";
     } else if (!nameRegex.test(formData.firstName)) {
       newErrors.firstName =
         "First name should only contain letters, spaces, hyphens, and apostrophes";
     }
 
-    // Validate lastName
     if (formData.lastName.trim() === "") {
-      // Optional: Check if lastName is empty
-      // newErrors.lastName = "Last name is required";
     } else if (!nameRegex.test(formData.lastName)) {
       newErrors.lastName =
         "Last name should only contain letters, spaces, hyphens, and apostrophes";
     }
 
-    // Phone validation (existing code)
     if (formData.phone && !/^\+?[0-9\s-()]{7,}$/.test(formData.phone)) {
       newErrors.phone = "Invalid phone number format";
     }
@@ -140,16 +128,14 @@ const ProfileEdit: React.FC<ProfileFormProps> = ({
         }
       }
 
-      // Now convert to UserUpdateData before calling onSave
       const updateData: UserUpdateData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
-        phone: formData.phone || undefined, // Convert empty string to undefined
+        phone: formData.phone || undefined,
         profilePictureUrl: profilePictureUrl,
       };
 
-      // Call the parent's onSave function with updated data
       onSave(updateData);
     } catch (error) {
       console.error("Error handling profile form submission:", error);
