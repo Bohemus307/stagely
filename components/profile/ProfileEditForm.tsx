@@ -1,4 +1,3 @@
-// In ProfileEditForm.tsx
 import React, { useState } from "react";
 import { Alert, View } from "react-native";
 import { Button, ButtonText } from "@/components/ui/button";
@@ -26,7 +25,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { ThemedText } from "@/components/ThemedText";
 import useS3ImageUpload from "@/hooks/useImageUpload";
 import { User } from "@/lib/@types/properties";
-import { UserUpdateData } from "@/hooks/profile/useEditUser";
+import { UpdateUserData } from "@/hooks/profile/useUpdateUser";
 
 interface FormData {
   firstName: string;
@@ -37,7 +36,7 @@ interface FormData {
 
 interface ProfileFormProps {
   userData: User;
-  onSave: (data: UserUpdateData) => void;
+  onSave: (data: UpdateUserData) => void;
   isSaving: boolean;
   error?: string;
 }
@@ -51,7 +50,7 @@ const ProfileEdit: React.FC<ProfileFormProps> = ({
   const [formData, setFormData] = useState<FormData>({
     firstName: userData.firstName || "",
     lastName: userData.lastName || "",
-    email: userData.email || "",
+    email: userData.email,
     phone: userData.phone || "",
   });
 
@@ -128,10 +127,9 @@ const ProfileEdit: React.FC<ProfileFormProps> = ({
         }
       }
 
-      const updateData: UserUpdateData = {
+      const updateData: UpdateUserData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
-        email: formData.email,
         phone: formData.phone || undefined,
         profilePictureUrl: profilePictureUrl,
       };

@@ -13,7 +13,7 @@ import { Box } from "@/components/ui/box";
 import { User } from "@/lib/@types/properties";
 
 interface ProfileHeaderProps {
-  user?: User | null;
+  user: User;
   onEditProfile: () => void;
   fallbackPicture?: string;
 }

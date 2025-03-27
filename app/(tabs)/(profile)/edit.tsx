@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -8,35 +8,57 @@ import {
 } from "react-native";
 import BackButton from "@/components/BackButton";
 import { ThemedText } from "@/components/ThemedText";
-import { useAuthUser } from "@/hooks/useAuthUser";
 import { router } from "expo-router";
 import { Spinner } from "@/components/ui/spinner";
 import { Button, ButtonText } from "@/components/ui/button";
 import { HStack } from "@/components/ui/hstack";
-import { useEditUser, UserUpdateData } from "@/hooks/profile/useEditUser";
 import ProfileEdit from "@/components/profile/ProfileEditForm";
+import { useCurrentUser } from "@/hooks/profile/useCurrentUser";
+import { useUpdateUser } from "@/hooks/profile/useUpdateUser";
+import { UpdateUserData } from "@/hooks/profile/useUpdateUser";
 
 const EditProfileScreen = () => {
   const {
-    backendUser,
+    user,
     isLoading: userLoading,
     error: userError,
-  } = useAuthUser();
+    refetch,
+  } = useCurrentUser();
 
-  const userId = backendUser?.id ? backendUser.id.toString() : "";
+  const userId = user?.id ? user.id.toString() : undefined;
 
   const {
-    updateEditUser,
+    updateUser,
     isPending: isUpdating,
+    isSuccess,
+    isError,
     error: updateError,
-  } = useEditUser(userId);
+    data: updateData,
+    reset,
+  } = useUpdateUser(userId);
 
-  const handleSaveProfile = async (updatedData: UserUpdateData) => {
-    updateEditUser(updatedData, {
-      onSuccess: () => {
+  useEffect(() => {
+    if (isSuccess) {
+      refetch().then(() => {
         router.back();
-      },
-    });
+      });
+    }
+  }, [isSuccess, updateData, refetch]);
+
+  useEffect(() => {
+    return () => {
+      reset();
+    };
+  }, [reset]);
+
+  const handleSaveProfile = async (updatedData: UpdateUserData) => {
+    if (!userId) {
+      console.error("No user ID available for update");
+      alert("Unable to update profile: User ID not available");
+      return;
+    }
+
+    updateUser(updatedData);
   };
 
   if (userLoading) {
@@ -47,7 +69,7 @@ const EditProfileScreen = () => {
     );
   }
 
-  if (userError || !backendUser) {
+  if (userError || !user) {
     return (
       <View className="flex-1 justify-center items-center">
         <ThemedText className="text-center mb-4">
@@ -55,7 +77,10 @@ const EditProfileScreen = () => {
             ? `Error loading profile: ${userError.message}`
             : "User profile not found"}
         </ThemedText>
-        <Button onPress={() => router.back()}>
+        <Button onPress={() => refetch()}>
+          <ButtonText>Retry</ButtonText>
+        </Button>
+        <Button className="mt-4" onPress={() => router.back()}>
           <ButtonText>Go Back</ButtonText>
         </Button>
       </View>
@@ -63,28 +88,29 @@ const EditProfileScreen = () => {
   }
 
   return (
-    <View className="flex-1">
-      <SafeAreaView className="flex-1">
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          className="flex-1"
-          keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 20}
-        >
-          <ScrollView className="bg-primary-50">
-            <HStack className="items-center px-4 py-2">
-              <BackButton />
-            </HStack>
+    <SafeAreaView className="flex-1">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+        keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 20}
+      >
+        <ScrollView className="bg-primary-50">
+          <HStack className="items-center px-4 py-2">
+            <BackButton />
+          </HStack>
 
-            <ProfileEdit
-              userData={backendUser}
-              onSave={handleSaveProfile}
-              isSaving={isUpdating}
-              error={updateError?.message}
-            />
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </View>
+          <ProfileEdit
+            userData={user}
+            onSave={handleSaveProfile}
+            isSaving={isUpdating}
+            error={
+              updateError?.message ||
+              (isError ? "Failed to update profile" : undefined)
+            }
+          />
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 

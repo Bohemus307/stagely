@@ -3,17 +3,17 @@ import { Box } from "@/components/ui/box";
 import { router } from "expo-router";
 import React from "react";
 import { View } from "react-native";
-import { useAuth0 } from "react-native-auth0";
 import ProfileHeader from "@/components/profile/details/ProfileHeader";
 import ProfileMenuItem from "@/components/profile/details/ProfileMenuItem";
 import { Spinner } from "@/components/ui/spinner";
-import { useAuthUser } from "@/hooks/useAuthUser";
 import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
+import { useCurrentUser } from "@/hooks/profile/useCurrentUser";
+import { useAuth0 } from "react-native-auth0";
 
 const ProfileScreen = () => {
-  const { auth0User, backendUser } = useAuthUser();
+  const { clearSession } = useAuth0();
 
-  const { user, clearSession, isLoading } = useAuth0();
+  const { auth0User, user, isLoading } = useCurrentUser();
 
   if (isLoading) {
     return (
@@ -23,7 +23,7 @@ const ProfileScreen = () => {
     );
   }
 
-  if (!user) {
+  if (!auth0User) {
     router.replace("/");
     return (
       <Box className="flex-1 justify-center items-center">
@@ -74,11 +74,13 @@ const ProfileScreen = () => {
       <View className="flex-1">
         <View className="mt-4 shadow-sm">
           <View className="">
-            <ProfileHeader
-              user={backendUser}
-              fallbackPicture={auth0User?.picture}
-              onEditProfile={navigateToEditProfile}
-            />
+            {user && (
+              <ProfileHeader
+                user={user}
+                fallbackPicture={auth0User?.picture}
+                onEditProfile={navigateToEditProfile}
+              />
+            )}
           </View>
         </View>
 

@@ -8,7 +8,7 @@ import { User } from "@/lib/@types/properties";
  * additional user details from the backend API
  */
 export const useAuthUser = () => {
-  const { user, getCredentials, isLoading, error } = useAuth0();
+  const { user, getCredentials, isLoading, error, clearSession } = useAuth0();
 
   const apiUrl =
     Constants.expoConfig?.extra?.stagelyApiUrl || process.env.STAGELY_API_URL;
@@ -60,5 +60,6 @@ export const useAuthUser = () => {
     isLoading: isLoading || backendLoading,
     error: error || backendError,
     refetch,
+    clearSession,
   };
 };
