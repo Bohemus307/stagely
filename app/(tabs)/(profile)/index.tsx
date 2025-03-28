@@ -10,12 +10,7 @@ import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
 import { useAuthUser } from "@/hooks/useAuthUser";
 
 const ProfileScreen = () => {
-  const {
-    auth0User,
-    backendUser: user,
-    isLoading,
-    clearSession,
-  } = useAuthUser();
+  const { auth0User, backendUser: user, isLoading } = useAuthUser();
 
   if (isLoading) {
     return (
@@ -36,7 +31,6 @@ const ProfileScreen = () => {
 
   const handleLogout = async () => {
     try {
-      await clearSession();
       router.replace("/");
     } catch (error) {
       console.error("Error during logout:", error);
@@ -86,8 +80,8 @@ const ProfileScreen = () => {
           </View>
         </View>
 
-        <View>
-          <Box className="">
+        <View className="pb-14">
+          <Box>
             {/* Account Settings Section */}
             <ThemedText type="defaultSemiBold" className="px-5 pt-2">
               ACCOUNT SETTINGS
