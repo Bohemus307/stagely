@@ -8,10 +8,11 @@ import ProfileMenuItem from "@/components/profile/details/ProfileMenuItem";
 import { Spinner } from "@/components/ui/spinner";
 import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
 import { useAuthUser } from "@/hooks/useAuthUser";
+import { useAuth0 } from "react-native-auth0";
 
 const ProfileScreen = () => {
   const { auth0User, backendUser: user, isLoading } = useAuthUser();
-
+  const { clearSession } = useAuth0();
   if (isLoading) {
     return (
       <Box className="flex-1 justify-center items-center">
@@ -31,6 +32,7 @@ const ProfileScreen = () => {
 
   const handleLogout = async () => {
     try {
+      await clearSession();
       router.replace("/");
     } catch (error) {
       console.error("Error during logout:", error);
