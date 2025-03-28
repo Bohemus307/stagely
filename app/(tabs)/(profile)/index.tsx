@@ -7,13 +7,15 @@ import ProfileHeader from "@/components/profile/details/ProfileHeader";
 import ProfileMenuItem from "@/components/profile/details/ProfileMenuItem";
 import { Spinner } from "@/components/ui/spinner";
 import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
-import { useCurrentUser } from "@/hooks/profile/useCurrentUser";
-import { useAuth0 } from "react-native-auth0";
+import { useAuthUser } from "@/hooks/useAuthUser";
 
 const ProfileScreen = () => {
-  const { clearSession } = useAuth0();
-
-  const { auth0User, user, isLoading } = useCurrentUser();
+  const {
+    auth0User,
+    backendUser: user,
+    isLoading,
+    clearSession,
+  } = useAuthUser();
 
   if (isLoading) {
     return (

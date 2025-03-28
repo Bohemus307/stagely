@@ -1,6 +1,7 @@
 import { useAuth0 } from "react-native-auth0";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Constants from "expo-constants";
+import { UserResponse } from "./useUpdateUser";
 
 export interface CreateUserData {
   email: string;
@@ -18,7 +19,7 @@ export const useCreateUser = () => {
   const apiUrl =
     Constants.expoConfig?.extra?.stagelyApiUrl || process.env.STAGELY_API_URL;
 
-  const mutation = useMutation<any, Error, CreateUserData>({
+  const mutation = useMutation<UserResponse, Error, CreateUserData>({
     mutationFn: async (userData: CreateUserData) => {
       if (!apiUrl) {
         throw new Error("API URL not available");

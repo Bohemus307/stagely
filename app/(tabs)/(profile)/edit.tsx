@@ -13,17 +13,17 @@ import { Spinner } from "@/components/ui/spinner";
 import { Button, ButtonText } from "@/components/ui/button";
 import { HStack } from "@/components/ui/hstack";
 import ProfileEdit from "@/components/profile/ProfileEditForm";
-import { useCurrentUser } from "@/hooks/profile/useCurrentUser";
 import { useUpdateUser } from "@/hooks/profile/useUpdateUser";
 import { UpdateUserData } from "@/hooks/profile/useUpdateUser";
+import { useAuthUser } from "@/hooks/useAuthUser";
 
 const EditProfileScreen = () => {
   const {
-    user,
+    backendUser: user,
     isLoading: userLoading,
     error: userError,
     refetch,
-  } = useCurrentUser();
+  } = useAuthUser();
 
   const userId = user?.id ? user.id.toString() : undefined;
 

@@ -2,6 +2,18 @@ import { useAuth0 } from "react-native-auth0";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Constants from "expo-constants";
 
+export interface UserResponse {
+  id: number;
+  auth0Id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  profilePictureUrl?: string;
+  lastLogin?: string;
+  createdAt: string;
+  updatedAt: string;
+}
 export interface UpdateUserData {
   email?: string;
   firstName?: string;
@@ -17,7 +29,7 @@ export const useUpdateUser = (userId?: string) => {
   const apiUrl =
     Constants.expoConfig?.extra?.stagelyApiUrl || process.env.STAGELY_API_URL;
 
-  const mutation = useMutation<any, Error, UpdateUserData>({
+  const mutation = useMutation<UserResponse, Error, UpdateUserData>({
     mutationFn: async (userData: UpdateUserData) => {
       if (!apiUrl) {
         throw new Error("API URL not available");
