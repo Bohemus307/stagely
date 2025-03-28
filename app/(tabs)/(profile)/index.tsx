@@ -3,20 +3,16 @@ import { Box } from "@/components/ui/box";
 import { router } from "expo-router";
 import React from "react";
 import { View } from "react-native";
-import { useAuth0 } from "react-native-auth0";
 import ProfileHeader from "@/components/profile/details/ProfileHeader";
 import ProfileMenuItem from "@/components/profile/details/ProfileMenuItem";
 import { Spinner } from "@/components/ui/spinner";
-import { useAuthUser } from "@/hooks/useAuthUser";
 import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
+import { useAuthUser } from "@/hooks/useAuthUser";
+import { useAuth0 } from "react-native-auth0";
 
 const ProfileScreen = () => {
-  const authUser = useAuthUser();
-
-  console.log("AUTH USER", authUser);
-
-  const { user, clearSession, isLoading } = useAuth0();
-
+  const { auth0User, backendUser: user, isLoading } = useAuthUser();
+  const { clearSession } = useAuth0();
   if (isLoading) {
     return (
       <Box className="flex-1 justify-center items-center">
@@ -25,7 +21,7 @@ const ProfileScreen = () => {
     );
   }
 
-  if (!user) {
+  if (!auth0User) {
     router.replace("/");
     return (
       <Box className="flex-1 justify-center items-center">
@@ -33,9 +29,6 @@ const ProfileScreen = () => {
       </Box>
     );
   }
-
-  const userData = user!;
-  // const metadata = (userData.user_metadata as UserMetadata) || {};
 
   const handleLogout = async () => {
     try {
@@ -79,16 +72,18 @@ const ProfileScreen = () => {
       <View className="flex-1">
         <View className="mt-4 shadow-sm">
           <View className="">
-            <ProfileHeader
-              name={userData.name || ""}
-              picture={userData.picture}
-              onEditProfile={navigateToEditProfile}
-            />
+            {user && (
+              <ProfileHeader
+                user={user}
+                fallbackPicture={auth0User?.picture}
+                onEditProfile={navigateToEditProfile}
+              />
+            )}
           </View>
         </View>
 
-        <View>
-          <Box className="">
+        <View className="pb-14">
+          <Box>
             {/* Account Settings Section */}
             <ThemedText type="defaultSemiBold" className="px-5 pt-2">
               ACCOUNT SETTINGS

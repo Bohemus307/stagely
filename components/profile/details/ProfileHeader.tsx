@@ -8,33 +8,48 @@ import {
 } from "@/components/ui/avatar";
 import { VStack } from "@/components/ui/vstack";
 import { HStack } from "@/components/ui/hstack";
+import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Box } from "@/components/ui/box";
+import { User } from "@/lib/@types/properties";
 
 interface ProfileHeaderProps {
-  name: string;
-  picture?: string;
+  user: User;
   onEditProfile: () => void;
+  fallbackPicture?: string;
 }
 
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({
-  name,
-  picture,
+  user,
   onEditProfile,
+  fallbackPicture,
 }) => {
   return (
     <Box className="mr-4 ml-4 p-4 rounded-lg shadow-lg overflow-hidden bg-white">
-      <HStack className="p-4 justify-between items-center">
-        <Avatar size="md" className="mr-4">
-          {picture ? (
-            <AvatarImage source={{ uri: picture }} />
+      <HStack className="p-4 items-center">
+        <Avatar size="lg" className="mr-4">
+          {user?.profilePictureUrl || fallbackPicture ? (
+            <AvatarImage
+              source={{
+                uri: user?.profilePictureUrl || fallbackPicture,
+              }}
+            />
           ) : (
             <AvatarFallbackText>
-              {name ? name.charAt(0) : "?"}
+              {user?.firstName ? user.firstName.charAt(0) : ""}
+              {user?.lastName ? user.lastName.charAt(0) : ""}
             </AvatarFallbackText>
           )}
+          <TouchableOpacity
+            className="absolute bottom-0 right-0 bg-primary-500 rounded-full w-6 h-6 items-center justify-center"
+            onPress={onEditProfile}
+          >
+            <IconSymbol name="plus" size={14} color="white" />
+          </TouchableOpacity>
         </Avatar>
         <VStack>
-          <ThemedText type="defaultSemiBold">{name}</ThemedText>
+          <ThemedText type="defaultSemiBold">
+            {user?.firstName} {user?.lastName}
+          </ThemedText>
           <TouchableOpacity onPress={onEditProfile}>
             <ThemedText type="link">Edit Profile</ThemedText>
           </TouchableOpacity>
