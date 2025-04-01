@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { formatDate } from "@/components/message/lib/utils/timeHelpers";
 import { Textarea, TextareaInput } from "@/components/ui/textarea";
 import { Box } from "@/components/ui/box";

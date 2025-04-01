@@ -235,7 +235,7 @@ export default function SmartPhotoCapture(): React.ReactElement {
 
     // Navigate to incident details with photos
     router.push({
-      pathname: "/(tabs)/(incidents)",
+      pathname: "/(tabs)/(incidents)/edit",
       params: {
         propertyId: propertyId || "",
         photos: JSON.stringify(photoURLs),

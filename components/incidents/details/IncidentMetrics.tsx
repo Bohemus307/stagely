@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { HStack } from "@/components/ui/hstack";
 import { Box } from "@/components/ui/box";
