@@ -25,20 +25,25 @@ export const useCreateProperty = () => {
 
   const apiUrl =
     Constants.expoConfig?.extra?.stagelyApiUrl || process.env.STAGELY_API_URL;
+  console.log("API URL for property creation:", apiUrl);
 
   // Mutation to create property in backend
   const mutation = useMutation<any, Error, PropertyData>({
     mutationFn: async (propertyData: PropertyData) => {
+      console.log("Creating property with data:", propertyData);
+
       if (!apiUrl) {
         throw new Error("API URL not available");
       }
 
       // Get the access token
       const credentials = await getCredentials();
+      console.log("Credentials obtained:", !!credentials);
 
       if (!credentials?.accessToken) {
         throw new Error("Access token not available");
       }
+      console.log("Sending request to:", `https://${apiUrl}/properties`);
 
       // Create property in the backend
       const response = await fetch(`https://${apiUrl}/properties`, {
@@ -49,8 +54,11 @@ export const useCreateProperty = () => {
         },
         body: JSON.stringify(propertyData),
       });
+      console.log("Response status:", response.status);
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error("API error response:", errorText);
         throw new Error(`API error: ${response.status}`);
       }
 
