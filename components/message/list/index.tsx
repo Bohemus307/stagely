@@ -96,14 +96,11 @@ const MessagesList: React.FC<MessageListProps> = ({
         className="flex-1"
         ListEmptyComponent={renderEmpty}
       />
-      <Fab
-        size="lg"
-        placement="bottom right"
-        onPress={handleNewMessage}
-        className="mb-24 mr-4"
-      >
-        <IconSymbol name="message.fill" size={24} color="white" />
-      </Fab>
+      <Box className="absolute bottom-6 right-6">
+        <Fab size="lg" placement="bottom right" onPress={handleNewMessage}>
+          <IconSymbol name="message.fill" size={24} color="white" />
+        </Fab>
+      </Box>
     </Box>
   );
 };

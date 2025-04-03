@@ -87,14 +87,11 @@ const IncidentList: React.FC<IncidentListProps> = ({
         ListEmptyComponent={<EmptyListComponent />}
       />
 
-      <Fab
-        size="lg"
-        placement="bottom right"
-        onPress={handleAddIncident}
-        className="mb-24 mr-4"
-      >
-        <FabIcon size="xl" as={AddIcon} />
-      </Fab>
+      <Box className="absolute bottom-6 right-6">
+        <Fab size="lg" placement="bottom right" onPress={handleAddIncident}>
+          <FabIcon size="xl" as={AddIcon} />
+        </Fab>
+      </Box>
     </Box>
   );
 };

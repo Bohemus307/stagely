@@ -77,7 +77,7 @@ describe("QuickActions Component", () => {
     // Test Photos navigation - directly find the pressable element
     fireEvent.press(getByText("Photos"));
     expect(router.push).toHaveBeenCalledWith({
-      pathname: "/(tabs)/(properties)/photos",
+      pathname: "/(tabs)/(properties)/(photos)",
       params: { propertyId: 0 },
     });
 

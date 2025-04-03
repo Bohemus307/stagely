@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { SafeAreaView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { Badge } from "@/components/ui/badge";
 import { Box } from "@/components/ui/box";
@@ -47,8 +47,10 @@ const PropertyDetailsScreen = () => {
   }
 
   return (
-    <SafeAreaView className="flex-1">
-      <BackButton />
+    <ScrollView className="flex-1">
+      <View className="py-2">
+        <BackButton />
+      </View>
 
       {/* Street View Image */}
       {property.latitude && property.longitude && !streetViewError ? (
@@ -74,7 +76,7 @@ const PropertyDetailsScreen = () => {
 
       {/* Property Information */}
       <PropertyInformation property={property} />
-    </SafeAreaView>
+    </ScrollView>
   );
 };
 
