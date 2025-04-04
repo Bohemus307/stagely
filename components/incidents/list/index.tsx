@@ -13,6 +13,7 @@ import { Fab, FabIcon } from "@/components/ui/fab";
 import { AddIcon } from "@/components/ui/icon";
 import IncidentCard from "@/components/incidents/list/IncidentCard";
 import { Incident } from "@/lib/@types/properties";
+import AddIncidentButton from "../AddIncidentButton";
 
 export interface IncidentListProps {
   incidents: Incident[];
@@ -106,14 +107,10 @@ const IncidentList: React.FC<IncidentListProps> = ({
       <ThemedText className="text-center my-3">
         No incidents found. Report a new incident to get started.
       </ThemedText>
-      <TouchableOpacity
-        className="bg-primary-500 rounded-lg px-4 py-2 mt-4"
-        onPress={handleAddIncident}
-      >
-        <ThemedText className="text-white font-medium">
-          Report Incident
-        </ThemedText>
-      </TouchableOpacity>
+      <Box className="mt-4">
+        {/* Using the AddIncidentButton component here */}
+        <AddIncidentButton />
+      </Box>
     </View>
   );
 

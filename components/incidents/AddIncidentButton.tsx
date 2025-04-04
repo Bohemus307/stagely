@@ -172,7 +172,13 @@ export default function AddIncidentButton() {
         `You've selected: ${nearestProperty.address}, ${nearestProperty.city}`,
       );
       setShowModal(false);
-      router.push("/(tabs)/(dashboard)/addIncident");
+      router.push({
+        pathname: "/(tabs)/(incidents)/[addIncident]",
+        params: {
+          propertyId: nearestProperty.id.toString(),
+          addIncident: "[addIncident]",
+        },
+      });
     }
   };
 

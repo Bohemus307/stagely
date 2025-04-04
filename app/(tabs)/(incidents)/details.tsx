@@ -27,7 +27,7 @@ const IncidentsDetailsScreen = () => {
     incident,
     isLoading: incidentLoading,
     error: incidentError,
-  } = useGetIncidentById(incidentId);
+  } = useGetIncidentById(incidentId, { enabled: !!incidentId });
 
   const {
     updateStatus,
@@ -68,7 +68,7 @@ const IncidentsDetailsScreen = () => {
 
   const handlePhotoPress = (image: IncidentImage): void => {
     router.push({
-      pathname: "/(tabs)/(incidents)/photos",
+      pathname: "/(tabs)/(incidents)/(photos)/add",
     });
   };
 

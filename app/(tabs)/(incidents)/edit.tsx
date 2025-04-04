@@ -30,7 +30,7 @@ const IncidentEditScreen = () => {
     incident,
     isLoading: incidentLoading,
     error: incidentError,
-  } = useGetIncidentById(id);
+  } = useGetIncidentById(id, { enabled: true });
 
   const {
     updateIncident,

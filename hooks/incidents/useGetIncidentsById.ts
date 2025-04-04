@@ -2,7 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import Constants from "expo-constants";
 import { useAuth0 } from "react-native-auth0";
 
-export const useGetIncidentById = (incidentId: string) => {
+export const useGetIncidentById = (
+  incidentId: string,
+  p0: { enabled: boolean },
+) => {
   const {
     getCredentials,
     isLoading: authLoading,
