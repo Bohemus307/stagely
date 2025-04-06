@@ -17,7 +17,11 @@ export const getTimeAgo = (dateString: string) => {
 };
 
 // Get status badge color for incidents
-export const getIncidentStatusBadge = (status: string) => {
+export const getIncidentStatusBadge = (status: string | undefined) => {
+  // Add a null check before calling toLowerCase()
+  if (!status) {
+    return "bg-gray-400/80 text-gray-800 rounded-2xl"; // Default style for undefined status
+  }
   switch (status.toLowerCase()) {
     case "urgent":
       return "bg-red-400/80 text-white rounded-2xl";
@@ -36,12 +40,22 @@ export const getIncidentStatusBadge = (status: string) => {
   }
 };
 
-export const getStatusIcon = (status: string, severity: string) => {
+export const getStatusIcon = (
+  status: string | undefined,
+  severity: string | undefined,
+) => {
   // Check for urgent first (high or critical severity)
   if (severity === "High" || severity === "Critical") {
     return {
       name: "exclamationmark.triangle" as const,
       color: "red",
+    };
+  }
+
+  if (!status) {
+    return {
+      name: "exclamationmark.triangle" as const,
+      color: "gray",
     };
   }
 

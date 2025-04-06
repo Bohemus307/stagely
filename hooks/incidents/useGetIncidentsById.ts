@@ -34,7 +34,7 @@ export const useGetIncidentById = (
       }
 
       const response = await fetch(
-        `https://${apiUrl}/properties/incidents?${incidentId}`,
+        `https://${apiUrl}/properties/incidents/${incidentId}`,
         {
           headers: {
             "Content-Type": "application/json",
