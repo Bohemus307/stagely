@@ -38,7 +38,6 @@ const PropertyPhotosScreen: React.FC = () => {
     propertyId,
     {},
   );
-  console.log("SPACES", propertySpaces);
   // Extract, format, and enhance images from all spaces
   const processedImages = useMemo<EnhancedPropertyImage[]>(() => {
     return (
