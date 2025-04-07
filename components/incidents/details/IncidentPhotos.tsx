@@ -1,4 +1,3 @@
-import React from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
 import { IconSymbol } from "@/components/ui/IconSymbol";

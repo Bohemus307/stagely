@@ -1,16 +1,17 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
 import { Divider } from "@/components/ui/divider";
 import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
 import { Badge } from "@/components/ui/badge";
-import { formatDate } from "@/components/properties/lib/utils/detailsHelpers";
-import { getSeverityBadge } from "@/components/properties/lib/utils/detailsHelpers";
+import {
+  getSeverityBadge,
+  formatDate,
+} from "@/components/properties/lib/utils/detailsHelpers";
 
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import { properties } from "@/components/properties/data/properties";
-import { Alert } from "react-native";
+
 import { ButtonText } from "@/components/ui/button";
 import { Button } from "@/components/ui/button";
 import { getIncidentStatusBadge } from "../lib/utils/incidentHelpers";
@@ -25,26 +26,8 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({
   incident,
   onUpdateStatus,
 }) => {
-  const [property, setProperty] = useState<any>(null);
   const [showStatusEditor, setShowStatusEditor] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>(incident.status);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        //Find associated Property
-        const propertyData = properties.find(
-          (p) => p.property_id === incident.propertyId,
-        );
-        setProperty(propertyData);
-      } catch (error) {
-        console.error("Error fetching incident details", error);
-        Alert.alert("Error", "Failed to load incident details");
-      }
-    };
-
-    fetchData();
-  }, [incident.propertyId]);
 
   const handleStatusUpdate = () => {
     if (onUpdateStatus && selectedStatus !== incident.status) {
@@ -68,11 +51,11 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({
           <ThemedText>{displayStatus}</ThemedText>
         </Badge>
       </HStack>
-      {property && (
+      {incident.propertyId && (
         <HStack className="items-center space-x-1 mb-3">
           <IconSymbol name="building.2.fill" size={14} color={"#6b7280"} />
           <ThemedText type="default">
-            {property.address}, {property.city}
+            Property #{incident.propertyId}
           </ThemedText>
         </HStack>
       )}

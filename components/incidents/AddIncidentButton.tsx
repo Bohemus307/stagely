@@ -41,10 +41,8 @@ export default function AddIncidentButton() {
     limit: 100, // Get a reasonable number of properties to search among
   });
 
-  // Get Google Maps API key from Expo Constants
   const GOOGLE_MAPS_API_KEY = Constants.expoConfig?.extra?.googleMapsKey || "";
 
-  // Function to find the nearest property based on current location
   const findNearestProperty = (
     latitude: number,
     longitude: number,
@@ -58,7 +56,6 @@ export default function AddIncidentButton() {
 
     propertiesData.data.forEach((property: Property) => {
       if (property.longitude && property.latitude) {
-        // Simple distance calculation
         const latDiff = Math.abs(latitude - property.latitude);
         const lngDiff = Math.abs(longitude - property.longitude);
         const distance = latDiff + lngDiff;
@@ -77,7 +74,6 @@ export default function AddIncidentButton() {
     setIsLoading(true);
     setStreetViewError(false);
 
-    // Check if properties are still loading
     if (propertiesLoading) {
       Alert.alert(
         "Please Wait",
@@ -87,7 +83,6 @@ export default function AddIncidentButton() {
       return;
     }
 
-    // Check if there was an error loading properties
     if (propertiesError) {
       Alert.alert(
         "Data Error",
@@ -105,7 +100,6 @@ export default function AddIncidentButton() {
     }
 
     try {
-      // Request permission to access location
       const { status } = await Location.requestForegroundPermissionsAsync();
 
       if (status !== "granted") {
@@ -123,10 +117,8 @@ export default function AddIncidentButton() {
         return;
       }
 
-      // Get current location
       const location = await Location.getCurrentPositionAsync();
 
-      // Find nearest property
       const nearest = findNearestProperty(
         location.coords.latitude,
         location.coords.longitude,
@@ -135,7 +127,6 @@ export default function AddIncidentButton() {
       if (nearest) {
         setNearestProperty(nearest);
 
-        // Pre-check if the property has valid location data
         setStreetViewError(
           !nearest.latitude ||
             !nearest.longitude ||
@@ -181,7 +172,13 @@ export default function AddIncidentButton() {
         `You've selected: ${nearestProperty.address}, ${nearestProperty.city}`,
       );
       setShowModal(false);
-      router.push("/(tabs)/(dashboard)/addIncident");
+      router.push({
+        pathname: "/(tabs)/(incidents)/[addIncident]",
+        params: {
+          propertyId: nearestProperty.id.toString(),
+          addIncident: "[addIncident]",
+        },
+      });
     }
   };
 
@@ -190,7 +187,6 @@ export default function AddIncidentButton() {
     router.push("/(tabs)/(properties)");
   };
 
-  // Function to render the property image or unavailable placeholder
   const renderPropertyImage = () => {
     if (
       nearestProperty?.latitude &&
@@ -214,7 +210,6 @@ export default function AddIncidentButton() {
       );
     }
 
-    // Fallback to placeholder
     return (
       <Box className="h-full w-full bg-secondary-100 flex items-center justify-center">
         <IconSymbol name="eye.slash" size={24} color="gray" />
@@ -223,14 +218,8 @@ export default function AddIncidentButton() {
     );
   };
 
-  // Get active incidents count
   const getActiveIncidents = (property: Property) => {
-    return (
-      property.incidents?.filter(
-        (incident) =>
-          incident.status !== "Resolved" && incident.status !== "Closed",
-      ).length || 0
-    );
+    return property.openIncidentCount || 0;
   };
 
   return (
@@ -238,7 +227,7 @@ export default function AddIncidentButton() {
       <Button
         className="h-16 w-1/2 rounded-lg flex flex-col items-center justify-center shadow-sm bg-background-50"
         onPress={handlePress}
-        isDisabled={propertiesLoading} // Disable button while properties are loading
+        isDisabled={propertiesLoading}
       >
         <VStack className="items-center justify-center">
           <IconSymbol
@@ -277,12 +266,10 @@ export default function AddIncidentButton() {
             {nearestProperty && (
               <>
                 <HStack className="items-start">
-                  {/* Left: Property Image */}
                   <Box className="h-20 w-20 rounded overflow-hidden mr-3">
                     {renderPropertyImage()}
                   </Box>
 
-                  {/* Right: Property Info */}
                   <VStack className="flex-1">
                     <Heading size="sm" className="text-typography-900">
                       {nearestProperty.address}

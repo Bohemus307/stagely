@@ -1,5 +1,9 @@
-import React from "react";
-import { FlatList, View, TouchableOpacity } from "react-native";
+import {
+  FlatList,
+  View,
+  TouchableOpacity,
+  ActivityIndicator,
+} from "react-native";
 import { router } from "expo-router";
 import { Colors } from "@/constants/Colors";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -9,14 +13,21 @@ import { Fab, FabIcon } from "@/components/ui/fab";
 import { AddIcon } from "@/components/ui/icon";
 import IncidentCard from "@/components/incidents/list/IncidentCard";
 import { Incident } from "@/lib/@types/properties";
+import AddIncidentButton from "../AddIncidentButton";
 
 export interface IncidentListProps {
   incidents: Incident[];
+  isLoading?: boolean;
+  error?: Error | null;
+  onRefresh?: () => void;
   onSelectIncident?: (incident: Incident) => void;
 }
 
 const IncidentList: React.FC<IncidentListProps> = ({
   incidents,
+  isLoading,
+  error,
+  onRefresh,
   onSelectIncident,
 }) => {
   const handleIncidentPress = (incident: Incident) => {
@@ -49,6 +60,43 @@ const IncidentList: React.FC<IncidentListProps> = ({
     </View>
   );
 
+  if (isLoading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-primary-50">
+        <ActivityIndicator size="large" color={Colors.light.tint} />
+        <ThemedText className="mt-4">Loading incidents...</ThemedText>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View className="flex-1 justify-center items-center bg-primary-50 p-4">
+        <IconSymbol
+          name="exclamationmark.triangle.fill"
+          size={48}
+          color="red"
+        />
+        <ThemedText className="text-center mt-4 text-red-600">
+          Error loading incidents
+        </ThemedText>
+        <ThemedText className="text-center mt-2 text-sm">
+          {error.message}
+        </ThemedText>
+        {onRefresh && (
+          <TouchableOpacity
+            className="bg-primary-500 rounded-lg px-4 py-2 mt-4"
+            onPress={onRefresh}
+          >
+            <ThemedText className="text-white font-medium">
+              Try Again
+            </ThemedText>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  }
+
   const EmptyListComponent = () => (
     <View className="items-center justify-center p-8 flex-1">
       <IconSymbol
@@ -59,14 +107,10 @@ const IncidentList: React.FC<IncidentListProps> = ({
       <ThemedText className="text-center my-3">
         No incidents found. Report a new incident to get started.
       </ThemedText>
-      <TouchableOpacity
-        className="bg-primary-500 rounded-lg px-4 py-2 mt-4"
-        onPress={handleAddIncident}
-      >
-        <ThemedText className="text-white font-medium">
-          Report Incident
-        </ThemedText>
-      </TouchableOpacity>
+      <Box className="mt-4">
+        {/* Using the AddIncidentButton component here */}
+        <AddIncidentButton />
+      </Box>
     </View>
   );
 
@@ -85,6 +129,8 @@ const IncidentList: React.FC<IncidentListProps> = ({
         className="flex-1 bg-primary-50"
         showsVerticalScrollIndicator={true}
         ListEmptyComponent={<EmptyListComponent />}
+        onRefresh={onRefresh}
+        refreshing={isLoading}
       />
 
       <Box className="absolute bottom-6 right-6">

@@ -1,68 +1,45 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { View } from "react-native";
 import IncidentSearch from "@/components/incidents/search";
 import IncidentList from "@/components/incidents/list";
 import IncidentMetrics from "@/components/incidents/details/IncidentMetrics";
-import { incidents as allIncidentsData } from "@/components/incidents/data/incidents";
 import { useLocalSearchParams } from "expo-router";
-import { Incident } from "@/lib/@types/properties";
 import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
+import { useGetIncidents } from "@/hooks/incidents/useGetIncidents";
+import { Incident } from "@/lib/@types/properties";
 
 const IncidentsScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [allIncidents, setAllIncidents] = useState<Incident[]>([]);
-  const [filteredIncidents, setFilteredIncidents] = useState<Incident[]>([]);
 
   const params = useLocalSearchParams();
   const propertyId = params.propertyId
     ? parseInt(params.propertyId as string)
-    : null;
+    : undefined;
 
-  useEffect(() => {
-    let incidents = [...allIncidentsData];
+  const { incidents, isLoading, error, refetch } = useGetIncidents({
+    propertyId,
+    status: statusFilter as any,
+    severity: statusFilter === "High" ? "High" : undefined,
+    page: 1,
+    limit: 50,
+    sortBy: "reportedAt",
+    sortOrder: "desc",
+  });
 
-    if (propertyId) {
-      incidents = incidents.filter(
-        (incident) => incident.property_id === propertyId,
-      );
-    }
+  const filteredIncidents = incidents || [];
 
-    setAllIncidents(incidents as unknown as Incident[]); // fix these fo sho!!
-    setFilteredIncidents(incidents as unknown as Incident[]); // here too
-  }, [propertyId]);
-
-  useEffect(() => {
-    let filtered = [...allIncidents];
-
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (incident) =>
-          incident.incidentType.toLowerCase().includes(query) ||
-          incident.description.toLowerCase().includes(query),
-      );
-    }
-
-    // Apply status filter
-    if (statusFilter) {
-      // Special case for "Urgent" which is mapped to "High" severity
-      if (statusFilter === "High") {
-        // Filter for incidents with High or Critical severity
-        filtered = filtered.filter(
-          (incident) =>
-            incident.severity === "High" || incident.severity === "Critical",
-        );
-      } else {
-        // For other filters (like "In Progress" or "Resolved"), filter by status directly
-        filtered = filtered.filter(
-          (incident) => incident.status === statusFilter,
-        );
-      }
-    }
-
-    setFilteredIncidents(filtered);
-  }, [searchQuery, statusFilter, allIncidents]);
+  const displayedIncidents = searchQuery
+    ? filteredIncidents.filter(
+        (incident: Incident) =>
+          incident.incidentType
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          incident.description
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()),
+      )
+    : filteredIncidents;
 
   return (
     <ResponsiveScreenWrapper scrollable={false}>
@@ -74,9 +51,14 @@ const IncidentsScreen = () => {
           onStatusFilterChange={setStatusFilter}
         />
       </View>
-      <IncidentMetrics incidents={filteredIncidents} />
+      <IncidentMetrics incidents={displayedIncidents} />
       <View className="flex-1">
-        <IncidentList incidents={filteredIncidents} />
+        <IncidentList
+          incidents={displayedIncidents}
+          isLoading={isLoading}
+          error={error}
+          onRefresh={refetch}
+        />
       </View>
     </ResponsiveScreenWrapper>
   );
