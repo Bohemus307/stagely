@@ -1,79 +1,79 @@
 import BackButton from "@/components/BackButton";
 import IncidentDetails from "@/components/incidents/details/IncidentDetails";
 import IncidentPhotos from "@/components/incidents/details/IncidentPhotos";
-
 import { Button, ButtonText } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { Alert, SafeAreaView, ScrollView, View, Text } from "react-native";
 import IncidentNotes from "@/components/incidents/details/IncidentNotes";
 import IncidentActions from "@/components/incidents/details/IncidentQuickActions";
-import { properties } from "@/components/properties/data/properties";
 import { Box } from "@/components/ui/box";
 import StreetViewImage from "@/components/properties/details/StreetView";
 import { Badge } from "@/components/ui/badge";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import { Incident, IncidentImage } from "@/lib/@types/properties";
-import { incidents } from "@/components/incidents/data/incidents";
-
-interface ExtendedIncident extends Incident {
-  notes?: string;
-}
+import { IncidentImage } from "@/lib/@types/properties";
+import { useGetIncidentById } from "@/hooks/incidents/useGetIncidentsById";
+import { useUpdateIncidentStatus } from "@/hooks/incidents/useUpdateIncidentStatus";
+import { useGetProperty } from "@/hooks/properties/useGetPropertyById";
 
 const IncidentsDetailsScreen = () => {
   const params = useLocalSearchParams();
-  const incidentId = parseInt(params.incidentId as string);
-  const [incident, setIncident] = useState<ExtendedIncident | null>(null);
-  const [loading, setLoading] = useState(true);
+  const incidentId = params.incidentId as string;
   const [streetViewError, setStreetViewError] = useState(false);
-  const [property, setProperty] = useState<any>(null);
+  const [notes, setNotes] = useState<{ text: string; timestamp: string }[]>([]);
 
-  useEffect(() => {
-    //Fetch incident
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        //Eventually an Api call to Backend
-        const foundIncident = incidents.find(
-          (inc) => inc.incident_id === incidentId,
-        ) as unknown as ExtendedIncident;
+  const {
+    incident,
+    isLoading: incidentLoading,
+    error: incidentError,
+  } = useGetIncidentById(incidentId, { enabled: !!incidentId });
 
-        if (foundIncident) {
-          setIncident(foundIncident);
+  const {
+    updateStatus,
+    isPending: isStatusUpdating,
+    isSuccess: isStatusUpdated,
+    error: statusError,
+  } = useUpdateIncidentStatus(incidentId);
 
-          const associatedProperty = properties.find(
-            (p) => p.property_id === foundIncident.propertyId,
-          );
+  const propertyId = incident?.propertyId?.toString();
+  const { property, isLoading: propertyLoading } = useGetProperty(
+    propertyId || "",
+    { enabled: !!propertyId },
+  );
 
-          setProperty(associatedProperty);
-        }
-      } catch (error) {
-        console.error("Error fetching incident details", error);
-        Alert.alert("Error", "Failed to load incident details");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (incidentId) {
-      fetchData();
-    }
-  }, [incidentId]);
+  const handleUpdateStatus = (incidentId: number, newStatus: string) => {
+    Alert.alert(
+      "Update Status",
+      `Are you sure you want to change the status to ${newStatus}?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Update",
+          onPress: () => {
+            updateStatus({
+              status: newStatus as
+                | "Open"
+                | "In_Progress"
+                | "Resolved"
+                | "Closed",
+              resolvedAt:
+                newStatus === "Resolved" ? new Date().toISOString() : undefined,
+            });
+          },
+        },
+      ],
+    );
+  };
 
   const handlePhotoPress = (image: IncidentImage): void => {
     router.push({
-      pathname: "/(tabs)/(incidents)/photos",
+      pathname: "/(tabs)/(incidents)/(photos)/add",
     });
   };
 
   const handleAddNote = (note: { text: string; timestamp: string }) => {
-    if (incident) {
-      setIncident({
-        ...incident,
-        notes: note.text,
-      } as ExtendedIncident);
-    }
+    setNotes([...notes, note]);
   };
 
   const handleEscalate = () => {
@@ -110,7 +110,9 @@ const IncidentsDetailsScreen = () => {
     });
   };
 
-  if (loading) {
+  const isLoading = incidentLoading || propertyLoading;
+
+  if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center">
         <Spinner size={"large"} />
@@ -118,10 +120,14 @@ const IncidentsDetailsScreen = () => {
     );
   }
 
-  if (!incident) {
+  if (incidentError || !incident) {
     return (
       <View className="flex-1 justify-center items-center">
-        <Text>Incident not found</Text>
+        <Text>
+          {incidentError
+            ? `Error loading incident: ${incidentError.message}`
+            : "Incident not found"}
+        </Text>
         <Button className="mt-4" onPress={() => router.back()}>
           <ButtonText>Go Back</ButtonText>
         </Button>
@@ -155,7 +161,31 @@ const IncidentsDetailsScreen = () => {
           )}
 
           {/* Incident Details */}
-          <IncidentDetails incident={incident} />
+          <IncidentDetails
+            incident={incident}
+            onUpdateStatus={handleUpdateStatus}
+          />
+          {isStatusUpdating && (
+            <Box className="mx-4 mb-4 p-2 bg-blue-100 rounded">
+              <Text className="text-blue-800">Updating status...</Text>
+            </Box>
+          )}
+
+          {isStatusUpdated && (
+            <Box className="mx-4 mb-4 p-2 bg-green-100 rounded">
+              <Text className="text-green-800">
+                Status updated successfully!
+              </Text>
+            </Box>
+          )}
+
+          {statusError && (
+            <Box className="mx-4 mb-4 p-2 bg-red-100 rounded">
+              <Text className="text-red-800">
+                Error updating status: {statusError.message}
+              </Text>
+            </Box>
+          )}
 
           {/* Photos Section */}
           {incident?.images && (
@@ -166,14 +196,7 @@ const IncidentsDetailsScreen = () => {
           )}
 
           {/* Notes Section */}
-          <IncidentNotes
-            initialNotes={
-              incident.notes
-                ? [{ text: incident.notes, timestamp: incident.reportedAt }]
-                : []
-            }
-            onAddNote={handleAddNote}
-          />
+          <IncidentNotes initialNotes={notes} onAddNote={handleAddNote} />
 
           {/* Action Buttons */}
           <IncidentActions

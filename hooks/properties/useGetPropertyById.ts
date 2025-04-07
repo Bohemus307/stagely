@@ -5,7 +5,10 @@ import Constants from "expo-constants";
 /**
  * Custom hook to get a single property by ID
  */
-export const useGetProperty = (propertyId: string) => {
+export const useGetProperty = (
+  propertyId: string,
+  p0: { enabled: boolean },
+) => {
   const { getCredentials, isLoading, error } = useAuth0();
 
   const apiUrl =

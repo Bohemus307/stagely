@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
 import { Badge } from "@/components/ui/badge";
@@ -33,7 +33,6 @@ const StreetViewImage: React.FC<StreetViewImageProps> = ({
   size = { width: 96, height: 96 },
   onError,
 }) => {
-  // Get API key from Expo Constants
   const GOOGLE_MAPS_API_KEY = Constants.expoConfig?.extra?.googleMapsKey || "";
 
   const streetViewUrl = `https://maps.googleapis.com/maps/api/streetview?size=${size.width}x${size.height}&location=${latitude},${longitude}&key=${GOOGLE_MAPS_API_KEY}`;

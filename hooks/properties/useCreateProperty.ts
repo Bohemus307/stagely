@@ -51,6 +51,8 @@ export const useCreateProperty = () => {
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error("API error response:", errorText);
         throw new Error(`API error: ${response.status}`);
       }
 
