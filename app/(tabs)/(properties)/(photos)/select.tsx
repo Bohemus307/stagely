@@ -512,7 +512,7 @@ const GallerySelectScreen = () => {
               <Box className="flex-row items-center">
                 <ActivityIndicator size="small" color="white" />
                 <Text className="text-white ml-2">
-                  {uploadProgress.completed}/{uploadProgress.total}
+                  {uploadProgress.completed + 1}/{uploadProgress.total}
                 </Text>
               </Box>
             ) : (
@@ -528,7 +528,7 @@ const GallerySelectScreen = () => {
       {uploading && (
         <Box className="p-4 bg-gray-100 rounded-lg my-2">
           <ThemedText className="text-center">
-            Uploading {uploadProgress.completed} of {uploadProgress.total}{" "}
+            Uploading {uploadProgress.completed + 1} of {uploadProgress.total}{" "}
             images...
           </ThemedText>
           <Box className="h-2 bg-gray-300 rounded-full mt-2">

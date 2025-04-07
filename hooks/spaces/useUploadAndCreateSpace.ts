@@ -140,7 +140,7 @@ export const useCreateSpace = () => {
         },
         body: file,
       });
-
+      console.log("RESPY", response);
       if (!response.ok) {
         throw new Error(`Upload error: ${response.status}`);
       }
