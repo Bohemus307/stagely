@@ -106,6 +106,7 @@ export interface Location {
 }
 
 export interface PropertyImage {
+  transformedUrl: string;
   id: number;
   inspectionId: number;
   spaceId?: number;

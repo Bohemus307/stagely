@@ -1,4 +1,10 @@
-import React, { ReactNode, createContext, useContext } from "react";
+import React, {
+  ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import {
   StatusBar,
   Platform,
@@ -6,37 +12,46 @@ import {
   StyleSheet,
   ScrollView,
   View,
+  Dimensions,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SafeAreaView, Edge } from "react-native-safe-area-context";
 
 import { Box } from "@/components/ui/box";
-import { useMediaQuery } from "@/components/ui/utils/use-media-query";
-
-import { useColorScheme } from "@/hooks/useColorScheme";
-import Header from "@/components/Header";
 import { Colors } from "@/constants/Colors";
+import Header from "@/components/Header";
+import { useColorScheme } from "@/hooks/useColorScheme";
 
-// Define breakpoints
+// Define mobile-oriented breakpoints (better for React Native)
 export const BREAKPOINTS = {
-  sm: 480, // Phone
-  md: 768, // Tablet
-  lg: 992, // Desktop
-  xl: 1280, // Large desktop
+  smallPhone: 320, // Small phones (iPhone SE etc.)
+  phone: 414, // Regular phones (iPhone 12/13/14)
+  largePhone: 480, // Large phones (iPhone Plus models, etc.)
+  tablet: 768, // iPads and tablets
+  largeTablet: 1024, // Large tablets (iPad Pro etc.)
 };
 
 // Create a context to expose screen size information
 interface ResponsiveContextType {
-  isMobile: boolean;
+  screenWidth: number;
+  screenHeight: number;
+  isSmallPhone: boolean;
+  isRegularPhone: boolean;
+  isLargePhone: boolean;
   isTablet: boolean;
-  isDesktop: boolean;
-  screenSize: "small" | "medium" | "large";
+  isLargeTablet: boolean;
+  screenSize: "smallPhone" | "phone" | "largePhone" | "tablet" | "largeTablet";
 }
 
 const ResponsiveContext = createContext<ResponsiveContextType>({
-  isMobile: true,
+  screenWidth: 0,
+  screenHeight: 0,
+  isSmallPhone: false,
+  isRegularPhone: false,
+  isLargePhone: false,
   isTablet: false,
-  isDesktop: false,
-  screenSize: "small",
+  isLargeTablet: false,
+  screenSize: "phone",
 });
 
 // Hook to use responsive context
@@ -63,11 +78,17 @@ interface ResponsiveScreenWrapperProps {
 
   /** SafeAreaView edges */
   edges?: Edge[];
+
+  /** Whether this screen has a tab bar */
+  hasTabBar?: boolean;
+
+  /** Custom bottom padding (if you want to override the default) */
+  bottomPadding?: number;
 }
 
 /**
  * ResponsiveScreenWrapper - A responsive screen wrapper that provides consistent
- * layout across different device sizes and exposes screen size information via context
+ * layout across different mobile device sizes and exposes screen size information via context
  */
 const ResponsiveScreenWrapper: React.FC<ResponsiveScreenWrapperProps> = ({
   children,
@@ -77,29 +98,53 @@ const ResponsiveScreenWrapper: React.FC<ResponsiveScreenWrapperProps> = ({
   containerProps = {},
   scrollViewProps = {},
   edges = ["top", "left", "right"],
+  hasTabBar = true,
+  bottomPadding,
 }) => {
   const colorScheme = useColorScheme() ?? "light";
+  const [dimensions, setDimensions] = useState(() => Dimensions.get("window"));
 
-  // Use media queries to determine screen size
-  const [isMobile] = useMediaQuery([{ maxWidth: BREAKPOINTS.sm }]);
-  const [isTablet] = useMediaQuery([
-    { minWidth: BREAKPOINTS.sm + 1 },
-    { maxWidth: BREAKPOINTS.md },
-  ]);
-  const [isDesktop] = useMediaQuery([{ minWidth: BREAKPOINTS.md + 1 }]);
+  // Update dimensions on change (orientation changes, foldable devices, etc.)
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener("change", ({ window }) => {
+      setDimensions(window);
+    });
+
+    return () => subscription.remove();
+  }, []);
+
+  const { width, height } = dimensions;
+
+  // Determine device category based on width
+  const isSmallPhone = width <= BREAKPOINTS.smallPhone;
+  const isRegularPhone =
+    width > BREAKPOINTS.smallPhone && width <= BREAKPOINTS.phone;
+  const isLargePhone =
+    width > BREAKPOINTS.phone && width <= BREAKPOINTS.largePhone;
+  const isTablet =
+    width > BREAKPOINTS.largePhone && width <= BREAKPOINTS.tablet;
+  const isLargeTablet = width > BREAKPOINTS.tablet;
 
   // Determine screen size category
-  const screenSize: "small" | "medium" | "large" = isDesktop
-    ? "large"
+  const screenSize = isLargeTablet
+    ? "largeTablet"
     : isTablet
-      ? "medium"
-      : "small";
+      ? "tablet"
+      : isLargePhone
+        ? "largePhone"
+        : isRegularPhone
+          ? "phone"
+          : "smallPhone";
 
   // Create responsive context value
   const responsiveValue: ResponsiveContextType = {
-    isMobile,
+    screenWidth: width,
+    screenHeight: height,
+    isSmallPhone,
+    isRegularPhone,
+    isLargePhone,
     isTablet,
-    isDesktop,
+    isLargeTablet,
     screenSize,
   };
 
@@ -107,13 +152,30 @@ const ResponsiveScreenWrapper: React.FC<ResponsiveScreenWrapperProps> = ({
     container: {
       flex: 1,
       backgroundColor: Colors.light.background,
+      paddingHorizontal: isTablet || isLargeTablet ? 16 : 12,
+      // We'll handle the bottom padding in the contentContainerStyle instead
     },
   });
 
-  // Content container for ScrollView
+  // Get safe area insets for handling notches and home indicators
+  const insets = useSafeAreaInsets();
+
+  // Calculate tab bar height (typically 49pt for iOS plus bottom safe area)
+  const tabBarHeight = Platform.OS === "ios" ? 49 + insets.bottom : 56;
+
+  // Determine bottom padding
+  const calculatedBottomPadding =
+    bottomPadding !== undefined
+      ? bottomPadding
+      : hasTabBar
+        ? tabBarHeight + 20 // Add extra padding if there's a tab bar
+        : 20; // Standard padding if no tab bar
+
+  // Content container for ScrollView with proper padding for tab bar
   const contentContainerStyle = scrollable
     ? {
         flexGrow: 1,
+        paddingBottom: calculatedBottomPadding,
       }
     : undefined;
 
@@ -129,7 +191,14 @@ const ResponsiveScreenWrapper: React.FC<ResponsiveScreenWrapperProps> = ({
           {children}
         </ScrollView>
       ) : (
-        <View style={{ flex: 1 }}>{children}</View>
+        <View
+          style={{
+            flex: 1,
+            paddingBottom: hasTabBar ? calculatedBottomPadding : 0,
+          }}
+        >
+          {children}
+        </View>
       )}
     </Box>
   );

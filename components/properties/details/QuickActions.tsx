@@ -24,7 +24,7 @@ const QuickActions = ({ property }: Props) => {
           className="bg-white border border-primary-300 "
           onPress={() =>
             router.push({
-              pathname: "/(tabs)/(properties)/photos",
+              pathname: "/(tabs)/(properties)/(photos)",
               params: { propertyId: property.id },
             })
           }

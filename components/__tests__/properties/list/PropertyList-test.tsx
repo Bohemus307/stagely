@@ -110,7 +110,7 @@ describe("PropertyList Component", () => {
     fireEvent.press(photosButtons[2]);
 
     expect(router.push).toHaveBeenCalledWith({
-      pathname: "/(tabs)/(properties)/photos",
+      pathname: "/(tabs)/(properties)/(photos)",
       params: { propertyId: mockProperties[2].id },
     });
   });

@@ -38,7 +38,7 @@ const PropertyList: React.FC<PropertyListProps> = ({
   const handlePhotosPress = (property: Property) => {
     console.log("Navigate to photos for property:", property.id);
     router.push({
-      pathname: "/(tabs)/(properties)/photos",
+      pathname: "/(tabs)/(properties)/(photos)",
       params: { propertyId: property.id },
     });
   };
@@ -105,14 +105,11 @@ const PropertyList: React.FC<PropertyListProps> = ({
       />
 
       {/* Fab button in bottom right corner */}
-      <Fab
-        size="lg"
-        placement="bottom right"
-        onPress={handleAddProperty}
-        className="mb-24 mr-4"
-      >
-        <FabIcon size="xl" as={AddIcon} />
-      </Fab>
+      <Box className="absolute bottom-6 lg:bottom-12 right-6">
+        <Fab size="lg" placement="bottom right" onPress={handleAddProperty}>
+          <FabIcon size="xl" as={AddIcon} />
+        </Fab>
+      </Box>
     </Box>
   );
 };
