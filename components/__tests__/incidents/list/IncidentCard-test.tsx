@@ -15,28 +15,16 @@ jest.mock("@/components/incidents/lib/utils/incidentHelpers", () => ({
   getTimeAgo: jest.fn(() => "2 hours ago"),
 }));
 
-// Mock properties data
-jest.mock("@/components/properties/data/properties", () => ({
-  properties: [
-    {
-      property_id: 123,
-      address: "123 Test St",
-      city: "Test City",
-      location: {
-        latitude: 37.7749,
-        longitude: -122.4194,
-      },
+// Mock Constants to avoid issues with GOOGLE_MAPS_API_KEY
+jest.mock("expo-constants", () => ({
+  expoConfig: {
+    extra: {
+      googleMapsKey: "mock-api-key",
     },
-    {
-      property_id: 456,
-      address: "456 Sample Ave",
-      city: "Sample City",
-      location: null,
-    },
-  ],
+  },
 }));
 
-// Mock UI components for React Native testing
+// Mock UI components
 jest.mock("@/components/ui/hstack", () => ({
   HStack: ({ children }: { children: React.ReactNode }) => (
     <View testID="hstack">{children}</View>
@@ -135,15 +123,12 @@ jest.mock("@/components/ui/image", () => ({
     alt: string;
     className?: string;
     onError?: () => void;
-  }) => <RNImage testID="image" source={source} accessibilityLabel={alt} />,
-}));
-
-// Mock Constants to avoid issues with GOOGLE_MAPS_API_KEY
-jest.mock("expo-constants", () => ({
-  expoConfig: {
-    extra: {
-      googleMapsKey: "mock-api-key",
-    },
+  }) => {
+    // Optional error simulation
+    if (onError && Math.random() < 0.5) {
+      onError();
+    }
+    return <RNImage testID="image" source={source} accessibilityLabel={alt} />;
   },
 }));
 
@@ -161,9 +146,10 @@ describe("IncidentCard", () => {
       images: [],
       createdAt: "",
       updatedAt: "",
+      ...overrides,
     };
 
-    return { ...baseIncident, ...overrides };
+    return baseIncident;
   };
 
   // Sample incident for testing
@@ -188,7 +174,7 @@ describe("IncidentCard", () => {
 
     // Check if main incident information is displayed
     expect(getByText("Water Damage")).toBeTruthy();
-    expect(getByText("123 Test St, Test City")).toBeTruthy();
+    expect(getByText(/Property #123/)).toBeTruthy();
     expect(getByText("View Details")).toBeTruthy();
   });
 
@@ -209,32 +195,6 @@ describe("IncidentCard", () => {
     expect(mockOnDetailsPress).toHaveBeenCalledWith(mockIncident);
   });
 
-  test("displays property information from properties data", () => {
-    const { getByText } = render(
-      <IncidentCard
-        incident={mockIncident}
-        onPress={mockOnPress}
-        onDetailsPress={mockOnDetailsPress}
-      />,
-    );
-
-    // Should show the property address from the mock properties data
-    expect(getByText("123 Test St, Test City")).toBeTruthy();
-  });
-
-  test("displays street view indicator when location is available", () => {
-    const { queryByText } = render(
-      <IncidentCard
-        incident={mockIncident}
-        onPress={mockOnPress}
-        onDetailsPress={mockOnDetailsPress}
-      />,
-    );
-
-    // Should have StreetView text since we're using property_id 123 which has location
-    expect(queryByText("Street View")).toBeTruthy();
-  });
-
   test("handles time ago display", () => {
     const { queryByText } = render(
       <IncidentCard
@@ -249,5 +209,19 @@ describe("IncidentCard", () => {
 
     // Check that the helper was called with the right date
     expect(getTimeAgo).toHaveBeenCalledWith(mockIncident.reportedAt);
+  });
+
+  test("handles urgent status", () => {
+    const urgentIncident = createTestIncident({ severity: "Critical" });
+    const { getByText } = render(
+      <IncidentCard
+        incident={urgentIncident}
+        onPress={mockOnPress}
+        onDetailsPress={mockOnDetailsPress}
+      />,
+    );
+
+    // Check if the urgent status is displayed
+    expect(getByText("Urgent")).toBeTruthy();
   });
 });

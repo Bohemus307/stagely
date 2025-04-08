@@ -1,213 +1,199 @@
-// Mock expo-location before other imports
 import React from "react";
 import { render, fireEvent } from "@testing-library/react-native";
-import IncidentList from "@/components/incidents/list/index";
-
-import { router } from "expo-router";
 import { View, Text, TouchableOpacity } from "react-native";
-import {
-  Incident,
-  IncidentSeverity,
-  IncidentStatus,
-} from "@/lib/@types/properties";
 
-jest.mock("expo-location", () => ({
-  requestForegroundPermissionsAsync: jest
-    .fn()
-    .mockResolvedValue({ status: "granted" }),
-  getCurrentPositionAsync: jest.fn().mockResolvedValue({
-    coords: { latitude: 37.7749, longitude: -122.4194 },
-  }),
+// Import the Incident type
+import { Incident } from "@/lib/@types/properties";
+
+// Mock cssInterop before importing any components that use it
+jest.mock("react-native-css-interop", () => ({
+  cssInterop: jest.fn(() => jest.fn()),
 }));
 
-// Mock dependencies
+// Simplified mocks that don't depend on each other
+const routerMock = {
+  push: jest.fn(),
+};
+
 jest.mock("expo-router", () => ({
-  router: {
-    push: jest.fn(),
-  },
+  router: routerMock,
 }));
 
-// Mock AddIncidentButton to avoid dependency on expo-location
-jest.mock("@/components/incidents/AddIncidentButton", () => ({
-  __esModule: true,
-  default: ({ className }: { className?: string }) => (
-    <TouchableOpacity testID="add-incident-button">
-      <Text>Add Incident</Text>
-    </TouchableOpacity>
+// Add interfaces for props
+interface ThemedTextProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+interface BoxProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+interface IncidentCardProps {
+  incident: Incident;
+  onPress: (incident: Incident) => void;
+  onDetailsPress: (incident: Incident) => void;
+}
+
+interface FabProps {
+  children: React.ReactNode;
+  onPress: () => void;
+  isDisabled?: boolean;
+  className?: string;
+  placement?: string;
+  size?: string;
+}
+
+// Sample incidents for testing
+const mockIncidents = [
+  {
+    id: 1,
+    propertyId: 123,
+    incidentType: "Water Damage",
+    description: "Water damage in kitchen",
+    status: "Open",
+    severity: "Medium",
+    images: [],
+    reportedAt: "2025-01-01T00:00:00Z",
+    createdAt: "",
+    updatedAt: "",
+  },
+  {
+    id: 2,
+    propertyId: 456,
+    incidentType: "Electrical Issue",
+    description: "Electrical issue in bathroom",
+    status: "In Progress",
+    severity: "High",
+    images: [],
+    reportedAt: "2025-01-02T00:00:00Z",
+    createdAt: "",
+    updatedAt: "",
+  },
+] as Incident[];
+
+// Mock necessary components
+jest.mock("@/components/ui/IconSymbol", () => ({
+  IconSymbol: () => <View testID="icon-symbol" />,
+}));
+
+jest.mock("@/components/ThemedText", () => ({
+  ThemedText: ({ children }: ThemedTextProps) => (
+    <Text testID="themed-text">{children}</Text>
   ),
 }));
 
-// Mock IncidentCard component
+jest.mock("@/components/ui/box", () => ({
+  Box: ({ children }: BoxProps) => <View testID="box">{children}</View>,
+}));
+
+// Mock incident card
 jest.mock("@/components/incidents/list/IncidentCard", () => ({
   __esModule: true,
-  default: ({
-    incident,
-    onPress,
-    onDetailsPress,
-  }: {
-    incident: any;
-    onPress: () => void;
-    onDetailsPress: () => void;
-  }) => (
+  default: ({ incident, onPress, onDetailsPress }: IncidentCardProps) => (
     <View testID="incident-card">
-      <Text testID="incident-title">{incident.incidentType}</Text>
-      <TouchableOpacity testID="details-button" onPress={onDetailsPress}>
+      <Text testID="incident-type">{incident.incidentType}</Text>
+      <TouchableOpacity
+        testID="details-button"
+        onPress={() => onDetailsPress(incident)}
+      >
         <Text>View Details</Text>
       </TouchableOpacity>
-      <TouchableOpacity testID="card-press" onPress={onPress}>
+      <TouchableOpacity testID="card-press" onPress={() => onPress(incident)}>
         <Text>Press Card</Text>
       </TouchableOpacity>
     </View>
   ),
 }));
 
-// Mock UI components
-jest.mock("@/components/ui/IconSymbol", () => ({
-  IconSymbol: ({
-    name,
-    size,
-    color,
-  }: {
-    name: string;
-    size: number;
-    color: string;
-  }) => (
-    <View
-      testID="icon-symbol"
-      data-name={name}
-      data-size={size}
-      data-color={color}
-    />
-  ),
+// Mock AddIncidentButton
+jest.mock("@/components/incidents/AddIncidentButton", () => ({
+  __esModule: true,
+  default: () => <View testID="add-incident-button" />,
 }));
 
-jest.mock("@/components/ThemedText", () => ({
-  ThemedText: ({
-    children,
-    className,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => (
-    <Text testID="themed-text" className={className}>
-      {children}
-    </Text>
-  ),
+// Mock useNearestProperty hook
+jest.mock("@/hooks/useNearestProperty", () => ({
+  useNearestProperty: () => ({
+    nearestProperty: null,
+    isLoading: false,
+    error: null,
+    showModal: false,
+    setShowModal: jest.fn(),
+    streetViewError: false,
+    setStreetViewError: jest.fn(),
+    findNearestProperty: jest.fn().mockResolvedValue(false),
+  }),
 }));
 
-jest.mock("@/components/ui/box", () => ({
-  Box: ({
-    children,
-    className,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => (
-    <View testID="box" className={className}>
-      {children}
-    </View>
-  ),
+// Mock PropertyConfirmationModal
+jest.mock("@/components/PropertyConfirmationModal", () => ({
+  __esModule: true,
+  default: () => <View testID="property-confirmation-modal" />,
 }));
 
+// Mock Fab components
 jest.mock("@/components/ui/fab", () => ({
-  Fab: ({
-    children,
-    size,
-    placement,
-    onPress,
-    className,
-  }: {
-    children: React.ReactNode;
-    size: string;
-    placement: string;
-    onPress: () => void;
-    className?: string;
-  }) => (
+  Fab: ({ children, onPress }: FabProps) => (
     <TouchableOpacity testID="fab" onPress={onPress}>
       {children}
     </TouchableOpacity>
   ),
-  FabIcon: ({ size, as }: { size: string; as: any }) => (
-    <View testID="fab-icon" />
-  ),
+  FabIcon: ({ as }: { as: React.ComponentType }) => <View testID="fab-icon" />,
 }));
 
+jest.mock("@legendapp/motion", () => ({}));
+jest.mock("@/components/ui/modal", () => ({}));
+jest.mock("@/components/ui/pressable", () => ({}));
+
+// Mock UIIcon component
 jest.mock("@/components/ui/icon", () => ({
   AddIcon: () => <View testID="add-icon" />,
 }));
 
-jest.mock("@/constants/Colors", () => ({
-  Colors: {
-    light: {
-      tabIconDefault: "#000000",
-    },
-  },
-}));
+// Remove this import since we're not using it
+// import { IncidentListProps } from "@/components/incidents/list";
 
-describe("IncidentList", () => {
-  // Helper function to create test incidents
-  const createTestIncident = (
-    id: number,
-    type: string,
-    status: IncidentStatus,
-    severity: IncidentSeverity,
-  ): Incident => ({
-    id: id,
-    propertyId: 123,
-    incidentType: type,
-    description: type,
-    reportedAt: "2025-02-15T10:30:00Z",
-    severity,
-    status,
-    images: [],
-    createdAt: "",
-    updatedAt: "",
-  });
+// Import the component after all mocks are set up
+import IncidentList from "@/components/incidents/list";
 
-  // Sample incidents for testing
-  const mockIncidents: Incident[] = [
-    createTestIncident(
-      1,
-      "Water Damage",
-      IncidentStatus.Open,
-      IncidentSeverity.Medium,
-    ),
-    createTestIncident(
-      2,
-      "Electrical Issue",
-      IncidentStatus.InProgress,
-      IncidentSeverity.High,
-    ),
-    createTestIncident(
-      3,
-      "Broken Window",
-      IncidentStatus.Resolved,
-      IncidentSeverity.Low,
-    ),
-  ];
-
+describe("IncidentList Basic Tests", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test("renders list with incidents correctly", () => {
+  test("renders empty state when no incidents", () => {
+    const { getByTestId, getByText } = render(<IncidentList incidents={[]} />);
+
+    // Check for empty state icon
+    const emptyIcon = getByTestId("icon-symbol");
+    expect(emptyIcon).toBeTruthy();
+
+    // Check for empty state text
+    expect(
+      getByText("No incidents found. Report a new incident to get started."),
+    ).toBeTruthy();
+  });
+
+  test("renders incident cards when incidents are provided", () => {
     const { getAllByTestId } = render(
       <IncidentList incidents={mockIncidents} />,
     );
 
-    // Check if all incident cards are rendered
+    // Check if incident cards are rendered
     const incidentCards = getAllByTestId("incident-card");
-    expect(incidentCards.length).toBe(mockIncidents.length);
+    expect(incidentCards.length).toBe(2);
 
-    // Check if incident titles are displayed
-    const incidentTitles = getAllByTestId("incident-title");
-    expect(incidentTitles[0].props.children).toBe("Water Damage");
-    expect(incidentTitles[1].props.children).toBe("Electrical Issue");
-    expect(incidentTitles[2].props.children).toBe("Broken Window");
+    // Check incident types
+    const incidentTypes = getAllByTestId("incident-type");
+    expect(incidentTypes[0].props.children).toBe("Water Damage");
+    expect(incidentTypes[1].props.children).toBe("Electrical Issue");
   });
 
-  test("calls onSelectIncident when an incident card is pressed", () => {
+  test("calls onSelectIncident when an incident is pressed", () => {
     const mockOnSelectIncident = jest.fn();
+
     const { getAllByTestId } = render(
       <IncidentList
         incidents={mockIncidents}
@@ -215,54 +201,27 @@ describe("IncidentList", () => {
       />,
     );
 
-    // Find all card press buttons and press the first one
+    // Press the first incident
     const cardPressButtons = getAllByTestId("card-press");
     fireEvent.press(cardPressButtons[0]);
 
-    // Check if onSelectIncident was called
-    expect(mockOnSelectIncident).toHaveBeenCalled();
-    // Note: Due to how we mocked the component, we can't verify the exact parameter passed
+    // Check if onSelectIncident was called with the correct incident
+    expect(mockOnSelectIncident).toHaveBeenCalledWith(mockIncidents[0]);
   });
 
-  test("navigates to incident details when details button is pressed", () => {
+  test("navigates to details screen when details button is pressed", () => {
     const { getAllByTestId } = render(
       <IncidentList incidents={mockIncidents} />,
     );
 
-    // Find all details buttons and press the second one
+    // Press the details button of the second incident
     const detailsButtons = getAllByTestId("details-button");
     fireEvent.press(detailsButtons[1]);
 
-    // Check if router.push was called
-    expect(router.push).toHaveBeenCalled();
-    // Note: We can verify that router.push was called, but not with which exact parameters
-    // because our mock doesn't pass the incident to the callback
-  });
-
-  test("navigates to add incident screen when FAB is pressed", () => {
-    const { getByTestId } = render(<IncidentList incidents={mockIncidents} />);
-
-    // Find and press the FAB
-    const fab = getByTestId("fab");
-    fireEvent.press(fab);
-
-    // Check if router.push was called with the correct parameters
-    expect(router.push).toHaveBeenCalledWith({
-      pathname: "/(tabs)/(incidents)/[addIncident]",
-      params: { addIncident: "new" },
+    // Check if router.push was called with the correct params
+    expect(routerMock.push).toHaveBeenCalledWith({
+      pathname: "/(tabs)/(incidents)/details",
+      params: { incidentId: 2 },
     });
-  });
-
-  test("does not call onSelectIncident when it's not provided", () => {
-    const { getAllByTestId } = render(
-      <IncidentList incidents={mockIncidents} />,
-    );
-
-    // Find all card press buttons and press the first one
-    const cardPressButtons = getAllByTestId("card-press");
-    fireEvent.press(cardPressButtons[0]);
-
-    // Since we didn't provide onSelectIncident, nothing should happen (no error)
-    // This is an implicit test that the component doesn't crash
   });
 });

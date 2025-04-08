@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Pressable } from "@/components/ui/pressable";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Box } from "@/components/ui/box";
-import { properties } from "@/components/properties/data/properties";
 import { Text } from "react-native";
 import { Image } from "@/components/ui/image";
 import Constants from "expo-constants";
@@ -61,22 +60,13 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
   onPress,
   onDetailsPress,
 }) => {
-  // Find the associated property
-  const property = properties.find(
-    (p) => p.property_id === incident.propertyId,
-  );
-
   // Initialize street view error state
-  const [streetViewError, setStreetViewError] = useState(
-    !property?.location ||
-      typeof property?.location.latitude !== "number" ||
-      typeof property?.location.longitude !== "number",
-  );
+  const [streetViewError, setStreetViewError] = useState(false);
 
   // Helper function to get property name from property ID
   const getPropertyName = () => {
-    if (property) {
-      return `${property.address}, ${property.city}`;
+    if (incident.property) {
+      return `${incident.property.address}`;
     }
     return `Property #${incident.propertyId}`;
   };
@@ -88,13 +78,16 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
 
   // Function to render the street view image or unavailable placeholder
   const renderPropertyImage = () => {
-    // If we have location and street view hasn't errored
-    if (property?.location && !streetViewError) {
+    if (
+      incident.property?.latitude &&
+      incident.property?.longitude &&
+      !streetViewError
+    ) {
       return (
         <Box className="relative h-full w-full">
           <StreetViewImage
-            latitude={property.location.latitude}
-            longitude={property.location.longitude}
+            latitude={incident.property.latitude}
+            longitude={incident.property.longitude}
             size={{ width: 200, height: 200 }}
             onError={() => {
               setStreetViewError(true);
@@ -123,7 +116,7 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
         <Box className="h-24 w-24 rounded-md overflow-hidden mr-4 flex-shrink-0">
           {renderPropertyImage()}
 
-          {!streetViewError && property?.location && (
+          {!streetViewError && incident.property?.address && (
             <Badge className="absolute bottom-0 left-0 bg-primary-400/70 text-white text-xs py-0.5 px-1 rounded-tr">
               <Text className="text-white text-xs">Street View</Text>
             </Badge>
