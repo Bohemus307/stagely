@@ -1,4 +1,3 @@
-// Modified IncidentList.tsx
 import {
   FlatList,
   View,
@@ -15,8 +14,9 @@ import { AddIcon } from "@/components/ui/icon";
 import IncidentCard from "@/components/incidents/list/IncidentCard";
 import { Incident } from "@/lib/@types/properties";
 import AddIncidentButton from "../AddIncidentButton";
-import { useNearestProperty } from "@/hooks/useNearestProperty";
 import PropertyConfirmationModal from "@/components/PropertyConfirmationModal";
+import PropertySelectionModal from "@/components/PropertySelectionModal";
+import { useIncidentCreation } from "@/hooks/incidents/useIncidentCreation";
 
 export interface IncidentListProps {
   incidents: Incident[];
@@ -33,16 +33,19 @@ const IncidentList: React.FC<IncidentListProps> = ({
   onRefresh,
   onSelectIncident,
 }) => {
-  // Use our custom hook
   const {
     nearestProperty,
-    isLoading: locationLoading,
     showModal,
     setShowModal,
+    showPropertySelectionModal,
+    setShowPropertySelectionModal,
     streetViewError,
     setStreetViewError,
-    findNearestProperty,
-  } = useNearestProperty();
+    handleCreateIncident,
+    handleConfirmProperty,
+    handleViewAllProperties,
+    handleSelectProperty,
+  } = useIncidentCreation();
 
   const handleIncidentPress = (incident: Incident) => {
     if (onSelectIncident) {
@@ -55,34 +58,6 @@ const IncidentList: React.FC<IncidentListProps> = ({
       pathname: "/(tabs)/(incidents)/details",
       params: { incidentId: incident.id },
     });
-  };
-
-  // Modified to use our property finding logic
-  const handleAddIncident = async () => {
-    const found = await findNearestProperty();
-    if (!found) {
-      // If no property found or error occurred, navigate to properties
-      router.push("/(tabs)/(properties)");
-    }
-    // If property found, the modal will show automatically via the hook state
-  };
-
-  const handleConfirmProperty = () => {
-    if (nearestProperty) {
-      setShowModal(false);
-      router.push({
-        pathname: "/(tabs)/(incidents)/[addIncident]",
-        params: {
-          propertyId: nearestProperty.id.toString(),
-          addIncident: "[addIncident]",
-        },
-      });
-    }
-  };
-
-  const handleViewAllProperties = () => {
-    setShowModal(false);
-    router.push("/(tabs)/(properties)");
   };
 
   const renderIncident = ({ item }: { item: Incident }) => (
@@ -143,7 +118,6 @@ const IncidentList: React.FC<IncidentListProps> = ({
         No incidents found. Report a new incident to get started.
       </ThemedText>
       <Box className="mt-4">
-        {/* Using the AddIncidentButton component here */}
         <AddIncidentButton />
       </Box>
     </View>
@@ -171,14 +145,12 @@ const IncidentList: React.FC<IncidentListProps> = ({
       <Fab
         size="lg"
         placement="bottom right"
-        onPress={handleAddIncident}
+        onPress={handleCreateIncident}
         className="mb-24 mr-4"
-        isDisabled={locationLoading}
       >
         <FabIcon size="xl" as={AddIcon} />
       </Fab>
 
-      {/* Property Confirmation Modal */}
       <PropertyConfirmationModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
@@ -187,6 +159,12 @@ const IncidentList: React.FC<IncidentListProps> = ({
         onViewAll={handleViewAllProperties}
         streetViewError={streetViewError}
         setStreetViewError={setStreetViewError}
+      />
+
+      <PropertySelectionModal
+        isOpen={showPropertySelectionModal}
+        onClose={() => setShowPropertySelectionModal(false)}
+        onSelectProperty={handleSelectProperty}
       />
     </Box>
   );

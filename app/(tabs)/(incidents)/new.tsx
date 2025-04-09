@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Alert, ScrollView, Text, View } from "react-native";
+import { Alert, ScrollView, Text } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { Spinner } from "@/components/ui/spinner";
 import BackButton from "@/components/BackButton";
@@ -39,7 +39,6 @@ const NewIncidentScreen = () => {
   const [severity, setSeverity] = useState("Medium");
   const [spaceType, setSpaceType] = useState("");
 
-  // Handle create success
   useEffect(() => {
     if (isCreateSuccess && createdIncident) {
       Alert.alert(
@@ -75,7 +74,6 @@ const NewIncidentScreen = () => {
       return;
     }
 
-    // Create a new incident
     createIncident({
       propertyId: parseInt(propertyId),
       incidentType,
@@ -89,7 +87,6 @@ const NewIncidentScreen = () => {
   };
 
   return (
-    // Root ScrollView, directly matching edit.tsx structure (without ThemedView wrapper)
     <ScrollView className="flex-1 bg-primary-50">
       <Box className="p-4">
         <BackButton />
@@ -228,13 +225,6 @@ const NewIncidentScreen = () => {
         )}
 
         <HStack className="space-x-2 mb-8">
-          <Button
-            variant="outline"
-            onPress={() => router.back()}
-            className="flex-1"
-          >
-            <ButtonText>Cancel</ButtonText>
-          </Button>
           <Button
             onPress={handleSubmit}
             isDisabled={isCreating}

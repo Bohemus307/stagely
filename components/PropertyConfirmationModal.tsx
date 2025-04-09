@@ -1,5 +1,3 @@
-// components/PropertyConfirmationModal.tsx
-import React from "react";
 import { Text } from "react-native";
 import {
   Modal,

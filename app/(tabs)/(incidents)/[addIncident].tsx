@@ -33,7 +33,6 @@ const AddIncidentScreen = () => {
     });
   };
 
-  // Option card style
   const getCardStyle = () => {
     return "bg-gray-200 rounded-xl overflow-hidden";
   };

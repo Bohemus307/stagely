@@ -1,4 +1,3 @@
-// hooks/useNearestProperty.ts
 import { useState } from "react";
 import * as Location from "expo-location";
 import { Alert } from "react-native";
@@ -11,7 +10,6 @@ export function useNearestProperty() {
   const [showModal, setShowModal] = useState(false);
   const [streetViewError, setStreetViewError] = useState(false);
 
-  // Use the properties hook to fetch data
   const {
     properties: propertiesData,
     isLoading: propertiesLoading,
@@ -21,7 +19,10 @@ export function useNearestProperty() {
     limit: 100,
   });
 
-  const findNearestProperty = async (): Promise<boolean> => {
+  const findNearestProperty = async (
+    latitude: number,
+    longitude: number,
+  ): Promise<boolean> => {
     setIsLoading(true);
     setStreetViewError(false);
 
@@ -57,17 +58,14 @@ export function useNearestProperty() {
 
       const location = await Location.getCurrentPositionAsync();
 
-      // Initialize as null
       let nearestProp: Property | null = null;
       let minDistance = Number.MAX_VALUE;
 
-      // Safely handle the properties data
       const properties = (propertiesData?.data as any[]) || [];
 
       for (let i = 0; i < properties.length; i++) {
         const property = properties[i] as any;
 
-        // Skip properties without valid coordinates
         if (
           !property ||
           typeof property.latitude !== "number" ||
@@ -88,12 +86,9 @@ export function useNearestProperty() {
         }
       }
 
-      // Now handle the nearest property if found
       if (nearestProp) {
-        // Safely set the nearest property
         setNearestProperty(nearestProp);
 
-        // Handle street view error checking
         const hasValidCoords =
           typeof nearestProp.latitude === "number" &&
           typeof nearestProp.longitude === "number";

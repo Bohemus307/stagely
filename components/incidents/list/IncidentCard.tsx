@@ -15,7 +15,6 @@ import {
 import { Heading } from "@/components/ui/heading";
 import { Incident } from "@/lib/@types/properties";
 
-// Street View Image Component
 interface StreetViewImageProps {
   latitude: number;
   longitude: number;
@@ -60,10 +59,8 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
   onPress,
   onDetailsPress,
 }) => {
-  // Initialize street view error state
   const [streetViewError, setStreetViewError] = useState(false);
 
-  // Helper function to get property name from property ID
   const getPropertyName = () => {
     if (incident.property) {
       return `${incident.property.address}`;
@@ -76,7 +73,6 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
   const displayStatus = isUrgent ? "Urgent" : incident.status;
   const badgeClass = getIncidentStatusBadge(displayStatus);
 
-  // Function to render the street view image or unavailable placeholder
   const renderPropertyImage = () => {
     if (
       incident.property?.latitude &&
@@ -97,7 +93,6 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
       );
     }
 
-    // Fallback to placeholder with message
     return (
       <Box className="h-full w-full bg-secondary-100 flex items-center justify-center flex-col">
         <IconSymbol name="eye.slash" size={24} color="gray" />
