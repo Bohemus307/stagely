@@ -104,7 +104,7 @@ const IncidentsDetailsScreen = () => {
   };
 
   const handleEditIncident = () => {
-    router.push({
+    router.replace({
       pathname: "/(tabs)/(incidents)/edit",
       params: { incidentId: incident?.id.toString() },
     });

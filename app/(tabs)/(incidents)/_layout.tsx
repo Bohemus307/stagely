@@ -15,12 +15,11 @@ export default function IncidentsLayout() {
         }}
       />
 
-      {/* Add explicit configuration for new.tsx */}
       <Stack.Screen
         name="new"
         options={{
           headerShown: false,
-          presentation: "card", // This forces standard screen presentation
+          presentation: "card",
         }}
       />
 
@@ -28,7 +27,15 @@ export default function IncidentsLayout() {
         name="[addIncident]"
         options={{
           headerShown: false,
-          presentation: "modal", // Change from modal to card
+          presentation: "modal",
+        }}
+      />
+
+      <Stack.Screen
+        name="edit"
+        options={{
+          headerShown: false,
+          presentation: "card",
         }}
       />
     </Stack>
