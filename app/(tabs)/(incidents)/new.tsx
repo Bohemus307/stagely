@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, ScrollView, Text } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { Spinner } from "@/components/ui/spinner";
-import BackButton from "@/components/BackButton";
+
 import { useCreateIncident } from "@/hooks/incidents/useCreateIncident";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Box } from "@/components/ui/box";
@@ -89,8 +89,6 @@ const NewIncidentScreen = () => {
   return (
     <ScrollView className="flex-1 bg-primary-50">
       <Box className="p-4">
-        <BackButton />
-
         <Heading className="text-xl my-4">Report New Incident</Heading>
 
         {/* Incident Form */}
@@ -225,6 +223,13 @@ const NewIncidentScreen = () => {
         )}
 
         <HStack className="space-x-2 mb-8">
+          <Button
+            variant="outline"
+            onPress={() => router.back()}
+            className="flex-1"
+          >
+            <ButtonText>Cancel</ButtonText>
+          </Button>
           <Button
             onPress={handleSubmit}
             isDisabled={isCreating}
