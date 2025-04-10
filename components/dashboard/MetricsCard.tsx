@@ -1,103 +1,87 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { HStack } from "@/components/ui/hstack";
 import { Box } from "@/components/ui/box";
-import {
-  Property,
-  Incident,
-  IncidentSeverity,
-  IncidentStatus,
-  PropertyStatus,
-} from "@/lib/@types/properties";
+import { Spinner } from "@/components/ui/spinner";
+import { useAuth0 } from "react-native-auth0";
+import Constants from "expo-constants";
 
 interface MetricItem {
   title: string;
   value: number;
+  isLoading: boolean;
+}
+
+interface PropertyStats {
+  totalProperties: number;
+  activeProperties: number;
+  maintenanceProperties: number;
+  archivedProperties: number;
+  totalIncidents: number;
+  openIncidents: number;
+  resolvedIncidents: number;
+  totalInspections: number;
+  recentlyUpdated?: any[];
 }
 
 export default function MetricsCard(): JSX.Element {
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [stats, setStats] = useState<PropertyStats | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<Error | null>(null);
+  const { getCredentials } = useAuth0();
+
+  const apiUrl =
+    Constants.expoConfig?.extra?.stagelyApiUrl || process.env.STAGELY_API_URL;
 
   useEffect(() => {
-    setProperties([
-      {
-        id: 1,
-        address: "Property A",
-        propertyId: 0,
-        userId: 0,
-        city: "",
-        country: "",
-        latitude: 0,
-        longitude: 0,
-        status: PropertyStatus.Active,
-        incidentCount: 0,
-        openIncidentCount: 0,
-        createdAt: "",
-        updatedAt: "",
-      },
-      {
-        id: 2,
-        address: "Property B",
-        propertyId: 0,
-        userId: 0,
-        city: "",
-        country: "",
-        latitude: 0,
-        longitude: 0,
-        status: PropertyStatus.Active,
-        incidentCount: 0,
-        openIncidentCount: 0,
-        createdAt: "",
-        updatedAt: "",
-      },
-      {
-        id: 3,
-        address: "Property C",
-        propertyId: 0,
-        userId: 0,
-        city: "",
-        country: "",
-        latitude: 0,
-        longitude: 0,
-        status: PropertyStatus.Active,
-        incidentCount: 0,
-        openIncidentCount: 0,
-        createdAt: "",
-        updatedAt: "",
-      },
-    ]);
-    setIncidents([
-      {
-        id: 1,
-        description: "Leak in Property A",
-        propertyId: 0,
-        incidentType: "",
-        reportedAt: "",
-        severity: IncidentSeverity.Low,
-        status: IncidentStatus.Open,
-        createdAt: "",
-        updatedAt: "",
-      },
-      {
-        id: 2,
-        description: "Power outage in Property B",
-        propertyId: 0,
-        incidentType: "",
-        reportedAt: "",
-        severity: IncidentSeverity.Low,
-        status: IncidentStatus.Open,
-        createdAt: "",
-        updatedAt: "",
-      },
-    ]);
-  }, []);
+    const fetchStats = async () => {
+      try {
+        const credentials = await getCredentials();
+        if (!credentials?.accessToken) {
+          throw new Error("Authentication required");
+        }
+
+        const response = await fetch(`https://${apiUrl}/properties/stats`, {
+          headers: {
+            Authorization: `Bearer ${credentials.accessToken}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch stats: ${response.statusText}`);
+        }
+
+        const statsData = await response.json();
+        setStats(statsData);
+      } catch (err) {
+        console.error("Error fetching stats:", err);
+        setError(err instanceof Error ? err : new Error(String(err)));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [apiUrl, getCredentials]);
 
   const metricItems: MetricItem[] = [
-    { title: "Active Properties", value: properties.length },
-    { title: "Open Incidents", value: incidents.length },
+    {
+      title: "Active Properties",
+      value: stats?.activeProperties || 0,
+      isLoading: isLoading,
+    },
+    {
+      title: "Open Incidents",
+      value: stats?.openIncidents || 0,
+      isLoading: isLoading,
+    },
   ];
+
+  if (error) {
+    console.warn("Error loading metrics:", error.message);
+  }
 
   return (
     <ThemedView>
@@ -111,9 +95,15 @@ export default function MetricsCard(): JSX.Element {
               <ThemedText className="text-left text-black font-semibold font-roboto mb-1">
                 {item.title}
               </ThemedText>
-              <ThemedText className="text-2xl font-semibold font-roboto text-left">
-                {item.value}
-              </ThemedText>
+              {item.isLoading ? (
+                <Box className="flex justify-start">
+                  <Spinner size="small" />
+                </Box>
+              ) : (
+                <ThemedText className="text-2xl font-semibold font-roboto text-left">
+                  {item.value}
+                </ThemedText>
+              )}
             </Box>
           ))}
         </HStack>
