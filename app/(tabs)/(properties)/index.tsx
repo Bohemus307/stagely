@@ -35,7 +35,7 @@ const PropertiesScreen = () => {
 
   return (
     <ResponsiveScreenWrapper scrollable={false}>
-      <View className="px-4 p-2 bg-white">
+      <View className="p-3 w-screen bg-white">
         <PropertySearch
           onSearchResults={handleSearchResults}
           onSearchCleared={handleSearchCleared}
