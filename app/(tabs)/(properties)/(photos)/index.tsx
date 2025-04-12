@@ -14,7 +14,7 @@ import { Spinner } from "@/components/ui/spinner";
 import BackButton from "@/components/BackButton";
 import { ThemedText } from "@/components/ThemedText";
 
-import { PropertyImage } from "@/lib/@types/properties";
+import { PropertyImage, SpaceType } from "@/lib/@types/properties";
 import { Image } from "expo-image";
 import { useGetPropertySpaces } from "@/hooks/spaces/useGetPropertySpaces";
 import { AddIcon } from "@/components/ui/icon";
@@ -38,6 +38,7 @@ const PropertyPhotosScreen: React.FC = () => {
     propertyId,
     {},
   );
+
   // Extract, format, and enhance images from all spaces
   const processedImages = useMemo<EnhancedPropertyImage[]>(() => {
     return (
@@ -49,14 +50,14 @@ const PropertyPhotosScreen: React.FC = () => {
           if (Array.isArray(item)) {
             return item.map((img: PropertyImage) => ({
               ...img,
-              spaceType: space.type || "Unknown",
+              spaceType: space.type || SpaceType.Unknown,
             }));
           }
           // Handle case where image is an object with imageUrl
           if (item && typeof item === "object" && item.imageUrl) {
             return {
               ...item,
-              spaceType: space.type || "Unknown",
+              spaceType: space.type || SpaceType.Unknown,
             };
           }
           return [];
@@ -100,6 +101,19 @@ const PropertyPhotosScreen: React.FC = () => {
     });
   };
 
+  // Navigate to photo detail screen
+  const handlePhotoPress = (photo: EnhancedPropertyImage): void => {
+    router.push({
+      pathname: "/(tabs)/(properties)/(photos)/details",
+      params: {
+        propertyId,
+        photoId: photo.id.toString(),
+        spaceId: photo.spaceId?.toString() || "",
+        spaceType: photo.spaceType,
+      },
+    });
+  };
+
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center">
@@ -126,7 +140,10 @@ const PropertyPhotosScreen: React.FC = () => {
     const imageUrl = getCloudFrontUrl(item.imageUrl);
 
     return (
-      <Pressable style={{ margin: 4, width: "31%", aspectRatio: 1 }}>
+      <Pressable
+        style={{ margin: 4, width: "31%", aspectRatio: 1 }}
+        onPress={() => handlePhotoPress(item)}
+      >
         <View style={{ position: "relative", width: "100%", height: "100%" }}>
           <Image
             source={{ uri: imageUrl }}

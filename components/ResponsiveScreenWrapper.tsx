@@ -152,7 +152,7 @@ const ResponsiveScreenWrapper: React.FC<ResponsiveScreenWrapperProps> = ({
     container: {
       flex: 1,
       backgroundColor: Colors.light.background,
-      paddingHorizontal: isTablet || isLargeTablet ? 16 : 12,
+      paddingHorizontal: isTablet || isLargeTablet ? 16 : 0,
       // We'll handle the bottom padding in the contentContainerStyle instead
     },
   });
