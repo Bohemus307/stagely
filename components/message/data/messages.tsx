@@ -5,13 +5,7 @@ export interface MessageUser {
   avatar?: string;
 }
 
-export interface ChatMessage {
-  id: string;
-  text: string;
-  timestamp: string;
-  sender: string;
-  status?: "sent" | "delivered" | "read";
-}
+// components/message/data/messages.ts
 
 export interface Message {
   id: string;
@@ -23,9 +17,14 @@ export interface Message {
   lastMessage: string;
   timestamp: string;
   unread: boolean;
-  urgent?: boolean;
-  propertyId?: number;
-  propertyName?: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  text: string;
+  timestamp: string;
+  sender: string;
+  status?: "sent" | "delivered" | "read" | "error";
 }
 // Type definitions for dictionaries
 export interface UserDictionary {

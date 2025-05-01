@@ -1,15 +1,18 @@
-import { useState, useEffect } from "react";
+// components/message/list/index.tsx
+import { useMemo } from "react";
 import { router } from "expo-router";
 import { Box } from "@/components/ui/box";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ThemedText";
-import { FlatList } from "react-native";
+import { FlatList, ActivityIndicator, View } from "react-native";
 import MessageCard from "./MessageCard";
-import { mockMessages } from "../data/messages";
 import { Fab } from "@/components/ui/fab";
-import { useAuth0 } from "react-native-auth0";
 import { Message } from "@/components/message/data/messages";
 import { filterMessages } from "../lib/utils/messageHelpers";
+import {
+  useGetConversations,
+  useGetUnreadCount,
+} from "@/hooks/messaging/useConversations";
 
 export interface MessageListProps {
   searchQuery?: string;
@@ -20,88 +23,135 @@ const MessagesList: React.FC<MessageListProps> = ({
   searchQuery = "",
   statusFilter = null,
 }) => {
-  const { user } = useAuth0();
-  const [messages, setMessages] = useState<Message[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isLoading, setIsLoading] = useState(true);
+  const { conversations, isLoading, error, refetch } = useGetConversations();
+  const { unreadCount } = useGetUnreadCount();
 
-  useEffect(() => {
-    // Simulate fetching messages from API
-    const fetchMessages = async () => {
-      try {
-        // Mock Data
-        setTimeout(() => {
-          // We're using the mockMessages as they already have urgent flags
-          setMessages(mockMessages);
-          setIsLoading(false);
+  // Convert conversations from API to message format using useMemo
+  const formattedMessages = useMemo(() => {
+    if (!conversations || conversations.length === 0) {
+      return [];
+    }
 
-          // Log the current Auth0 user - in a real app you'd use this to fetch user-specific messages
-          if (user) {
-            console.log("Current Auth0 user:", user.name);
-            // In a real application, you would fetch messages for this specific user
-            // Example: const response = await fetch(`/api/messages?userId=${user.sub}`);
-          }
-        }, 500);
-      } catch (error) {
-        console.error("Error fetching messages:", error);
-        setIsLoading(false);
-      }
-    };
+    return conversations.map((conv: any) => {
+      // Extract the other participant info
+      const otherParticipant = {
+        id:
+          conv.participants
+            .find((p: number) => p !== conv.lastMessageSenderId)
+            ?.toString() || "",
+        name: conv.participantNames?.join(", ") || "Unknown",
+        avatar: conv.participantAvatars?.[0] || undefined,
+      };
 
-    fetchMessages();
-  }, [user]);
+      return {
+        id: conv.conversationId,
+        user: otherParticipant,
+        lastMessage: conv.lastMessageText || "Start a conversation...",
+        timestamp: conv.lastMessageTime
+          ? new Date(conv.lastMessageTime).toISOString()
+          : new Date().toISOString(),
+        unread:
+          (conv.unreadCount &&
+            Object.values(conv.unreadCount).some(
+              (value) => (value as number) > 0,
+            )) ||
+          false,
+      };
+    });
+  }, [conversations]);
 
-  //helper function to filter
-  const filteredMessages = filterMessages(messages, searchQuery, statusFilter);
+  // Filter messages
+  const filteredMessages = useMemo(() => {
+    return filterMessages(formattedMessages, searchQuery, statusFilter);
+  }, [formattedMessages, searchQuery, statusFilter]);
 
   const handleMessagePress = (message: Message) => {
     router.push({
       pathname: "/(tabs)/(messages)/[conversation]",
       params: {
-        conversation: message.user.id,
+        conversation: message.id,
         userId: message.user.id,
-        propertyId: message.propertyId,
       },
     });
   };
 
-  const renderEmpty = () => (
-    <Box className="flex-1 justify-center items-center p-8">
-      <IconSymbol name="message.fill" size={48} color="#9CA3AF" />
-      <ThemedText className="text-center mt-4 text-gray-500">
-        {searchQuery || statusFilter
-          ? "No messages match your search"
-          : "No messages yet. Start a conversation!"}
-      </ThemedText>
-    </Box>
-  );
+  const renderEmpty = () => {
+    // Show error message only if there's a real error
+    // Otherwise, show the "No messages" message
+    if (error) {
+      return (
+        <Box className="flex-1 justify-center items-center p-8">
+          <IconSymbol
+            name="exclamationmark.triangle"
+            size={48}
+            color="#ef4444"
+          />
+          <ThemedText className="text-center mt-4 text-gray-700">
+            Error loading messages. Pull down to retry.
+          </ThemedText>
+        </Box>
+      );
+    }
 
-  // Fab button
+    return (
+      <Box className="flex-1 justify-center items-center p-8">
+        <IconSymbol name="message.fill" size={48} color="#9CA3AF" />
+        <ThemedText className="text-center mt-4 text-gray-500">
+          {searchQuery || statusFilter
+            ? "No messages match your search"
+            : "No messages yet. Start a conversation!"}
+        </ThemedText>
+      </Box>
+    );
+  };
+
   const handleNewMessage = () => {
     router.push("/(tabs)/(messages)/new");
   };
 
-  return (
-    <Box className="flex-1 relative bg-primary-50">
-      <FlatList
-        data={filteredMessages}
-        renderItem={({ item }) => (
-          <MessageCard message={item} onPress={handleMessagePress} />
-        )}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{
-          padding: 16,
-          flexGrow: filteredMessages.length ? 0 : 1,
-        }}
-        className="flex-1"
-        ListEmptyComponent={renderEmpty}
-      />
-      <Box className="absolute bottom-6 right-6">
-        <Fab size="lg" placement="bottom right" onPress={handleNewMessage}>
-          <IconSymbol name="message.fill" size={24} color="white" />
-        </Fab>
+  if (isLoading && formattedMessages.length === 0) {
+    return (
+      <Box className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color="#0056b3" />
       </Box>
-    </Box>
+    );
+  }
+
+  return (
+    <View className="flex-1 relative">
+      <Box className="flex-1 bg-primary-50">
+        <FlatList
+          data={filteredMessages}
+          renderItem={({ item }) => (
+            <MessageCard message={item} onPress={handleMessagePress} />
+          )}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{
+            padding: 16,
+            flexGrow: filteredMessages.length ? 0 : 1,
+          }}
+          onRefresh={refetch}
+          refreshing={isLoading}
+          ListEmptyComponent={renderEmpty}
+        />
+      </Box>
+
+      {/* Fab button with improved positioning */}
+      <Fab
+        size="lg"
+        onPress={handleNewMessage}
+        className="absolute right-4 bottom-4 z-10"
+      >
+        <IconSymbol name="message.fill" size={24} color="white" />
+        {unreadCount > 0 && (
+          <Box className="absolute -top-1 -right-1 bg-red-500 rounded-full w-5 h-5 items-center justify-center">
+            <ThemedText className="text-xs text-white">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </ThemedText>
+          </Box>
+        )}
+      </Fab>
+    </View>
   );
 };
 
