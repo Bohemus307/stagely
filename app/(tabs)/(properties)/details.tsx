@@ -18,9 +18,7 @@ const PropertyDetailsScreen = () => {
   const [streetViewError, setStreetViewError] = useState(false);
 
   // Use the new hook to fetch property data
-  const { property, isLoading, error } = useGetProperty(propertyId, {
-    enabled: !!propertyId,
-  });
+  const { property, isLoading, error } = useGetProperty(propertyId || "");
   console.log("PROPERTY", property, "ID", propertyId);
   if (isLoading) {
     return (

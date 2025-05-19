@@ -23,9 +23,7 @@ const AddIncidentScreen = () => {
     property,
     isLoading: propertyLoading,
     error: propertyError,
-  } = useGetProperty(propertyId, {
-    enabled: !!propertyId,
-  });
+  } = useGetProperty(propertyId || "");
 
   // Action handlers
   const handleTakePhoto = (): void => {

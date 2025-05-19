@@ -12,14 +12,16 @@ import React, { useEffect, useState, useCallback } from "react";
 import { ThemedView } from "@/components/ThemedView";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BackButton from "@/components/BackButton";
-import { ActivityIndicator, FlatList, View } from "react-native";
+import { ActivityIndicator, FlatList, View, Alert } from "react-native";
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
 import { SearchIcon } from "@/components/ui/icon";
 import { useCreateConversation } from "@/hooks/messaging/useCreateConversation";
-import { useAuth0 } from "react-native-auth0"; // Import Auth0 for token
+import { useInviteConversation } from "@/hooks/messaging/useInviteConversation";
+import { useAuth0 } from "react-native-auth0";
 import { VStack } from "@/components/ui/vstack";
 import { ButtonText, Button } from "@/components/ui/button";
 import { Divider } from "@/components/ui/divider";
+import { useAuthUser } from "@/hooks/useAuthUser";
 
 interface User {
   id: number;
@@ -33,11 +35,17 @@ const NewMessageScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [isSearchingUsers, setIsSearchingUsers] = useState(false);
-  const { getCredentials } = useAuth0(); // Get Auth0 credentials
+  const { getCredentials } = useAuth0();
   const [newContactEmail, setNewContactEmail] = useState("");
+  const [initialMessage, setInitialMessage] = useState("");
+  const { backendUser, isLoading: isLoadingUser } = useAuthUser();
   const [isCreatingContact, setIsCreatingContact] = useState(false);
+
   const { mutate: createConversation, isPending: isCreatingConversation } =
     useCreateConversation();
+
+  const { mutate: inviteConversation, isPending: isInvitingUser } =
+    useInviteConversation();
 
   const isValidEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -103,6 +111,7 @@ const NewMessageScreen = () => {
         {
           participants: [user.id],
           type: "general",
+          initialMessage: initialMessage || undefined,
         },
         {
           onSuccess: (data) => {
@@ -115,6 +124,12 @@ const NewMessageScreen = () => {
               },
             });
           },
+          onError: (error) => {
+            Alert.alert(
+              "Error",
+              `Failed to create conversation: ${error.message}`,
+            );
+          },
         },
       );
     }
@@ -122,88 +137,83 @@ const NewMessageScreen = () => {
 
   const handleCreateNewContact = async () => {
     if (!isValidEmail(newContactEmail)) {
-      // You could add proper error handling/toast here
-      console.error("Invalid email");
+      Alert.alert("Invalid Email", "Please enter a valid email address");
+      return;
+    }
+
+    if (!backendUser) {
+      Alert.alert(
+        "Error",
+        "User information not available. Please login again.",
+      );
       return;
     }
 
     setIsCreatingContact(true);
-    try {
-      // Get auth credentials
-      const credentials = await getCredentials();
-      if (!credentials?.accessToken) {
-        console.error("No access token available");
-        setIsCreatingContact(false);
-        return;
-      }
 
-      // First check if user exists
-      const searchResponse = await fetch(
-        `https://${process.env.STAGELY_API_URL}/users/search?query=${encodeURIComponent(newContactEmail)}&limit=1`,
+    // Log the attempt
+    console.log("Attempting to create contact with email:", newContactEmail);
+    console.log("Current user ID:", backendUser.id);
+    try {
+      // Use the invite conversation hook
+      inviteConversation(
         {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${credentials.accessToken}`,
+          email: newContactEmail,
+          initialMessage: initialMessage || undefined,
+        },
+        {
+          onSuccess: (data) => {
+            console.log("Success creating conversation:", data);
+
+            if (!data || !data.conversation || !data.user) {
+              console.error("Invalid response format:", data);
+              Alert.alert(
+                "Error",
+                "Received an invalid response from the server. Please try again.",
+              );
+              setIsCreatingContact(false);
+              return;
+            }
+
+            // Navigate to the conversation screen
+            router.push({
+              pathname: "/(tabs)/(messages)/[conversation]",
+              params: {
+                conversation: data.conversation.conversationId,
+                userId: data.user.id.toString(),
+              },
+            });
+            setIsCreatingContact(false);
+          },
+          onError: (error) => {
+            console.error("Error creating conversation:", error);
+            Alert.alert(
+              "Error",
+              `Failed to create conversation: ${error.message}. Please try again later.`,
+            );
+            setIsCreatingContact(false);
           },
         },
       );
-
-      if (searchResponse.ok) {
-        const searchData = await searchResponse.json();
-
-        // If user exists, create conversation with them
-        if (searchData && searchData.length > 0) {
-          handleUserSelect(searchData[0]);
-          return;
-        }
-
-        // Otherwise, create a new invitation or placeholder user
-        // This depends on your backend implementation
-        const inviteResponse = await fetch(
-          `https://${process.env.STAGELY_API_URL}/invitations`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${credentials.accessToken}`,
-            },
-            body: JSON.stringify({ email: newContactEmail }),
-          },
-        );
-
-        if (inviteResponse.ok) {
-          const inviteData = await inviteResponse.json();
-
-          // Create conversation with the invited user
-          createConversation(
-            {
-              participants: [inviteData.userId], // This depends on your API response
-              type: "general",
-            },
-            {
-              onSuccess: (data) => {
-                // Navigate to the conversation screen
-                router.push({
-                  pathname: "/(tabs)/(messages)/[conversation]",
-                  params: {
-                    conversation: data.conversation.conversationId,
-                    userId: inviteData.userId.toString(),
-                  },
-                });
-              },
-            },
-          );
-        } else {
-          // Handle error
-          console.error("Failed to create invitation");
-        }
-      }
     } catch (error) {
-      console.error("Error creating contact:", error);
-    } finally {
+      console.error("Unexpected error in handleCreateNewContact:", error);
+      Alert.alert(
+        "Error",
+        "An unexpected error occurred. Please try again later.",
+      );
       setIsCreatingContact(false);
     }
   };
+
+  // Add a loading state for the user
+  if (isLoadingUser) {
+    return (
+      <ThemedView className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color="#0056b3" />
+        <ThemedText className="mt-4">Loading user information...</ThemedText>
+      </ThemedView>
+    );
+  }
 
   const renderUserItem = ({ item }: { item: User }) => (
     <Pressable
@@ -255,34 +265,50 @@ const NewMessageScreen = () => {
               placeholder="Search for a Contact by Name or Email..."
               value={searchQuery}
               onChangeText={setSearchQuery}
+              autoCapitalize="none"
             />
           </Input>
-          <ThemedText type="defaultSemiBold" className="mb-2">
-            Contacts
-          </ThemedText>
-          // Add in your component, under the search input
-          <VStack className="mb-4">
+
+          {/* Initial Message Input */}
+          <Input className="rounded-2xl border mb-4">
+            <InputField
+              placeholder="Initial message (optional)"
+              value={initialMessage}
+              onChangeText={setInitialMessage}
+              multiline
+            />
+          </Input>
+
+          <VStack className="mb-4 w-full">
             <ThemedText type="defaultSemiBold" className="mb-2">
               New Contact
             </ThemedText>
-            <Input className="rounded-2xl border mb-2">
+            <Input className="rounded-2xl border mb-2 w-full">
               <InputField
                 placeholder="Contact Email Address"
                 value={newContactEmail}
                 onChangeText={setNewContactEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
               />
             </Input>
             <Button
-              className="rounded-md"
+              className="rounded-md w-full"
               onPress={handleCreateNewContact}
-              disabled={!isValidEmail(newContactEmail) || isCreatingContact}
+              disabled={!isValidEmail(newContactEmail) || isInvitingUser}
             >
               <ButtonText>
-                {isCreatingContact ? "Creating..." : "Create New Contact"}
+                {isInvitingUser ? "Creating..." : "Create New Contact"}
               </ButtonText>
             </Button>
           </VStack>
+
           <Divider className="mb-4" />
+
+          <ThemedText type="defaultSemiBold" className="mb-2">
+            Contacts
+          </ThemedText>
+
           <FlatList
             data={filteredUsers}
             renderItem={renderUserItem}

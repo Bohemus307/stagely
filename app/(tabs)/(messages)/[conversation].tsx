@@ -1,3 +1,4 @@
+// app/(tabs)/(messages)/[conversation].tsx
 import { useLocalSearchParams } from "expo-router";
 import { useState, useRef, useEffect, useCallback, memo } from "react";
 import {
@@ -10,6 +11,7 @@ import {
   View,
   Text,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { Box } from "@/components/ui/box";
 import { ThemedText } from "@/components/ThemedText";
@@ -87,6 +89,7 @@ const ConversationScreen = () => {
   // Get conversation and messages using custom hooks
   const { conversation, isLoading: isLoadingConversation } =
     useGetConversation(conversationId);
+
   const {
     messages,
     isLoading: isLoadingMessages,
@@ -96,6 +99,7 @@ const ConversationScreen = () => {
   // Mutations
   const { mutate: sendMessageMutation, isPending: isSendingMessage } =
     useSendMessage(conversationId);
+
   const { mutate: markAsReadMutation } = useMarkAsRead(conversationId);
 
   // Format message time
@@ -117,14 +121,17 @@ const ConversationScreen = () => {
     }
   }, []);
 
-  // Extract the other participant's info
-  const otherUserId = conversation?.participants?.find(
-    (p: any) => p !== conversation.lastMessageSenderId,
+  // Find the current user ID (the one that is not the other participant)
+  const currentUserId = conversation?.participants?.find(
+    (p: any) => p !== Number(params.userId),
   );
+
+  // Extract the other participant's info
+  const otherUserId = Number(params.userId);
 
   // Convert messages from API to match your ChatMessage format
   useEffect(() => {
-    if (!messages || !otherUserId) return;
+    if (!messages || !messages.length) return;
 
     const formatted = messages.map((msg: any) => ({
       id: msg.messageId,
@@ -132,8 +139,8 @@ const ConversationScreen = () => {
       timestamp: new Date(msg.timestamp).toISOString(),
       sender: msg.senderId === otherUserId ? "user" : "current-user",
       status:
-        msg.status && msg.status[otherUserId]
-          ? msg.status[otherUserId].toLowerCase()
+        msg.status && msg.status[otherUserId.toString()]
+          ? msg.status[otherUserId.toString()].toLowerCase()
           : "sent",
     }));
 
@@ -143,16 +150,16 @@ const ConversationScreen = () => {
     const unreadMessageIds = messages
       .filter(
         (msg: any) =>
+          msg.senderId !== currentUserId &&
           msg.status &&
-          msg.status[otherUserId] !== "READ" &&
-          msg.senderId !== otherUserId,
+          msg.status[currentUserId?.toString()] !== "READ",
       )
       .map((msg: any) => msg.messageId);
 
     if (unreadMessageIds.length > 0) {
       setUnreadMessagesToMark(unreadMessageIds);
     }
-  }, [messages, otherUserId]);
+  }, [messages, otherUserId, currentUserId]);
 
   // Separate effect to mark messages as read
   useEffect(() => {
@@ -192,8 +199,11 @@ const ConversationScreen = () => {
         // Message sent successfully
         refetchMessages();
       },
-      onError: () => {
+      onError: (error) => {
         // Handle error
+        Alert.alert("Error", `Failed to send message: ${error.message}`);
+
+        // Mark message as error in UI
         setFormattedMessages((prev) =>
           prev.map((msg) =>
             msg.id === tempMessage.id ? { ...msg, status: "error" } : msg,
@@ -215,7 +225,7 @@ const ConversationScreen = () => {
     );
   }
 
-  // Determine other user display info
+  // Get participant names from conversation
   const otherUserName = conversation?.participantNames?.[0] || "User";
   const otherUserAvatar = conversation?.participantAvatars?.[0];
 

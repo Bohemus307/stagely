@@ -17,6 +17,7 @@ export interface Message {
   lastMessage: string;
   timestamp: string;
   unread: boolean;
+  urgent?: boolean;
 }
 
 export interface ChatMessage {
