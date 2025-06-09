@@ -1,4 +1,5 @@
-// app/(tabs)/(messages)/[conversation].tsx
+// app/(tabs)/(messages)/[conversation].tsx - Key Updates
+
 import { useLocalSearchParams } from "expo-router";
 import { useState, useRef, useEffect, useCallback, memo } from "react";
 import {
@@ -31,8 +32,9 @@ import {
   useMarkAsRead,
 } from "@/hooks/messaging/useMessages";
 import { ChatMessage } from "@/components/message/data/messages";
+import { useAuthUser } from "@/hooks/useAuthUser";
 
-// Memoized Message component to prevent unnecessary re-renders
+// MessageItem component remains the same
 const MessageItem = memo(
   ({
     item,
@@ -72,12 +74,14 @@ const MessageItem = memo(
   },
 );
 
-// Add display name to fix ESLint warning
 MessageItem.displayName = "MessageItem";
 
 const ConversationScreen = () => {
   const params = useLocalSearchParams();
   const conversationId = params.conversation as string;
+
+  // Get the current authenticated user
+  const { backendUser, isLoading: isLoadingUser } = useAuthUser();
 
   const [newMessage, setNewMessage] = useState("");
   const [formattedMessages, setFormattedMessages] = useState<ChatMessage[]>([]);
@@ -85,6 +89,9 @@ const ConversationScreen = () => {
     [],
   );
   const flatListRef = useRef<FlatList>(null);
+
+  // Extract the other participant's ID from params
+  const otherUserId = Number(params.userId);
 
   // Get conversation and messages using custom hooks
   const { conversation, isLoading: isLoadingConversation } =
@@ -121,53 +128,55 @@ const ConversationScreen = () => {
     }
   }, []);
 
-  // Find the current user ID (the one that is not the other participant)
-  const currentUserId = conversation?.participants?.find(
-    (p: any) => p !== Number(params.userId),
-  );
-
-  // Extract the other participant's info
-  const otherUserId = Number(params.userId);
-
   // Convert messages from API to match your ChatMessage format
   useEffect(() => {
-    if (!messages || !messages.length) return;
+    if (!messages || !messages.length || !backendUser?.id) return;
 
+    // Map API messages to ChatMessage format
     const formatted = messages.map((msg: any) => ({
       id: msg.messageId,
       text: msg.text,
       timestamp: new Date(msg.timestamp).toISOString(),
-      sender: msg.senderId === otherUserId ? "user" : "current-user",
-      status:
-        msg.status && msg.status[otherUserId.toString()]
-          ? msg.status[otherUserId.toString()].toLowerCase()
-          : "sent",
+      sender: msg.senderId === backendUser.id ? "current-user" : "user",
+      status: msg.status
+        ? // For status, we need to check if this message is from us and look at other user's status
+          // or if it's from other user and look at our status
+          msg.senderId === backendUser.id
+          ? (msg.status[otherUserId.toString()] || "sent").toLowerCase()
+          : (msg.status[backendUser.id.toString()] || "delivered").toLowerCase()
+        : "sent",
     }));
 
     setFormattedMessages(formatted);
 
-    // Collect unread message IDs but don't mark them yet
+    // Collect unread message IDs - only messages sent by the OTHER user that WE haven't read
     const unreadMessageIds = messages
       .filter(
         (msg: any) =>
-          msg.senderId !== currentUserId &&
+          // Message is from the other user (not from us)
+          msg.senderId !== backendUser.id &&
+          // And we haven't read it yet (our status is not READ)
           msg.status &&
-          msg.status[currentUserId?.toString()] !== "READ",
+          msg.status[backendUser.id.toString()] !== "READ",
       )
       .map((msg: any) => msg.messageId);
 
     if (unreadMessageIds.length > 0) {
       setUnreadMessagesToMark(unreadMessageIds);
     }
-  }, [messages, otherUserId, currentUserId]);
+  }, [messages, otherUserId, backendUser?.id]);
 
   // Separate effect to mark messages as read
   useEffect(() => {
-    if (unreadMessagesToMark.length > 0) {
-      markAsReadMutation(unreadMessagesToMark);
+    if (unreadMessagesToMark.length > 0 && backendUser?.id) {
+      // Pass both userId and messageIds to the mark as read mutation
+      markAsReadMutation({
+        userId: backendUser.id,
+        messageIds: unreadMessagesToMark,
+      });
       setUnreadMessagesToMark([]);
     }
-  }, [unreadMessagesToMark, markAsReadMutation]);
+  }, [unreadMessagesToMark, markAsReadMutation, backendUser?.id]);
 
   // Render message component
   const renderMessage = useCallback(
@@ -179,7 +188,7 @@ const ConversationScreen = () => {
 
   // Handle sending a message
   const handleSendMessage = useCallback(() => {
-    if (newMessage.trim() === "") return;
+    if (newMessage.trim() === "" || !backendUser?.id) return;
 
     // Optimistically update the UI
     const tempMessage: ChatMessage = {
@@ -193,28 +202,35 @@ const ConversationScreen = () => {
     setFormattedMessages((prev) => [tempMessage, ...prev]);
     setNewMessage("");
 
-    // Actually send the message
-    sendMessageMutation(newMessage.trim(), {
-      onSuccess: () => {
-        // Message sent successfully
-        refetchMessages();
+    // Send the message - include userId in the parameters
+    sendMessageMutation(
+      {
+        userId: backendUser.id,
+        text: newMessage.trim(),
       },
-      onError: (error) => {
-        // Handle error
-        Alert.alert("Error", `Failed to send message: ${error.message}`);
+      {
+        onSuccess: () => {
+          // Message sent successfully
+          refetchMessages();
+        },
+        onError: (error) => {
+          // Handle error
+          Alert.alert("Error", `Failed to send message: ${error.message}`);
 
-        // Mark message as error in UI
-        setFormattedMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === tempMessage.id ? { ...msg, status: "error" } : msg,
-          ),
-        );
+          // Mark message as error in UI
+          setFormattedMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === tempMessage.id ? { ...msg, status: "error" } : msg,
+            ),
+          );
+        },
       },
-    });
-  }, [newMessage, sendMessageMutation, refetchMessages]);
+    );
+  }, [newMessage, sendMessageMutation, refetchMessages, backendUser?.id]);
 
   // Loading state
   if (
+    isLoadingUser ||
     isLoadingConversation ||
     (isLoadingMessages && formattedMessages.length === 0)
   ) {
@@ -225,9 +241,14 @@ const ConversationScreen = () => {
     );
   }
 
-  // Get participant names from conversation
-  const otherUserName = conversation?.participantNames?.[0] || "User";
-  const otherUserAvatar = conversation?.participantAvatars?.[0];
+  // Get participant info from conversation
+  const otherParticipant = conversation?.otherParticipant;
+  const otherUserName = otherParticipant
+    ? `${otherParticipant.firstName} ${otherParticipant.lastName}`
+    : conversation?.participantNames?.[0] || "User";
+  const otherUserAvatar =
+    otherParticipant?.profilePictureUrl ||
+    conversation?.participantAvatars?.[0];
 
   return (
     <ThemedView className="flex-1">
@@ -285,9 +306,11 @@ const ConversationScreen = () => {
             />
             <TouchableOpacity
               onPress={handleSendMessage}
-              disabled={newMessage.trim() === "" || isSendingMessage}
+              disabled={
+                newMessage.trim() === "" || isSendingMessage || !backendUser?.id
+              }
               className={`rounded-full w-10 h-10 items-center justify-center ${
-                newMessage.trim() === "" || isSendingMessage
+                newMessage.trim() === "" || isSendingMessage || !backendUser?.id
                   ? "bg-gray-300"
                   : "bg-primary-500"
               }`}

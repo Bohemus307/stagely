@@ -9,13 +9,6 @@ interface InviteConversationParams {
   initialMessage?: string;
 }
 
-// Define a specific interface for the request body
-interface InviteRequestBody {
-  userId: number;
-  email: string;
-  initialMessage?: string; // Make initialMessage optional
-}
-
 export const useInviteConversation = () => {
   const { getCredentials } = useAuth0();
   const { backendUser } = useAuthUser();
@@ -25,87 +18,87 @@ export const useInviteConversation = () => {
 
   return useMutation({
     mutationFn: async (params: InviteConversationParams) => {
-      console.log(`Starting invitation for ${params.email}`);
-
       if (!apiUrl) {
-        console.error("API URL not available");
         throw new Error("API URL not available");
       }
 
-      console.log(`Using API URL: ${apiUrl}`);
-
       if (!backendUser || !backendUser.id) {
-        console.error("Backend user ID not available");
         throw new Error("Backend user ID not available, please login again");
       }
 
-      console.log(`Using backend user ID: ${backendUser.id}`);
+      console.log("Starting invite process with params:", {
+        email: params.email,
+        hasInitialMessage: !!params.initialMessage,
+        backendUserId: backendUser.id,
+        apiUrl,
+      });
 
       // Get the access token
-      try {
-        const credentials = await getCredentials();
-
-        if (!credentials?.accessToken) {
-          console.error("Access token not available");
-          throw new Error("Access token not available");
-        }
-
-        console.log(
-          `Got access token (first 10 chars): ${credentials.accessToken.substring(0, 10)}...`,
-        );
-
-        // Create the request body with explicit typing
-        const requestBody: InviteRequestBody = {
-          userId: backendUser.id,
-          email: params.email,
-        };
-
-        // Only add initialMessage if it exists
-        if (params.initialMessage) {
-          requestBody.initialMessage = params.initialMessage;
-        }
-
-        console.log(`Request body: ${JSON.stringify(requestBody)}`);
-
-        // Invite user and create conversation
-        const endpoint = `https://${apiUrl}/messaging/invite-conversation`;
-        console.log(`Making request to: ${endpoint}`);
-
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${credentials.accessToken}`,
-          },
-          body: JSON.stringify(requestBody),
-        });
-
-        console.log(`Response status: ${response.status}`);
-
-        // Log the full response for debugging
-        const responseText = await response.text();
-        console.log(`Response body: ${responseText}`);
-
-        if (!response.ok) {
-          console.error(`Error response: ${responseText}`);
-          throw new Error(`API error: ${response.status} - ${responseText}`);
-        }
-
-        // Parse the response if it succeeded
-        try {
-          return JSON.parse(responseText);
-        } catch (e) {
-          console.error("Error parsing response:", e);
-          throw new Error("Invalid response format");
-        }
-      } catch (error) {
-        console.error("Error in invite conversation:", error);
-        throw error;
+      const credentials = await getCredentials();
+      if (!credentials?.accessToken) {
+        throw new Error("Access token not available");
       }
+
+      // Send invitation to the user
+      const inviteEndpoint = `https://${apiUrl}/users/invite`;
+      console.log(`Inviting user via: ${inviteEndpoint}`);
+
+      const inviteRequestBody = {
+        email: params.email,
+      };
+
+      console.log("Invite request body:", JSON.stringify(inviteRequestBody));
+
+      const inviteResponse = await fetch(inviteEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${credentials.accessToken}`,
+        },
+        body: JSON.stringify(inviteRequestBody),
+      });
+
+      console.log("Invite response status:", inviteResponse.status);
+      const responseText = await inviteResponse.text();
+      console.log("Invite response text:", responseText);
+
+      if (!inviteResponse.ok) {
+        throw new Error(
+          `API error: ${inviteResponse.status} - ${responseText}`,
+        );
+      }
+
+      // Parse the response
+      const inviteData = JSON.parse(responseText);
+
+      if (!inviteData.success || !inviteData.user || !inviteData.user.id) {
+        throw new Error(
+          "Failed to create or find invited user: " +
+            JSON.stringify(inviteData),
+        );
+      }
+
+      console.log("Successfully invited user:", inviteData.user.id);
+
+      // Check if the user is a placeholder (needs to accept invitation)
+      const isPlaceholder = inviteData.user.isPlaceholder === true;
+
+      // For placeholder users, just return the invitation data
+      // For non-placeholder users (already existing), we could create a conversation
+      // but that's handled separately in handleUserSelect
+
+      // Return a standardized response
+      return {
+        success: true,
+        user: inviteData.user,
+        // Return empty objects for conversation and message
+        // since we can't create a conversation until the user accepts
+        conversation: {},
+        message: undefined,
+      };
     },
     onSuccess: (data) => {
-      console.log("Invitation successful:", data);
-      // Invalidate and refetch conversations
+      console.log("Invitation sent successfully");
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
     },
     onError: (error) => {

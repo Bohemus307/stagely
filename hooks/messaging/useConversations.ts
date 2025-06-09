@@ -2,10 +2,11 @@
 import { useAuth0 } from "react-native-auth0";
 import { useQuery } from "@tanstack/react-query";
 import Constants from "expo-constants";
+import { useAuthUser } from "@/hooks/useAuthUser";
 
-export const useGetConversations = () => {
+export const useGetConversations = (limit = 20) => {
   const { getCredentials } = useAuth0();
-
+  const { backendUser } = useAuthUser();
   const apiUrl =
     Constants.expoConfig?.extra?.stagelyApiUrl || process.env.STAGELY_API_URL;
 
@@ -14,6 +15,9 @@ export const useGetConversations = () => {
     queryFn: async () => {
       if (!apiUrl) {
         throw new Error("API URL not available");
+      }
+      if (!backendUser?.id) {
+        throw new Error("User ID not available");
       }
 
       // Get the access token
@@ -25,7 +29,7 @@ export const useGetConversations = () => {
 
       // Fetch conversations from the backend
       const response = await fetch(
-        `https://${apiUrl}/messaging/conversations`,
+        `https://${apiUrl}/messaging/conversations?userId=${backendUser.id}&limit=${limit}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -40,11 +44,29 @@ export const useGetConversations = () => {
 
       return response.json();
     },
-    enabled: !!apiUrl,
+    enabled: !!apiUrl && !!backendUser?.id,
   });
 
+  // Process the conversation data to include participant names
+  const processedConversations =
+    data?.conversations?.map((conv: any) => {
+      // Find the other participants (who aren't the current user)
+      const otherParticipants =
+        conv.participants?.filter((p: number) => p !== backendUser?.id) || [];
+
+      // We don't have participants names directly from the backend
+      // You'll need to fetch user info separately or use a lookup approach
+
+      return {
+        ...conv,
+        // This is just a placeholder, you'll need to implement participant name resolution
+        participantNames: otherParticipants.map(() => "User"),
+        participantAvatars: otherParticipants.map(() => null),
+      };
+    }) || [];
+
   return {
-    conversations: data?.conversations || [],
+    conversations: processedConversations,
     isLoading,
     error,
     refetch,
@@ -53,7 +75,7 @@ export const useGetConversations = () => {
 
 export const useGetConversation = (conversationId: string) => {
   const { getCredentials } = useAuth0();
-
+  const { backendUser } = useAuthUser();
   const apiUrl =
     Constants.expoConfig?.extra?.stagelyApiUrl || process.env.STAGELY_API_URL;
 
@@ -62,6 +84,9 @@ export const useGetConversation = (conversationId: string) => {
     queryFn: async () => {
       if (!apiUrl) {
         throw new Error("API URL not available");
+      }
+      if (!backendUser?.id) {
+        throw new Error("User ID not available");
       }
 
       // Get the access token
@@ -73,7 +98,7 @@ export const useGetConversation = (conversationId: string) => {
 
       // Fetch conversation from the backend
       const response = await fetch(
-        `https://${apiUrl}/messaging/conversations/${conversationId}`,
+        `https://${apiUrl}/messaging/conversations/${conversationId}?userId=${backendUser.id}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -88,11 +113,25 @@ export const useGetConversation = (conversationId: string) => {
 
       return response.json();
     },
-    enabled: !!apiUrl && !!conversationId,
+    enabled: !!apiUrl && !!conversationId && !!backendUser?.id,
   });
 
+  // Process conversation data to include participant names
+  const processedConversation = data?.conversation
+    ? {
+        ...data.conversation,
+        // This is a placeholder for participant name resolution
+        participantNames: (data.conversation.participants || [])
+          .filter((p: number) => p !== backendUser?.id)
+          .map(() => "User"),
+        participantAvatars: (data.conversation.participants || [])
+          .filter((p: number) => p !== backendUser?.id)
+          .map(() => null),
+      }
+    : null;
+
   return {
-    conversation: data?.conversation,
+    conversation: processedConversation,
     isLoading,
     error,
     refetch,
@@ -101,7 +140,7 @@ export const useGetConversation = (conversationId: string) => {
 
 export const useGetUnreadCount = () => {
   const { getCredentials } = useAuth0();
-
+  const { backendUser } = useAuthUser();
   const apiUrl =
     Constants.expoConfig?.extra?.stagelyApiUrl || process.env.STAGELY_API_URL;
 
@@ -110,6 +149,9 @@ export const useGetUnreadCount = () => {
     queryFn: async () => {
       if (!apiUrl) {
         throw new Error("API URL not available");
+      }
+      if (!backendUser?.id) {
+        throw new Error("User ID not available");
       }
 
       // Get the access token
@@ -120,12 +162,15 @@ export const useGetUnreadCount = () => {
       }
 
       // Fetch unread count from the backend
-      const response = await fetch(`https://${apiUrl}/messaging/unread-count`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${credentials.accessToken}`,
+      const response = await fetch(
+        `https://${apiUrl}/messaging/unread-count?userId=${backendUser.id}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${credentials.accessToken}`,
+          },
         },
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
@@ -133,7 +178,7 @@ export const useGetUnreadCount = () => {
 
       return response.json();
     },
-    enabled: !!apiUrl,
+    enabled: !!apiUrl && !!backendUser?.id,
   });
 
   return {

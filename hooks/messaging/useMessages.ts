@@ -2,9 +2,21 @@
 import { useAuth0 } from "react-native-auth0";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Constants from "expo-constants";
+import { useAuthUser } from "@/hooks/useAuthUser";
+
+interface MarkAsReadParams {
+  userId: number;
+  messageIds: string[];
+}
+
+interface SendMessageParams {
+  userId: number;
+  text: string;
+}
 
 export const useGetMessages = (conversationId: string, limit = 20) => {
   const { getCredentials } = useAuth0();
+  const { backendUser } = useAuthUser();
   const apiUrl =
     Constants.expoConfig?.extra?.stagelyApiUrl || process.env.STAGELY_API_URL;
 
@@ -13,6 +25,9 @@ export const useGetMessages = (conversationId: string, limit = 20) => {
     queryFn: async () => {
       if (!apiUrl) {
         throw new Error("API URL not available");
+      }
+      if (!backendUser?.id) {
+        throw new Error("User ID not available");
       }
 
       // Get the access token
@@ -24,7 +39,7 @@ export const useGetMessages = (conversationId: string, limit = 20) => {
 
       // Fetch messages from the backend
       const response = await fetch(
-        `https://${apiUrl}/messaging/conversations/${conversationId}/messages?limit=${limit}`,
+        `https://${apiUrl}/messaging/conversations/${conversationId}/messages?userId=${backendUser.id}&limit=${limit}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -39,7 +54,7 @@ export const useGetMessages = (conversationId: string, limit = 20) => {
 
       return response.json();
     },
-    enabled: !!apiUrl && !!conversationId,
+    enabled: !!apiUrl && !!conversationId && !!backendUser?.id,
   });
 
   return {
@@ -58,9 +73,17 @@ export const useSendMessage = (conversationId: string) => {
     Constants.expoConfig?.extra?.stagelyApiUrl || process.env.STAGELY_API_URL;
 
   return useMutation({
-    mutationFn: async (messageText: string) => {
+    mutationFn: async (params: SendMessageParams) => {
       if (!apiUrl) {
         throw new Error("API URL not available");
+      }
+
+      if (!params.userId) {
+        throw new Error("User ID not available");
+      }
+
+      if (!params.text || params.text.trim() === "") {
+        throw new Error("Message text cannot be empty");
       }
 
       // Get the access token
@@ -69,6 +92,10 @@ export const useSendMessage = (conversationId: string) => {
       if (!credentials?.accessToken) {
         throw new Error("Access token not available");
       }
+
+      console.log(
+        `Sending message to conversation ${conversationId} from user ${params.userId}`,
+      );
 
       // Send message to the backend
       const response = await fetch(
@@ -79,15 +106,22 @@ export const useSendMessage = (conversationId: string) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${credentials.accessToken}`,
           },
-          body: JSON.stringify({ text: messageText }),
+          body: JSON.stringify({
+            userId: params.userId,
+            text: params.text,
+          }),
         },
       );
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        const errorText = await response.text();
+        console.error("Error sending message:", errorText);
+        throw new Error(`API error: ${response.status} - ${errorText}`);
       }
 
-      return response.json();
+      const messageData = await response.json();
+      console.log("Message sent successfully:", messageData);
+      return messageData;
     },
     onSuccess: () => {
       // Invalidate and refetch messages after sending a new message
@@ -105,9 +139,18 @@ export const useMarkAsRead = (conversationId: string) => {
     Constants.expoConfig?.extra?.stagelyApiUrl || process.env.STAGELY_API_URL;
 
   return useMutation({
-    mutationFn: async (messageIds: string[]) => {
+    mutationFn: async (params: MarkAsReadParams) => {
       if (!apiUrl) {
         throw new Error("API URL not available");
+      }
+
+      if (!params.userId) {
+        throw new Error("User ID not available");
+      }
+
+      if (!params.messageIds || params.messageIds.length === 0) {
+        console.log("No message IDs to mark as read");
+        return { updated: [], failed: [] };
       }
 
       // Get the access token
@@ -116,6 +159,10 @@ export const useMarkAsRead = (conversationId: string) => {
       if (!credentials?.accessToken) {
         throw new Error("Access token not available");
       }
+
+      console.log(
+        `Marking ${params.messageIds.length} messages as read for user ${params.userId}`,
+      );
 
       // Mark messages as read
       const response = await fetch(
@@ -126,19 +173,27 @@ export const useMarkAsRead = (conversationId: string) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${credentials.accessToken}`,
           },
-          body: JSON.stringify({ messageIds }),
+          body: JSON.stringify({
+            userId: params.userId,
+            messageIds: params.messageIds,
+          }),
         },
       );
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        const errorText = await response.text();
+        console.error("Error marking messages as read:", errorText);
+        throw new Error(`API error: ${response.status} - ${errorText}`);
       }
 
-      return response.json();
+      const result = await response.json();
+      console.log("Messages marked as read:", result);
+      return result;
     },
     onSuccess: () => {
-      // Invalidate and refetch conversations and unread count
+      // Invalidate and refetch conversations and messages
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      queryClient.invalidateQueries({ queryKey: ["messages", conversationId] });
       queryClient.invalidateQueries({ queryKey: ["unreadCount"] });
     },
   });

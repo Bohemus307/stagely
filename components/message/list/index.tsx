@@ -1,5 +1,4 @@
-// components/message/list/index.tsx
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { router } from "expo-router";
 import { Box } from "@/components/ui/box";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -13,6 +12,18 @@ import {
   useGetUnreadCount,
 } from "@/hooks/messaging/useConversations";
 import { Button } from "@/components/ui/button";
+import { useAuthUser } from "@/hooks/useAuthUser";
+
+// Define proper types for your conversations
+interface Conversation {
+  conversationId: string;
+  participants?: number[];
+  participantNames?: string[];
+  participantAvatars?: string[];
+  lastMessageText?: string;
+  lastMessageTime?: number;
+  unreadCount?: Record<string, number>;
+}
 
 export interface MessageListProps {
   searchQuery?: string;
@@ -23,24 +34,36 @@ const MessagesList: React.FC<MessageListProps> = ({
   searchQuery = "",
   statusFilter = null,
 }) => {
+  const { backendUser } = useAuthUser();
   const { conversations, isLoading, error, refetch } = useGetConversations();
   const { unreadCount } = useGetUnreadCount();
 
-  // Convert conversations from API to message format using useMemo
+  // Add debug logging for development
+  useEffect(() => {
+    if (conversations && conversations.length > 0) {
+      console.log("Sample conversation structure:", conversations[0]);
+    }
+  }, [conversations]);
+
+  // Convert conversations from API to message format
   const formattedMessages = useMemo(() => {
     if (!conversations || conversations.length === 0) {
       return [];
     }
 
-    return conversations.map((conv: any) => {
-      // Find other participant's ID (the first one that isn't the current user)
-      // This assumes the current user is always one of the participants
-      const otherParticipantId = conv.participants[0]; // Just take the first participant as the other user
+    return conversations.map((conv: Conversation) => {
+      // Safely access participants array
+      const participants = conv.participants || [];
+
+      // Find other participant's ID
+      const otherParticipantId = participants.find(
+        (p) => p !== backendUser?.id,
+      );
 
       return {
         id: conv.conversationId,
         user: {
-          id: otherParticipantId.toString(),
+          id: otherParticipantId?.toString() || "unknown",
           name: conv.participantNames?.[0] || "Unknown",
           avatar: conv.participantAvatars?.[0],
         },
@@ -48,10 +71,13 @@ const MessagesList: React.FC<MessageListProps> = ({
         timestamp: conv.lastMessageTime
           ? new Date(conv.lastMessageTime).toISOString()
           : new Date().toISOString(),
-        unread: conv.unreadCount && conv.unreadCount["currentUser"] > 0,
+        unread:
+          conv.unreadCount &&
+          backendUser?.id &&
+          conv.unreadCount[backendUser.id.toString()] > 0,
       };
     });
-  }, [conversations]);
+  }, [conversations, backendUser?.id]);
 
   // Filter messages
   const filteredMessages = useMemo(() => {
@@ -69,8 +95,6 @@ const MessagesList: React.FC<MessageListProps> = ({
   };
 
   const renderEmpty = () => {
-    // Show error message only if there's a real error
-    // Otherwise, show the "No messages" message
     if (error) {
       return (
         <Box className="flex-1 justify-center items-center p-8">
@@ -102,7 +126,7 @@ const MessagesList: React.FC<MessageListProps> = ({
     router.push("/(tabs)/(messages)/new");
   };
 
-  if (isLoading && formattedMessages.length === 0) {
+  if ((isLoading && formattedMessages.length === 0) || !backendUser) {
     return (
       <Box className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" color="#0056b3" />
@@ -129,7 +153,6 @@ const MessagesList: React.FC<MessageListProps> = ({
         />
       </Box>
 
-      {/* Fab button with improved positioning */}
       <View className="absolute right-4 bottom-4 z-10">
         <Button
           onPress={handleNewMessage}
