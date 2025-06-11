@@ -1,4 +1,3 @@
-// app/(tabs)/(messages)/new.tsx
 import { ThemedText } from "@/components/ThemedText";
 import {
   Avatar,

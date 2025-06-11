@@ -1,4 +1,3 @@
-// components/InvitationBanner.tsx
 import React, { useState } from "react";
 import { View, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
 import { ThemedText } from "@/components/ThemedText";

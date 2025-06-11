@@ -1,4 +1,3 @@
-// app/(tabs)/(messages)/[conversation].tsx
 import { useLocalSearchParams } from "expo-router";
 import { useState, useRef, useEffect, useCallback, memo } from "react";
 import {

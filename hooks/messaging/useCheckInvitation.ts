@@ -1,4 +1,3 @@
-// hooks/messaging/useCheckInvitation.ts
 import { useQuery } from "@tanstack/react-query";
 import Constants from "expo-constants";
 

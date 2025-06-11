@@ -1,4 +1,3 @@
-// app/(tabs)/(messages)/index.tsx - Messages screen with invitation banner
 import React, { useState } from "react";
 import { View } from "react-native";
 import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";

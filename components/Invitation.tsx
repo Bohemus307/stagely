@@ -1,4 +1,3 @@
-// components/Invitation.tsx - Component to handle invitation acceptance
 import React from "react";
 import { View, Alert, ActivityIndicator } from "react-native";
 import { router } from "expo-router";

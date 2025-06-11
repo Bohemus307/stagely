@@ -1,4 +1,3 @@
-// hooks/messaging/useMessages.ts
 import { useAuth0 } from "react-native-auth0";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Constants from "expo-constants";
