@@ -1,5 +1,4 @@
-// app/(tabs)/(messages)/[conversation].tsx - Key Updates
-
+// app/(tabs)/(messages)/[conversation].tsx
 import { useLocalSearchParams } from "expo-router";
 import { useState, useRef, useEffect, useCallback, memo } from "react";
 import {
@@ -34,7 +33,48 @@ import {
 import { ChatMessage } from "@/components/message/data/messages";
 import { useAuthUser } from "@/hooks/useAuthUser";
 
-// MessageItem component remains the same
+// Helper functions for display names
+const getDisplayName = (participant: any): string => {
+  if (
+    participant?.firstName &&
+    participant?.lastName &&
+    !(participant.firstName === "Invited" && participant.lastName === "User")
+  ) {
+    return `${participant.firstName} ${participant.lastName}`;
+  }
+
+  if (
+    participant?.name &&
+    participant.name !== "Invited User" &&
+    participant.name.trim() !== ""
+  ) {
+    return participant.name;
+  }
+
+  if (participant?.email) {
+    const emailUsername = participant.email.split("@")[0];
+    return emailUsername
+      .replace(/[._]/g, " ")
+      .split(" ")
+      .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  }
+
+  return "Unknown User";
+};
+
+const isPlaceholderUser = (participant: any): boolean => {
+  return (
+    !participant?.firstName ||
+    !participant?.lastName ||
+    participant.firstName === "Invited" ||
+    participant.lastName === "User" ||
+    participant.name === "Invited User" ||
+    !participant.name ||
+    participant.name.trim() === ""
+  );
+};
+
 const MessageItem = memo(
   ({
     item,
@@ -80,7 +120,6 @@ const ConversationScreen = () => {
   const params = useLocalSearchParams();
   const conversationId = params.conversation as string;
 
-  // Get the current authenticated user
   const { backendUser, isLoading: isLoadingUser } = useAuthUser();
 
   const [newMessage, setNewMessage] = useState("");
@@ -88,12 +127,12 @@ const ConversationScreen = () => {
   const [unreadMessagesToMark, setUnreadMessagesToMark] = useState<string[]>(
     [],
   );
-  const flatListRef = useRef<FlatList>(null);
 
-  // Extract the other participant's ID from params
+  const flatListRef = useRef<FlatList>(null);
+  const textInputRef = useRef<TextInput>(null);
+
   const otherUserId = Number(params.userId);
 
-  // Get conversation and messages using custom hooks
   const { conversation, isLoading: isLoadingConversation } =
     useGetConversation(conversationId);
 
@@ -103,11 +142,20 @@ const ConversationScreen = () => {
     refetch: refetchMessages,
   } = useGetMessages(conversationId);
 
-  // Mutations
   const { mutate: sendMessageMutation, isPending: isSendingMessage } =
     useSendMessage(conversationId);
 
   const { mutate: markAsReadMutation } = useMarkAsRead(conversationId);
+
+  useEffect(() => {
+    setNewMessage("");
+  }, [conversationId]);
+
+  useEffect(() => {
+    setFormattedMessages([]);
+    setUnreadMessagesToMark([]);
+    setNewMessage("");
+  }, [backendUser?.id]);
 
   // Format message time
   const formatMessageTime = useCallback((timestamp: string) => {
@@ -130,55 +178,78 @@ const ConversationScreen = () => {
 
   // Convert messages from API to match your ChatMessage format
   useEffect(() => {
-    if (!messages || !messages.length || !backendUser?.id) return;
-
-    // Map API messages to ChatMessage format
-    const formatted = messages.map((msg: any) => ({
-      id: msg.messageId,
-      text: msg.text,
-      timestamp: new Date(msg.timestamp).toISOString(),
-      sender: msg.senderId === backendUser.id ? "current-user" : "user",
-      status: msg.status
-        ? // For status, we need to check if this message is from us and look at other user's status
-          // or if it's from other user and look at our status
-          msg.senderId === backendUser.id
-          ? (msg.status[otherUserId.toString()] || "sent").toLowerCase()
-          : (msg.status[backendUser.id.toString()] || "delivered").toLowerCase()
-        : "sent",
-    }));
-
-    setFormattedMessages(formatted);
-
-    // Collect unread message IDs - only messages sent by the OTHER user that WE haven't read
-    const unreadMessageIds = messages
-      .filter(
-        (msg: any) =>
-          // Message is from the other user (not from us)
-          msg.senderId !== backendUser.id &&
-          // And we haven't read it yet (our status is not READ)
-          msg.status &&
-          msg.status[backendUser.id.toString()] !== "READ",
-      )
-      .map((msg: any) => msg.messageId);
-
-    if (unreadMessageIds.length > 0) {
-      setUnreadMessagesToMark(unreadMessageIds);
+    // Don't process if we're still loading
+    if (isLoadingMessages || isLoadingConversation) {
+      return;
     }
-  }, [messages, otherUserId, backendUser?.id]);
 
-  // Separate effect to mark messages as read
+    if (!backendUser?.id) {
+      return;
+    }
+
+    if (!messages || messages.length === 0) {
+      setFormattedMessages([]);
+      setUnreadMessagesToMark([]);
+      return;
+    }
+
+    const processMessages = () => {
+      const formatted = messages.map((msg: any) => ({
+        id: msg.messageId,
+        text: msg.text,
+        timestamp: new Date(msg.timestamp).toISOString(),
+        sender: msg.senderId === backendUser.id ? "current-user" : "user",
+        status: msg.status
+          ? msg.senderId === backendUser.id
+            ? (msg.status[otherUserId.toString()] || "sent").toLowerCase()
+            : (
+                msg.status[backendUser.id.toString()] || "delivered"
+              ).toLowerCase()
+          : "sent",
+      }));
+
+      const unreadMessageIds = messages
+        .filter(
+          (msg: any) =>
+            msg.senderId !== backendUser.id &&
+            msg.status &&
+            msg.status[backendUser.id.toString()] !== "READ",
+        )
+        .map((msg: any) => msg.messageId);
+
+      setFormattedMessages(formatted);
+
+      if (unreadMessageIds.length > 0) {
+        setUnreadMessagesToMark(unreadMessageIds);
+      }
+    };
+
+    const timeoutId = setTimeout(processMessages, 50);
+
+    return () => clearTimeout(timeoutId);
+  }, [
+    messages,
+    otherUserId,
+    backendUser?.id,
+    isLoadingMessages,
+    isLoadingConversation,
+  ]);
+
+  // Mark messages as read
   useEffect(() => {
     if (unreadMessagesToMark.length > 0 && backendUser?.id) {
-      // Pass both userId and messageIds to the mark as read mutation
-      markAsReadMutation({
-        userId: backendUser.id,
-        messageIds: unreadMessagesToMark,
-      });
-      setUnreadMessagesToMark([]);
+      const timeoutId = setTimeout(() => {
+        markAsReadMutation({
+          userId: backendUser.id,
+          messageIds: unreadMessagesToMark,
+        });
+        setUnreadMessagesToMark([]);
+      }, 100);
+
+      return () => clearTimeout(timeoutId);
     }
   }, [unreadMessagesToMark, markAsReadMutation, backendUser?.id]);
 
-  // Render message component
   const renderMessage = useCallback(
     ({ item }: { item: ChatMessage }) => {
       return <MessageItem item={item} formatMessageTime={formatMessageTime} />;
@@ -186,14 +257,16 @@ const ConversationScreen = () => {
     [formatMessageTime],
   );
 
-  // Handle sending a message
   const handleSendMessage = useCallback(() => {
-    if (newMessage.trim() === "" || !backendUser?.id) return;
+    if (newMessage.trim() === "" || !backendUser?.id || isSendingMessage) {
+      return;
+    }
 
-    // Optimistically update the UI
+    const messageText = newMessage.trim();
+
     const tempMessage: ChatMessage = {
       id: Date.now().toString(),
-      text: newMessage,
+      text: messageText,
       timestamp: new Date().toISOString(),
       sender: "current-user",
       status: "sent",
@@ -202,22 +275,19 @@ const ConversationScreen = () => {
     setFormattedMessages((prev) => [tempMessage, ...prev]);
     setNewMessage("");
 
-    // Send the message - include userId in the parameters
+    // Send the message
     sendMessageMutation(
       {
         userId: backendUser.id,
-        text: newMessage.trim(),
+        text: messageText,
       },
       {
         onSuccess: () => {
-          // Message sent successfully
           refetchMessages();
         },
         onError: (error) => {
-          // Handle error
           Alert.alert("Error", `Failed to send message: ${error.message}`);
 
-          // Mark message as error in UI
           setFormattedMessages((prev) =>
             prev.map((msg) =>
               msg.id === tempMessage.id ? { ...msg, status: "error" } : msg,
@@ -226,9 +296,14 @@ const ConversationScreen = () => {
         },
       },
     );
-  }, [newMessage, sendMessageMutation, refetchMessages, backendUser?.id]);
+  }, [
+    newMessage,
+    sendMessageMutation,
+    refetchMessages,
+    backendUser?.id,
+    isSendingMessage,
+  ]);
 
-  // Loading state
   if (
     isLoadingUser ||
     isLoadingConversation ||
@@ -237,22 +312,33 @@ const ConversationScreen = () => {
     return (
       <ThemedView className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" color="#0056b3" />
+        <ThemedText className="mt-2">Loading conversation...</ThemedText>
       </ThemedView>
     );
   }
 
-  // Get participant info from conversation
+  if (!backendUser) {
+    return (
+      <ThemedView className="flex-1 justify-center items-center">
+        <ThemedText>User not found.</ThemedText>
+      </ThemedView>
+    );
+  }
+
   const otherParticipant = conversation?.otherParticipant;
   const otherUserName = otherParticipant
-    ? `${otherParticipant.firstName} ${otherParticipant.lastName}`
+    ? getDisplayName(otherParticipant)
     : conversation?.participantNames?.[0] || "User";
   const otherUserAvatar =
     otherParticipant?.profilePictureUrl ||
     conversation?.participantAvatars?.[0];
+  const showEmailSubtitle =
+    otherParticipant && isPlaceholderUser(otherParticipant);
 
   return (
     <ThemedView className="flex-1">
       <SafeAreaView className="flex-1">
+        {/* Header */}
         <View className="border-b border-gray-200 pb-2">
           <View className="px-2 flex-row items-center">
             <BackButton />
@@ -271,6 +357,12 @@ const ConversationScreen = () => {
                 <ThemedText className="font-semibold">
                   {otherUserName}
                 </ThemedText>
+                {/* Show email as subtitle for placeholder users */}
+                {showEmailSubtitle && conversation?.otherParticipant?.email && (
+                  <ThemedText className="text-xs text-gray-500">
+                    {conversation.otherParticipant.email}
+                  </ThemedText>
+                )}
               </View>
             </HStack>
           </View>
@@ -289,6 +381,8 @@ const ConversationScreen = () => {
           inverted
           onRefresh={refetchMessages}
           refreshing={isLoadingMessages}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
         />
 
         {/* Message Input */}
@@ -298,11 +392,20 @@ const ConversationScreen = () => {
         >
           <HStack className="p-2 border-t border-gray-200 bg-white">
             <TextInput
+              ref={textInputRef}
               className="flex-1 bg-gray-100 rounded-full px-4 py-2 mr-2"
               placeholder="Type a message..."
               value={newMessage}
               onChangeText={setNewMessage}
-              multiline
+              multiline={false}
+              returnKeyType="send"
+              onSubmitEditing={handleSendMessage}
+              editable={!!backendUser?.id && !isSendingMessage}
+              autoCorrect={false}
+              autoCapitalize="sentences"
+              keyboardType="default"
+              textContentType="none"
+              autoComplete="off"
             />
             <TouchableOpacity
               onPress={handleSendMessage}

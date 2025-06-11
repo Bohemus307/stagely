@@ -30,14 +30,12 @@ export const useGetMessages = (conversationId: string, limit = 20) => {
         throw new Error("User ID not available");
       }
 
-      // Get the access token
       const credentials = await getCredentials();
 
       if (!credentials?.accessToken) {
         throw new Error("Access token not available");
       }
 
-      // Fetch messages from the backend
       const response = await fetch(
         `https://${apiUrl}/messaging/conversations/${conversationId}/messages?userId=${backendUser.id}&limit=${limit}`,
         {
@@ -86,18 +84,12 @@ export const useSendMessage = (conversationId: string) => {
         throw new Error("Message text cannot be empty");
       }
 
-      // Get the access token
       const credentials = await getCredentials();
 
       if (!credentials?.accessToken) {
         throw new Error("Access token not available");
       }
 
-      console.log(
-        `Sending message to conversation ${conversationId} from user ${params.userId}`,
-      );
-
-      // Send message to the backend
       const response = await fetch(
         `https://${apiUrl}/messaging/conversations/${conversationId}/messages`,
         {
@@ -120,11 +112,9 @@ export const useSendMessage = (conversationId: string) => {
       }
 
       const messageData = await response.json();
-      console.log("Message sent successfully:", messageData);
       return messageData;
     },
     onSuccess: () => {
-      // Invalidate and refetch messages after sending a new message
       queryClient.invalidateQueries({ queryKey: ["messages", conversationId] });
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
       queryClient.invalidateQueries({ queryKey: ["unreadCount"] });
@@ -149,20 +139,14 @@ export const useMarkAsRead = (conversationId: string) => {
       }
 
       if (!params.messageIds || params.messageIds.length === 0) {
-        console.log("No message IDs to mark as read");
         return { updated: [], failed: [] };
       }
 
-      // Get the access token
       const credentials = await getCredentials();
 
       if (!credentials?.accessToken) {
         throw new Error("Access token not available");
       }
-
-      console.log(
-        `Marking ${params.messageIds.length} messages as read for user ${params.userId}`,
-      );
 
       // Mark messages as read
       const response = await fetch(
@@ -187,11 +171,9 @@ export const useMarkAsRead = (conversationId: string) => {
       }
 
       const result = await response.json();
-      console.log("Messages marked as read:", result);
       return result;
     },
     onSuccess: () => {
-      // Invalidate and refetch conversations and messages
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
       queryClient.invalidateQueries({ queryKey: ["messages", conversationId] });
       queryClient.invalidateQueries({ queryKey: ["unreadCount"] });
