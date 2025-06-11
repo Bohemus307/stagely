@@ -39,7 +39,6 @@ const IncidentsDetailsScreen = () => {
   const propertyId = incident?.propertyId?.toString();
   const { property, isLoading: propertyLoading } = useGetProperty(
     propertyId || "",
-    { enabled: !!propertyId },
   );
 
   const handleUpdateStatus = (incidentId: number, newStatus: string) => {

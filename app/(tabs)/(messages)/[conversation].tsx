@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, memo } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -9,13 +9,9 @@ import {
   TouchableOpacity,
   View,
   Text,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
-import {
-  mockConversations,
-  mockUsers,
-  UserDictionary,
-  ConversationDictionary,
-} from "@/components/message/data/messages";
 import { Box } from "@/components/ui/box";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -26,95 +22,66 @@ import {
   AvatarFallbackText,
   AvatarImage,
 } from "@/components/ui/avatar";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth0 } from "react-native-auth0";
-import { ChatMessage, MessageUser } from "@/components/message/data/messages";
+import { useGetConversation } from "@/hooks/messaging/useConversations";
+import {
+  useGetMessages,
+  useSendMessage,
+  useMarkAsRead,
+} from "@/hooks/messaging/useMessages";
+import { ChatMessage } from "@/components/message/data/messages";
+import { useAuthUser } from "@/hooks/useAuthUser";
 
-const ConversationScreen = () => {
-  const { user: auth0User } = useAuth0();
-  const params = useLocalSearchParams();
-  const userId = params.userId as string;
-  const propertyId = params.propertyId as string;
+// Helper functions for display names
+const getDisplayName = (participant: any): string => {
+  if (
+    participant?.firstName &&
+    participant?.lastName &&
+    !(participant.firstName === "Invited" && participant.lastName === "User")
+  ) {
+    return `${participant.firstName} ${participant.lastName}`;
+  }
 
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [newMessage, setNewMessage] = useState("");
-  const [otherUser, setOtherUser] = useState<MessageUser | null>(null);
-  const [propertyName, setPropertyName] = useState<string>("");
-  const flatListRef = useRef<FlatList>(null);
+  if (
+    participant?.name &&
+    participant.name !== "Invited User" &&
+    participant.name.trim() !== ""
+  ) {
+    return participant.name;
+  }
 
-  useEffect(() => {
-    if (userId) {
-      // Get user data - type assertion to address indexing issue
-      const user = (mockUsers as UserDictionary)[userId];
-      setOtherUser(user);
+  if (participant?.email) {
+    const emailUsername = participant.email.split("@")[0];
+    return emailUsername
+      .replace(/[._]/g, " ")
+      .split(" ")
+      .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  }
 
-      // Get Conversation Data - type assertion to address indexing issue
-      const conversation =
-        (mockConversations as ConversationDictionary)[userId] || [];
-      setMessages(conversation);
+  return "Unknown User";
+};
 
-      // Eventually fetch the property name from API
-      if (propertyId) {
-        // mock data
-        const propertyNames: Record<string, string> = {
-          "1": "588 Cortez St",
-          "2": "742 Evergreen Terrace",
-          "3": "221B Baker St",
-          "5": "350 Fifth Avenue",
-          "6": "123 Main St",
-        };
+const isPlaceholderUser = (participant: any): boolean => {
+  return (
+    !participant?.firstName ||
+    !participant?.lastName ||
+    participant.firstName === "Invited" ||
+    participant.lastName === "User" ||
+    participant.name === "Invited User" ||
+    !participant.name ||
+    participant.name.trim() === ""
+  );
+};
 
-        setPropertyName(propertyNames[propertyId] || "");
-      }
-
-      if (auth0User) {
-        console.log("Current Auth0 user in conversation:", auth0User.name);
-        // In a real app, you would use the auth0User ID to validate permissions
-        // or to track which user is viewing the conversation
-      }
-    }
-  }, [userId, propertyId, auth0User]);
-
-  const sendMessage = () => {
-    if (newMessage.trim() === "") return;
-
-    const newMsg: ChatMessage = {
-      id: Date.now().toString(),
-      text: newMessage,
-      timestamp: new Date().toISOString(),
-      sender: "current-user",
-      status: "sent",
-    };
-
-    setMessages((prev) => [...prev, newMsg]);
-    setNewMessage("");
-
-    // Scroll to bottom when new msg is added
-    setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-  };
-
-  const formatMessageTime = (timestamp: string) => {
-    try {
-      const date = new Date(timestamp);
-      let hours = date.getHours();
-      const minutes = date.getMinutes();
-      const ampm = hours >= 12 ? "PM" : "AM";
-
-      hours = hours % 12;
-      hours = hours ? hours : 12;
-
-      const formattedMinutes = minutes < 10 ? "0" + minutes : minutes;
-
-      return `${hours}:${formattedMinutes} ${ampm}`;
-    } catch (e) {
-      return `Error: ${e}`;
-    }
-  };
-
-  const renderMessage = ({ item }: { item: ChatMessage }) => {
+const MessageItem = memo(
+  ({
+    item,
+    formatMessageTime,
+  }: {
+    item: ChatMessage;
+    formatMessageTime: (timestamp: string) => string;
+  }) => {
     const isCurrentUser = item.sender === "current-user";
 
     return (
@@ -143,57 +110,278 @@ const ConversationScreen = () => {
         </Box>
       </View>
     );
-  };
+  },
+);
+
+MessageItem.displayName = "MessageItem";
+
+const ConversationScreen = () => {
+  const params = useLocalSearchParams();
+  const conversationId = params.conversation as string;
+
+  const { backendUser, isLoading: isLoadingUser } = useAuthUser();
+
+  const [newMessage, setNewMessage] = useState("");
+  const [formattedMessages, setFormattedMessages] = useState<ChatMessage[]>([]);
+  const [unreadMessagesToMark, setUnreadMessagesToMark] = useState<string[]>(
+    [],
+  );
+
+  const flatListRef = useRef<FlatList>(null);
+  const textInputRef = useRef<TextInput>(null);
+
+  const otherUserId = Number(params.userId);
+
+  const { conversation, isLoading: isLoadingConversation } =
+    useGetConversation(conversationId);
+
+  const {
+    messages,
+    isLoading: isLoadingMessages,
+    refetch: refetchMessages,
+  } = useGetMessages(conversationId);
+
+  const { mutate: sendMessageMutation, isPending: isSendingMessage } =
+    useSendMessage(conversationId);
+
+  const { mutate: markAsReadMutation } = useMarkAsRead(conversationId);
+
+  useEffect(() => {
+    setNewMessage("");
+  }, [conversationId]);
+
+  useEffect(() => {
+    setFormattedMessages([]);
+    setUnreadMessagesToMark([]);
+    setNewMessage("");
+  }, [backendUser?.id]);
+
+  // Format message time
+  const formatMessageTime = useCallback((timestamp: string) => {
+    try {
+      const date = new Date(timestamp);
+      let hours = date.getHours();
+      const minutes = date.getMinutes();
+      const ampm = hours >= 12 ? "PM" : "AM";
+
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+
+      const formattedMinutes = minutes < 10 ? "0" + minutes : minutes;
+
+      return `${hours}:${formattedMinutes} ${ampm}`;
+    } catch (e) {
+      return "";
+    }
+  }, []);
+
+  // Convert messages from API to match your ChatMessage format
+  useEffect(() => {
+    // Don't process if we're still loading
+    if (isLoadingMessages || isLoadingConversation) {
+      return;
+    }
+
+    if (!backendUser?.id) {
+      return;
+    }
+
+    if (!messages || messages.length === 0) {
+      setFormattedMessages([]);
+      setUnreadMessagesToMark([]);
+      return;
+    }
+
+    const processMessages = () => {
+      const formatted = messages.map((msg: any) => ({
+        id: msg.messageId,
+        text: msg.text,
+        timestamp: new Date(msg.timestamp).toISOString(),
+        sender: msg.senderId === backendUser.id ? "current-user" : "user",
+        status: msg.status
+          ? msg.senderId === backendUser.id
+            ? (msg.status[otherUserId.toString()] || "sent").toLowerCase()
+            : (
+                msg.status[backendUser.id.toString()] || "delivered"
+              ).toLowerCase()
+          : "sent",
+      }));
+
+      const unreadMessageIds = messages
+        .filter(
+          (msg: any) =>
+            msg.senderId !== backendUser.id &&
+            msg.status &&
+            msg.status[backendUser.id.toString()] !== "READ",
+        )
+        .map((msg: any) => msg.messageId);
+
+      setFormattedMessages(formatted);
+
+      if (unreadMessageIds.length > 0) {
+        setUnreadMessagesToMark(unreadMessageIds);
+      }
+    };
+
+    const timeoutId = setTimeout(processMessages, 50);
+
+    return () => clearTimeout(timeoutId);
+  }, [
+    messages,
+    otherUserId,
+    backendUser?.id,
+    isLoadingMessages,
+    isLoadingConversation,
+  ]);
+
+  // Mark messages as read
+  useEffect(() => {
+    if (unreadMessagesToMark.length > 0 && backendUser?.id) {
+      const timeoutId = setTimeout(() => {
+        markAsReadMutation({
+          userId: backendUser.id,
+          messageIds: unreadMessagesToMark,
+        });
+        setUnreadMessagesToMark([]);
+      }, 100);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [unreadMessagesToMark, markAsReadMutation, backendUser?.id]);
+
+  const renderMessage = useCallback(
+    ({ item }: { item: ChatMessage }) => {
+      return <MessageItem item={item} formatMessageTime={formatMessageTime} />;
+    },
+    [formatMessageTime],
+  );
+
+  const handleSendMessage = useCallback(() => {
+    if (newMessage.trim() === "" || !backendUser?.id || isSendingMessage) {
+      return;
+    }
+
+    const messageText = newMessage.trim();
+
+    const tempMessage: ChatMessage = {
+      id: Date.now().toString(),
+      text: messageText,
+      timestamp: new Date().toISOString(),
+      sender: "current-user",
+      status: "sent",
+    };
+
+    setFormattedMessages((prev) => [tempMessage, ...prev]);
+    setNewMessage("");
+
+    // Send the message
+    sendMessageMutation(
+      {
+        userId: backendUser.id,
+        text: messageText,
+      },
+      {
+        onSuccess: () => {
+          refetchMessages();
+        },
+        onError: (error) => {
+          Alert.alert("Error", `Failed to send message: ${error.message}`);
+
+          setFormattedMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === tempMessage.id ? { ...msg, status: "error" } : msg,
+            ),
+          );
+        },
+      },
+    );
+  }, [
+    newMessage,
+    sendMessageMutation,
+    refetchMessages,
+    backendUser?.id,
+    isSendingMessage,
+  ]);
+
+  if (
+    isLoadingUser ||
+    isLoadingConversation ||
+    (isLoadingMessages && formattedMessages.length === 0)
+  ) {
+    return (
+      <ThemedView className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color="#0056b3" />
+        <ThemedText className="mt-2">Loading conversation...</ThemedText>
+      </ThemedView>
+    );
+  }
+
+  if (!backendUser) {
+    return (
+      <ThemedView className="flex-1 justify-center items-center">
+        <ThemedText>User not found.</ThemedText>
+      </ThemedView>
+    );
+  }
+
+  const otherParticipant = conversation?.otherParticipant;
+  const otherUserName = otherParticipant
+    ? getDisplayName(otherParticipant)
+    : conversation?.participantNames?.[0] || "User";
+  const otherUserAvatar =
+    otherParticipant?.profilePictureUrl ||
+    conversation?.participantAvatars?.[0];
+  const showEmailSubtitle =
+    otherParticipant && isPlaceholderUser(otherParticipant);
 
   return (
     <ThemedView className="flex-1">
       <SafeAreaView className="flex-1">
+        {/* Header */}
         <View className="border-b border-gray-200 pb-2">
           <View className="px-2 flex-row items-center">
             <BackButton />
 
-            {otherUser && (
-              <HStack className="items-center">
-                <Avatar size="sm" className="mr-2">
-                  {otherUser.avatar ? (
-                    <AvatarImage source={{ uri: otherUser.avatar }} />
-                  ) : (
-                    <AvatarFallbackText>
-                      {otherUser.name.charAt(0)}
-                    </AvatarFallbackText>
-                  )}
-                </Avatar>
-                <View>
-                  <ThemedText className="font-semibold">
-                    {otherUser.name}
+            <HStack className="items-center">
+              <Avatar size="sm" className="mr-2">
+                {otherUserAvatar ? (
+                  <AvatarImage source={{ uri: otherUserAvatar }} />
+                ) : (
+                  <AvatarFallbackText>
+                    {otherUserName.charAt(0)}
+                  </AvatarFallbackText>
+                )}
+              </Avatar>
+              <View>
+                <ThemedText className="font-semibold">
+                  {otherUserName}
+                </ThemedText>
+                {/* Show email as subtitle for placeholder users */}
+                {showEmailSubtitle && conversation?.otherParticipant?.email && (
+                  <ThemedText className="text-xs text-gray-500">
+                    {conversation.otherParticipant.email}
                   </ThemedText>
-                  {propertyName && (
-                    <HStack className="items-center">
-                      <IconSymbol
-                        name="building.2.fill"
-                        size={12}
-                        color="#6b7280"
-                      />
-                      <ThemedText>{propertyName}</ThemedText>
-                    </HStack>
-                  )}
-                </View>
-              </HStack>
-            )}
+                )}
+              </View>
+            </HStack>
           </View>
         </View>
 
         {/* Message List */}
         <FlatList
           ref={flatListRef}
-          data={messages}
+          data={formattedMessages}
           renderItem={renderMessage}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{
             padding: 16,
             flexGrow: 1,
           }}
-          onLayout={() => flatListRef.current?.scrollToEnd({ animated: false })}
+          inverted
+          onRefresh={refetchMessages}
+          refreshing={isLoadingMessages}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
         />
 
         {/* Message Input */}
@@ -203,20 +391,37 @@ const ConversationScreen = () => {
         >
           <HStack className="p-2 border-t border-gray-200 bg-white">
             <TextInput
+              ref={textInputRef}
               className="flex-1 bg-gray-100 rounded-full px-4 py-2 mr-2"
               placeholder="Type a message..."
               value={newMessage}
               onChangeText={setNewMessage}
-              multiline
+              multiline={false}
+              returnKeyType="send"
+              onSubmitEditing={handleSendMessage}
+              editable={!!backendUser?.id && !isSendingMessage}
+              autoCorrect={false}
+              autoCapitalize="sentences"
+              keyboardType="default"
+              textContentType="none"
+              autoComplete="off"
             />
             <TouchableOpacity
-              onPress={sendMessage}
-              disabled={newMessage.trim() === ""}
+              onPress={handleSendMessage}
+              disabled={
+                newMessage.trim() === "" || isSendingMessage || !backendUser?.id
+              }
               className={`rounded-full w-10 h-10 items-center justify-center ${
-                newMessage.trim() === "" ? "bg-gray-300" : "bg-primary-500"
+                newMessage.trim() === "" || isSendingMessage || !backendUser?.id
+                  ? "bg-gray-300"
+                  : "bg-primary-500"
               }`}
             >
-              <Ionicons name="send" size={18} color="white" />
+              {isSendingMessage ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <Ionicons name="send" size={18} color="white" />
+              )}
             </TouchableOpacity>
           </HStack>
         </KeyboardAvoidingView>

@@ -4,202 +4,362 @@ import {
   AvatarFallbackText,
   AvatarImage,
 } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
-import { VStack } from "@/components/ui/vstack";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { properties } from "@/components/properties/data/properties";
+import React, { useEffect, useState, useCallback } from "react";
 import { ThemedView } from "@/components/ThemedView";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BackButton from "@/components/BackButton";
-import { FlatList, View } from "react-native";
-import { Button } from "@/components/ui/button";
+import { ActivityIndicator, FlatList, View, Alert } from "react-native";
 import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
 import { SearchIcon } from "@/components/ui/icon";
-import { MessageUser, mockUsers } from "@/components/message/data/messages";
-import { Property } from "@/lib/@types/properties";
+import { useCreateConversation } from "@/hooks/messaging/useCreateConversation";
+import { useInviteConversation } from "@/hooks/messaging/useInviteConversation";
+import { useAuthUser } from "@/hooks/useAuthUser";
+import { useGetUsers } from "@/hooks/profile/useSearchUsers";
+import { User } from "@/components/message/data/messages";
 
 const NewMessageScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredUsers, setFilteredUsers] = useState<MessageUser[]>(
-    Object.values(mockUsers),
+  const [initialMessage, setInitialMessage] = useState("");
+  const [selectedMode, setSelectedMode] = useState<"search" | "invite">(
+    "search",
   );
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [selectedUser, setSelectedUser] = useState<MessageUser | null>(null);
-  const [showPropertySelection, setShowPropertySelection] = useState(false);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  //Filter users based on search query
+  const { backendUser, isLoading: isLoadingUser } = useAuthUser();
+
+  const { users: searchResults, isLoading: isSearchingUsers } = useGetUsers({
+    search: debouncedSearch,
+    limit: 10,
+  });
+
+  const { mutate: createConversation, isPending: isCreatingConversation } =
+    useCreateConversation();
+
+  const { mutate: inviteConversation, isPending: isInviting } =
+    useInviteConversation();
+
   useEffect(() => {
-    if (!showPropertySelection) {
-      if (searchQuery.trim() === "") {
-        setFilteredUsers(Object.values(mockUsers));
+    const delayDebounceFn = setTimeout(() => {
+      if (searchQuery.trim().length >= 2 && selectedMode === "search") {
+        setDebouncedSearch(searchQuery.trim());
       } else {
-        const lowercaseQuery = searchQuery.toLowerCase();
-        const filtered = Object.values(mockUsers).filter((user) =>
-          user.name.toLowerCase().includes(lowercaseQuery),
-        );
-        setFilteredUsers(filtered);
+        setDebouncedSearch("");
       }
-    }
-  }, [searchQuery, showPropertySelection]);
+    }, 500);
 
-  const handleUserSelect = (user: MessageUser) => {
-    setSelectedUser(user);
-    setSelectedUserId(user.id);
-    setShowPropertySelection(true);
-    setSearchQuery("");
-  };
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, selectedMode]);
 
-  const handlePropertySelect = (propertyId: number) => {
-    if (selectedUserId) {
-      router.push({
-        pathname: "/(tabs)/(messages)/[conversation]",
-        params: {
-          conversation: selectedUserId,
-          userId: selectedUserId,
-          propertyId: propertyId.toString(),
+  const isEmailLike = useCallback((query: string) => {
+    return query.includes("@") && query.includes(".");
+  }, []);
+
+  const handleUserSelect = useCallback(
+    (user: User) => {
+      if (!backendUser?.id) {
+        Alert.alert(
+          "Error",
+          "User information not available. Please login again.",
+        );
+        return;
+      }
+
+      const requestParams = {
+        userId: backendUser.id,
+        participants: [user.id],
+        initialMessage: initialMessage.trim() || undefined,
+      };
+
+      createConversation(requestParams, {
+        onSuccess: (data: any) => {
+          if (data?.success === false) {
+            Alert.alert("Error", data.error || "Failed to create conversation");
+            return;
+          }
+
+          const conversationId =
+            data?.conversation?.conversationId ||
+            data?.conversationId ||
+            (data?.conversation && typeof data.conversation === "string"
+              ? data.conversation
+              : null);
+
+          if (conversationId) {
+            router.push({
+              pathname: "/(tabs)/(messages)/[conversation]",
+              params: {
+                conversation: conversationId,
+                userId: user.id.toString(),
+              },
+            });
+          } else {
+            console.error("No conversation ID in response:", data);
+            Alert.alert(
+              "Error",
+              "Could not create conversation. Missing conversation ID. Please try again.",
+            );
+          }
+        },
+        onError: (error: Error) => {
+          console.error("Failed to create conversation:", error);
+          Alert.alert(
+            "Error",
+            `Failed to create conversation: ${error.message}`,
+          );
         },
       });
-    }
-  };
+    },
+    [backendUser?.id, initialMessage, createConversation],
+  );
 
-  const handleSkipPropertySelection = () => {
-    if (selectedUserId) {
-      router.push({
-        pathname: "/(tabs)/(messages)/[conversation]",
-        params: {
-          conversation: selectedUserId,
-          userId: selectedUserId,
+  // Handle inviting a new user by email
+  const handleEmailInvite = useCallback(() => {
+    if (!isEmailLike(searchQuery.trim())) {
+      Alert.alert(
+        "Invalid Email",
+        "Please enter a valid email address to send an invitation.",
+      );
+      return;
+    }
+
+    const email = searchQuery.trim();
+
+    inviteConversation(
+      {
+        email: email,
+        initialMessage: initialMessage.trim() || undefined,
+      },
+      {
+        onSuccess: (data: any) => {
+          Alert.alert(
+            "Invitation Sent",
+            `An invitation has been sent to ${email}. They will receive your message once they accept the invitation.`,
+            [
+              {
+                text: "OK",
+                onPress: () => {
+                  router.back();
+                },
+              },
+            ],
+          );
         },
-      });
-    }
-  };
+        onError: (error: Error) => {
+          console.error("Failed to send invitation:", error);
+          Alert.alert("Error", `Failed to send invitation: ${error.message}`);
+        },
+      },
+    );
+  }, [searchQuery, initialMessage, inviteConversation, isEmailLike]);
 
-  const renderUserItem = ({ item }: { item: MessageUser }) => (
+  const handleSearchChange = useCallback(
+    (text: string) => {
+      setSearchQuery(text);
+
+      // Auto-switch mode based on input
+      if (isEmailLike(text.trim())) {
+        setSelectedMode("invite");
+      } else {
+        setSelectedMode("search");
+      }
+    },
+    [isEmailLike],
+  );
+
+  if (isLoadingUser) {
+    return (
+      <ThemedView className="flex-1 justify-center items-center">
+        <ActivityIndicator size="large" color="#0056b3" />
+        <ThemedText className="mt-4">Loading user information...</ThemedText>
+      </ThemedView>
+    );
+  }
+
+  const filteredUsers =
+    searchResults?.filter((user: User) => {
+      const isPlaceholder =
+        user.firstName === "Invited" && user.lastName === "User";
+      return !isPlaceholder;
+    }) || [];
+
+  const renderUserItem = ({ item }: { item: User }) => (
     <Pressable
       className="p-2 mb-2 bg-white rounded-lg shadow-sm"
       onPress={() => handleUserSelect(item)}
+      disabled={isCreatingConversation || isInviting}
     >
       <HStack className="items-center">
         <Avatar size="sm" className="mr-3">
-          {item.avatar ? (
-            <AvatarImage source={{ uri: item.avatar }} />
+          {item.profilePictureUrl ? (
+            <AvatarImage source={{ uri: item.profilePictureUrl }} />
           ) : (
-            <AvatarFallbackText>{item.name.charAt(0)}</AvatarFallbackText>
+            <AvatarFallbackText>{item.firstName.charAt(0)}</AvatarFallbackText>
           )}
         </Avatar>
-        <ThemedText type="defaultSemiBold">{item.name}</ThemedText>
-      </HStack>
-    </Pressable>
-  );
-
-  const renderPropertyItem = ({ item }: { item: Property }) => (
-    <Pressable
-      className="p-3 mb-2 bg-white rounded-lg shadow-sm"
-      onPress={() => handlePropertySelect(item.id)}
-    >
-      <HStack className="items-center justify-between">
-        <VStack>
-          <ThemedText type="defaultSemiBold">{item.address}</ThemedText>
-          <ThemedText type="default">
-            {item.city}, {item.state} {item.zipCode}
+        <View className="flex-1">
+          <ThemedText type="defaultSemiBold">
+            {item.firstName} {item.lastName}
           </ThemedText>
-        </VStack>
-
-        <Badge
-          className={
-            item.status === "Active"
-              ? "bg-green-400/80"
-              : item.status === "Maintenance"
-                ? "bg-amber-400/80"
-                : "bg-gray-400/80"
-          }
-        >
-          <ThemedText>{item.status}</ThemedText>
-        </Badge>
+          <ThemedText className="text-sm text-gray-500">
+            {item.email}
+          </ThemedText>
+        </View>
+        {(isCreatingConversation || isInviting) && (
+          <ActivityIndicator size="small" color="#0056b3" />
+        )}
       </HStack>
     </Pressable>
   );
+
+  const renderEmailInvite = () => {
+    if (selectedMode !== "invite" || !isEmailLike(searchQuery.trim())) {
+      return null;
+    }
+
+    return (
+      <Pressable
+        className="p-4 mb-2 bg-blue-50 rounded-lg border border-blue-200"
+        onPress={handleEmailInvite}
+        disabled={isInviting || isCreatingConversation}
+      >
+        <HStack className="items-center">
+          <Avatar size="sm" className="mr-3 bg-blue-500">
+            <AvatarFallbackText className="text-white">
+              {searchQuery.trim().charAt(0).toUpperCase()}
+            </AvatarFallbackText>
+          </Avatar>
+          <View className="flex-1">
+            <ThemedText type="defaultSemiBold" className="text-blue-700">
+              Invite {searchQuery.trim()}
+            </ThemedText>
+            <ThemedText className="text-sm text-blue-600">
+              Send an invitation to this email address
+            </ThemedText>
+          </View>
+          {(isInviting || isCreatingConversation) && (
+            <ActivityIndicator size="small" color="#0056b3" />
+          )}
+        </HStack>
+      </Pressable>
+    );
+  };
+
+  const renderEmptyState = () => {
+    if (isSearchingUsers || isInviting || isCreatingConversation) {
+      return null;
+    }
+
+    if (selectedMode === "invite" && isEmailLike(searchQuery.trim())) {
+      return null;
+    }
+
+    if (searchQuery.length >= 2 && selectedMode === "search") {
+      return (
+        <View className="flex-1 items-center justify-center py-8">
+          <ThemedText className="text-gray-500 text-center">
+            No users found matching "{searchQuery}"
+          </ThemedText>
+          {isEmailLike(searchQuery.trim()) && (
+            <ThemedText className="text-blue-500 text-center mt-2">
+              Try sending an invitation to this email address instead
+            </ThemedText>
+          )}
+        </View>
+      );
+    }
+
+    if (searchQuery.length > 0 && searchQuery.length < 2) {
+      return (
+        <View className="flex-1 items-center justify-center py-8">
+          <ThemedText className="text-gray-500 text-center">
+            Enter at least 2 characters to search
+          </ThemedText>
+        </View>
+      );
+    }
+
+    return (
+      <View className="flex-1 items-center justify-center py-8">
+        <ThemedText className="text-gray-500 text-center">
+          Search for a user by name or email to start a conversation
+        </ThemedText>
+        <ThemedText className="text-gray-400 text-center mt-2 text-sm">
+          Enter an email address to send an invitation
+        </ThemedText>
+      </View>
+    );
+  };
+
+  const isProcessing = isCreatingConversation || isInviting;
 
   return (
     <ThemedView className="flex-1">
       <SafeAreaView className="flex-1">
         <BackButton />
-        <View className="flex-row items-center px-4">
-          <ThemedText type="defaultSemiBold">
-            {showPropertySelection ? "New Message" : "New Message"}
-          </ThemedText>
+        <View className="flex-row items-center px-4 mb-4">
+          <ThemedText type="defaultSemiBold">New Message</ThemedText>
         </View>
 
-        {showPropertySelection ? (
-          <View className="p-4 flex-1">
-            {selectedUser && (
-              <HStack className="items-center mb-4">
-                <Avatar size="sm" className="mr-2">
-                  {selectedUser.avatar ? (
-                    <AvatarImage source={{ uri: selectedUser.avatar }} />
-                  ) : (
-                    <AvatarFallbackText>
-                      {selectedUser.name.charAt(0)}
-                    </AvatarFallbackText>
-                  )}
-                </Avatar>
-                <ThemedText>Messaging {selectedUser.name}</ThemedText>
-              </HStack>
-            )}
-
-            <ThemedText type="defaultSemiBold" className="mb-2">
-              Select a Property (Optional)
-            </ThemedText>
-
-            <FlatList
-              data={
-                properties.filter(
-                  (p) => p.status !== "Archived",
-                ) as unknown as Property[]
-              } //FIX ME too 🌵
-              renderItem={renderPropertyItem}
-              keyExtractor={(item) => item.id.toString()}
-              contentContainerStyle={{ paddingBottom: 20 }}
-              ListHeaderComponent={
-                <Button
-                  className="mb-4 p-3 bg-white rounded-lg border border-gray-300"
-                  variant="outline"
-                  onPress={handleSkipPropertySelection}
-                >
-                  <HStack className="h-20 items-center justify-center w-full">
-                    <ThemedText className="text-primary-700">
-                      Skip - No Property
-                    </ThemedText>
-                  </HStack>
-                </Button>
-              }
-            />
-          </View>
-        ) : (
-          <View className="p-4 flex-1">
-            <Input className="rounded-2xl border mb-4">
-              <InputSlot className="pl-3">
+        <View className="p-4 flex-1">
+          {/* Search Input */}
+          <Input className="rounded-2xl border mb-4">
+            <InputSlot className="pl-3">
+              {isSearchingUsers ? (
+                <ActivityIndicator size="small" color="#0056b3" />
+              ) : (
                 <InputIcon as={SearchIcon} />
-              </InputSlot>
-              <InputField
-                placeholder="Search for a Contact..."
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-              />
-            </Input>
-            <ThemedText type="defaultSemiBold">Contacts</ThemedText>
-
-            <FlatList
-              data={filteredUsers}
-              renderItem={renderUserItem}
-              keyExtractor={(item) => item.id}
-              contentContainerStyle={{ paddingBottom: 20 }}
+              )}
+            </InputSlot>
+            <InputField
+              placeholder="Search for users by name or email..."
+              value={searchQuery}
+              onChangeText={handleSearchChange}
+              autoCapitalize="none"
+              editable={!isProcessing}
             />
+          </Input>
+
+          {/* Initial Message Input */}
+          <Input className="rounded-2xl border mb-4">
+            <InputField
+              placeholder="Initial message (optional)"
+              value={initialMessage}
+              onChangeText={setInitialMessage}
+              multiline
+              editable={!isProcessing}
+            />
+          </Input>
+
+          {/* Mode Indicator */}
+          <View className="mb-2 flex-row items-center">
+            <ThemedText type="defaultSemiBold">
+              {selectedMode === "invite"
+                ? "Send Invitation"
+                : "Select a user to message"}
+            </ThemedText>
+            {selectedMode === "invite" && (
+              <View className="ml-2 px-2 py-1 bg-blue-100 rounded">
+                <ThemedText className="text-xs text-blue-700">
+                  Invite Mode
+                </ThemedText>
+              </View>
+            )}
           </View>
-        )}
+
+          {/* Results List */}
+          <FlatList
+            data={selectedMode === "search" ? filteredUsers : []}
+            renderItem={renderUserItem}
+            keyExtractor={(item) => item.id.toString()}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            ListHeaderComponent={renderEmailInvite}
+            ListEmptyComponent={renderEmptyState}
+            keyboardShouldPersistTaps="handled"
+          />
+        </View>
       </SafeAreaView>
     </ThemedView>
   );

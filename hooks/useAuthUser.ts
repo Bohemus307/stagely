@@ -1,7 +1,7 @@
 import { useAuth0 } from "react-native-auth0";
 import { useQuery } from "@tanstack/react-query";
 import Constants from "expo-constants";
-import { User } from "@/lib/@types/properties";
+import type { User } from "@prisma/client";
 
 /**
  * Custom hook to fetch authenticated user data from Auth0 and then get
@@ -13,7 +13,6 @@ export const useAuthUser = () => {
   const apiUrl =
     Constants.expoConfig?.extra?.stagelyApiUrl || process.env.STAGELY_API_URL;
 
-  // Query to fetch user details from backend
   const {
     data: backendUser,
     isLoading: backendLoading,
@@ -21,20 +20,17 @@ export const useAuthUser = () => {
     refetch,
   } = useQuery<User | null>({
     queryKey: ["user", user?.email],
-    queryFn: async () => {
+    queryFn: async (): Promise<User | null> => {
       if (!user?.email || !apiUrl) {
         throw new Error("User email or API URL not available");
       }
 
-      // Get the access token
       const credentials = await getCredentials();
-      // console.log("CREDS", credentials?.accessToken); for BE testing 🚀
 
       if (!credentials?.accessToken) {
         throw new Error("Access token not available");
       }
 
-      // Search for user by email in the backend
       const response = await fetch(
         `https://${apiUrl}/users/search?query=${encodeURIComponent(user.email)}&limit=1`,
         {
@@ -54,11 +50,15 @@ export const useAuthUser = () => {
     enabled: !!user?.email && !!apiUrl,
   });
 
+  // Helper function to check if user is placeholder
+  const isPlaceholderUser = backendUser?.isPlaceholder === true;
+
   return {
     auth0User: user,
     backendUser,
     isLoading: isLoading || backendLoading,
     error: error || backendError,
     refetch,
+    isPlaceholderUser,
   };
 };

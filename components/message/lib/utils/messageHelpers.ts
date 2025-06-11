@@ -16,9 +16,7 @@ export const filterMessages = (
     // Text search filter
     const matchesSearch =
       message.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      message.lastMessage.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (message.propertyName &&
-        message.propertyName.toLowerCase().includes(searchQuery.toLowerCase()));
+      message.lastMessage.toLowerCase().includes(searchQuery.toLowerCase());
 
     // Status filter
     let matchesStatus = true;
