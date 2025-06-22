@@ -2,7 +2,9 @@ import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ScrollView, Pressable } from "react-native";
+import { Image } from "@/components/ui/image";
 import { IncidentImage } from "@/lib/@types/properties";
+import { getCloudFrontUrl } from "@/app/(tabs)/(properties)/(photos)/details";
 
 interface IncidentPhotosProps {
   images: IncidentImage[];
@@ -44,9 +46,13 @@ const IncidentPhotos: React.FC<IncidentPhotosProps> = ({
             onPress={() => onPhotoPress && onPhotoPress(image)}
           >
             <Box className="w-32 h-32 mr-3 rounded-lg overflow-hidden">
-              <Box className="w-full h-full bg-white rounded-lg items-center justify-center">
-                <IconSymbol name="photo" size={30} color="#9ca3af" />
-              </Box>
+              <Image
+                source={{
+                  uri: getCloudFrontUrl(image.imageUrl) || image.imageUrl,
+                }}
+                className="w-full h-full"
+                alt={image.caption || `Incident photo ${image.id}`}
+              />
             </Box>
           </Pressable>
         ))}

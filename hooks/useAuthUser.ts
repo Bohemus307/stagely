@@ -1,7 +1,6 @@
-import { useAuth0 } from "react-native-auth0";
+import { useAuth0, User } from "react-native-auth0";
 import { useQuery } from "@tanstack/react-query";
 import Constants from "expo-constants";
-import type { User } from "@prisma/client";
 
 /**
  * Custom hook to fetch authenticated user data from Auth0 and then get

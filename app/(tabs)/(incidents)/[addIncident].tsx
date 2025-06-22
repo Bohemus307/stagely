@@ -23,7 +23,7 @@ const AddIncidentScreen = () => {
     property,
     isLoading: propertyLoading,
     error: propertyError,
-  } = useGetProperty(propertyId || "");
+  } = useGetProperty(propertyId);
 
   // Action handlers
   const handleTakePhoto = (): void => {
@@ -36,20 +36,10 @@ const AddIncidentScreen = () => {
 
   const handleSelectFromGallery = (): void => {
     // Navigate to gallery selection screen
+    // Only pass propertyId (no incidentId) to trigger new incident flow
     router.push({
       pathname: "/(tabs)/(incidents)/(photos)/select",
       params: { propertyId },
-    });
-  };
-
-  const handleReportWithoutPhotos = (): void => {
-    // Navigate to incident form screen
-    router.push({
-      pathname: "/(tabs)/(incidents)/new",
-      params: {
-        propertyId,
-        skipPhotos: "true",
-      },
     });
   };
 
@@ -173,23 +163,6 @@ const AddIncidentScreen = () => {
                 <Box className="flex-1">
                   <ThemedText className="text-lg font-medium">
                     Choose from Gallery
-                  </ThemedText>
-                </Box>
-              </Box>
-            </Pressable>
-
-            {/* Report Without Photos Option */}
-            <Pressable
-              onPress={handleReportWithoutPhotos}
-              className={getCardStyle()}
-            >
-              <Box className="flex-row items-center py-5 px-4">
-                <Box className="w-12 h-12 bg-primary-500 rounded-full justify-center items-center mr-4">
-                  <IconSymbol name="doc.text" size={24} color="white" />
-                </Box>
-                <Box className="flex-1">
-                  <ThemedText className="text-lg font-medium">
-                    Report Without Photos
                   </ThemedText>
                 </Box>
               </Box>

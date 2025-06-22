@@ -210,16 +210,19 @@ const useS3ImageUpload = (
       const fileName = `${uuidv4()}.jpg`;
 
       // Request pre-signed URL from backend
-      const urlResponse = await fetch(`${apiEndpoint}/s3/get-presigned-url`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const urlResponse = await fetch(
+        `https://${apiEndpoint}/s3/get-presigned-url`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fileName,
+            contentType: "image/jpeg",
+          }),
         },
-        body: JSON.stringify({
-          fileName,
-          contentType: "image/jpeg",
-        }),
-      });
+      );
 
       if (!urlResponse.ok) {
         throw new Error(

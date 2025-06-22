@@ -61,6 +61,7 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
   onPress,
   onDetailsPress,
 }) => {
+  console.log(incident);
   // Find the associated property
   const property = properties.find(
     (p) => p.property_id === incident.propertyId,

@@ -1,0 +1,320 @@
+import { useState } from "react";
+import { useRouter } from "expo-router";
+import { Alert, Text } from "react-native";
+import * as Location from "expo-location";
+import { Button, ButtonText } from "@/components/ui/button";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import {
+  Modal,
+  ModalBackdrop,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+} from "@/components/ui/modal";
+import { HStack } from "@/components/ui/hstack";
+import { VStack } from "@/components/ui/vstack";
+import { Box } from "@/components/ui/box";
+import { Heading } from "@/components/ui/heading";
+import { Badge } from "@/components/ui/badge";
+import { Icon, CloseIcon, AddIcon } from "@/components/ui/icon";
+import { Image } from "@/components/ui/image";
+import Constants from "expo-constants";
+import { useGetProperties } from "@/hooks/properties/useGetProperties";
+import { Property } from "@/lib/@types/properties";
+import { Fab, FabIcon } from "@/components/ui/fab";
+
+export default function AddIncidentButtonFab() {
+  const router = useRouter();
+  const [showModal, setShowModal] = useState(false);
+  const [nearestProperty, setNearestProperty] = useState<Property | null>(null);
+  const [streetViewError, setStreetViewError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Use the properties hook to fetch data
+  const {
+    properties: propertiesData,
+    isLoading: propertiesLoading,
+    error: propertiesError,
+  } = useGetProperties({
+    status: "Active", // Optionally filter by active properties
+    limit: 100, // Get a reasonable number of properties to search among
+  });
+
+  const GOOGLE_MAPS_API_KEY = Constants.expoConfig?.extra?.googleMapsKey || "";
+
+  const findNearestProperty = (
+    latitude: number,
+    longitude: number,
+  ): Property | null => {
+    if (!propertiesData?.data || propertiesData.data.length === 0) {
+      return null;
+    }
+
+    let nearestProp: Property | null = null;
+    let minDistance = Number.MAX_VALUE;
+
+    propertiesData.data.forEach((property: Property) => {
+      if (property.longitude && property.latitude) {
+        const latDiff = Math.abs(latitude - property.latitude);
+        const lngDiff = Math.abs(longitude - property.longitude);
+        const distance = latDiff + lngDiff;
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestProp = property;
+        }
+      }
+    });
+
+    return nearestProp;
+  };
+
+  const handlePress = async () => {
+    setIsLoading(true);
+    setStreetViewError(false);
+
+    if (propertiesLoading) {
+      Alert.alert(
+        "Please Wait",
+        "Still loading property data. Please try again in a moment.",
+      );
+      setIsLoading(false);
+      return;
+    }
+
+    if (propertiesError) {
+      Alert.alert(
+        "Data Error",
+        "There was a problem loading property data. Please try again later.",
+        [
+          {
+            text: "View All Properties",
+            onPress: () => router.push("/(tabs)/(properties)"),
+          },
+          { text: "Cancel", style: "cancel" },
+        ],
+      );
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+
+      if (status !== "granted") {
+        Alert.alert(
+          "Location Permission Denied",
+          "Please enable location services to automatically detect nearby properties.",
+          [
+            {
+              text: "View All Properties",
+              onPress: () => router.push("/(tabs)/(properties)"),
+            },
+            { text: "Cancel", style: "cancel" },
+          ],
+        );
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync();
+
+      const nearest = findNearestProperty(
+        location.coords.latitude,
+        location.coords.longitude,
+      );
+
+      if (nearest) {
+        setNearestProperty(nearest);
+
+        setStreetViewError(
+          !nearest.latitude ||
+            !nearest.longitude ||
+            typeof nearest.latitude !== "number" ||
+            typeof nearest.longitude !== "number",
+        );
+
+        setShowModal(true);
+      } else {
+        Alert.alert(
+          "No Properties Found",
+          "No properties were found near your current location.",
+          [
+            {
+              text: "View All Properties",
+              onPress: () => router.push("/(tabs)/(properties)"),
+            },
+            { text: "Cancel", style: "cancel" },
+          ],
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        `Location Error ${error}`,
+        "Could not determine your current location.",
+        [
+          {
+            text: "View All Properties",
+            onPress: () => router.push("/(tabs)/(properties)"),
+          },
+          { text: "Cancel", style: "cancel" },
+        ],
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleConfirmProperty = () => {
+    if (nearestProperty) {
+      Alert.alert(
+        "Property Confirmed",
+        `You've selected: ${nearestProperty.address}, ${nearestProperty.city}`,
+      );
+      setShowModal(false);
+      router.push({
+        pathname: "/(tabs)/(incidents)/[addIncident]",
+        params: {
+          propertyId: nearestProperty.id.toString(),
+          addIncident: "[addIncident]",
+        },
+      });
+    }
+  };
+
+  const handleViewAllProperties = () => {
+    setShowModal(false);
+    router.push("/(tabs)/(properties)");
+  };
+
+  const renderPropertyImage = () => {
+    if (
+      nearestProperty?.latitude &&
+      nearestProperty?.longitude &&
+      !streetViewError
+    ) {
+      const streetViewUrl = `https://maps.googleapis.com/maps/api/streetview?size=200x200&location=${nearestProperty.latitude},${nearestProperty.longitude}&key=${GOOGLE_MAPS_API_KEY}`;
+
+      return (
+        <Box className="relative h-full w-full">
+          <Image
+            source={{ uri: streetViewUrl }}
+            alt="Street View"
+            className="h-full w-full object-cover"
+            onError={() => setStreetViewError(true)}
+          />
+          <Badge className="absolute bottom-0 left-0 bg-primary-400/70 px-1 rounded-tr">
+            <Text className="text-white text-xs">Street View</Text>
+          </Badge>
+        </Box>
+      );
+    }
+
+    return (
+      <Box className="h-full w-full bg-secondary-100 flex items-center justify-center">
+        <IconSymbol name="eye.slash" size={24} color="gray" />
+        <Text className="text-xs text-gray-500 mt-1">No Preview</Text>
+      </Box>
+    );
+  };
+
+  const getActiveIncidents = (property: Property) => {
+    return property.openIncidentCount || 0;
+  };
+
+  return (
+    <>
+      {!isLoading && (
+        <Fab size="lg" placement="bottom right" onPress={handlePress}>
+          <FabIcon size="xl" as={AddIcon} />
+        </Fab>
+      )}
+
+      {/* Property Confirmation Modal */}
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} size="md">
+        <ModalBackdrop />
+        <ModalContent>
+          <ModalHeader>
+            <Heading size="md" className="text-typography-950">
+              Nearby Property
+            </Heading>
+            <ModalCloseButton>
+              <Icon
+                as={CloseIcon}
+                size="md"
+                className="stroke-background-400 group-[:hover]/modal-close-button:stroke-background-700"
+              />
+            </ModalCloseButton>
+          </ModalHeader>
+
+          <ModalBody>
+            {nearestProperty && (
+              <>
+                <HStack className="items-start">
+                  <Box className="h-20 w-20 rounded overflow-hidden mr-3">
+                    {renderPropertyImage()}
+                  </Box>
+
+                  <VStack className="flex-1">
+                    <Heading size="sm" className="text-typography-900">
+                      {nearestProperty.address}
+                    </Heading>
+                    <Text className="text-typography-500 text-sm">
+                      {nearestProperty.city}, {nearestProperty.state}{" "}
+                      {nearestProperty.zipCode}
+                    </Text>
+
+                    <HStack className="mt-2 space-x-2">
+                      {nearestProperty.status && (
+                        <Badge
+                          className={
+                            nearestProperty.status === "Active"
+                              ? "bg-green-500 rounded-2xl"
+                              : nearestProperty.status === "Maintenance"
+                                ? "bg-amber-500 rounded-2xl"
+                                : "bg-gray-500 rounded-2xl"
+                          }
+                        >
+                          <Text className="text-white text-xs">
+                            {nearestProperty.status}
+                          </Text>
+                        </Badge>
+                      )}
+
+                      {getActiveIncidents(nearestProperty) > 0 && (
+                        <Badge className="bg-red-500">
+                          <Text className="text-white text-xs">
+                            {getActiveIncidents(nearestProperty)} Issue
+                            {getActiveIncidents(nearestProperty) > 1 ? "s" : ""}
+                          </Text>
+                        </Badge>
+                      )}
+                    </HStack>
+                  </VStack>
+                </HStack>
+                <Text className="text-typography-700 mt-4 text-center">
+                  Is this where the incident occurred?
+                </Text>
+              </>
+            )}
+          </ModalBody>
+
+          <ModalFooter className="flex items-center justify-center">
+            <Button
+              variant="outline"
+              action="secondary"
+              onPress={handleViewAllProperties}
+              className="mr-2"
+            >
+              <ButtonText>All Properties</ButtonText>
+            </Button>
+            <Button onPress={handleConfirmProperty}>
+              <ButtonText>Confirm</ButtonText>
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
+  );
+}

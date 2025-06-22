@@ -3,8 +3,9 @@ import IncidentDetails from "@/components/incidents/details/IncidentDetails";
 import IncidentPhotos from "@/components/incidents/details/IncidentPhotos";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { ThemedText } from "@/components/ThemedText";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, SafeAreaView, ScrollView, View, Text } from "react-native";
 import IncidentNotes from "@/components/incidents/details/IncidentNotes";
 import IncidentActions from "@/components/incidents/details/IncidentQuickActions";
@@ -29,6 +30,14 @@ const IncidentsDetailsScreen = () => {
     error: incidentError,
   } = useGetIncidentById(incidentId, { enabled: !!incidentId });
 
+  // Debug logging
+  useEffect(() => {
+    if (incident) {
+      console.log("[IncidentDetails] Loaded incident:", incident);
+      console.log("[IncidentDetails] Incident images:", incident.images);
+    }
+  }, [incident]);
+
   const {
     updateStatus,
     isPending: isStatusUpdating,
@@ -37,9 +46,7 @@ const IncidentsDetailsScreen = () => {
   } = useUpdateIncidentStatus(incidentId);
 
   const propertyId = incident?.propertyId?.toString();
-  const { property, isLoading: propertyLoading } = useGetProperty(
-    propertyId || "",
-  );
+  const { property, isLoading: propertyLoading } = useGetProperty(propertyId);
 
   const handleUpdateStatus = (incidentId: number, newStatus: string) => {
     Alert.alert(
@@ -187,11 +194,21 @@ const IncidentsDetailsScreen = () => {
           )}
 
           {/* Photos Section */}
-          {incident?.images && (
+          {incident?.images && incident.images.length > 0 ? (
             <IncidentPhotos
-              images={incident?.images}
+              images={incident.images}
               onPhotoPress={handlePhotoPress}
             />
+          ) : (
+            <Box className="bg-primary-50 mx-4 p-4 rounded-lg shadow-sm mb-4">
+              <ThemedText type="defaultSemiBold" className="mb-3">
+                Photos
+              </ThemedText>
+              <Box className="h-32 bg-gray-100 rounded-lg items-center justify-center">
+                <IconSymbol name="photo" size={30} color="#9ca3af" />
+                <Text className="text-gray-500 mt-2">Loading photos...</Text>
+              </Box>
+            </Box>
           )}
 
           {/* Notes Section */}

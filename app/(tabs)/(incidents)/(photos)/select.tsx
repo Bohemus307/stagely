@@ -19,6 +19,9 @@ import { Box } from "@/components/ui/box";
 import BackButton from "@/components/BackButton";
 import { useAddIncidentImages } from "@/hooks/incidents/useAddIncidentImages";
 
+import { useCreateIncident } from "@/hooks/incidents/useCreateIncident";
+import { useS3Upload } from "@/hooks/useS3Upload";
+
 interface SelectedImage {
   id: string;
   uri: string;
@@ -26,15 +29,19 @@ interface SelectedImage {
 }
 
 interface IncidentImageData {
-  file: Blob;
-  fileName: string;
   imageUrl: string;
+  caption?: string;
+  takenAt?: string;
   metadata?: Record<string, any>;
 }
 
 const IncidentGallerySelectScreen = () => {
   const params = useLocalSearchParams();
   const incidentId = params.incidentId as string;
+  const propertyId = params.propertyId as string;
+
+  // Check if this is for a new incident or existing one
+  const isNewIncident = !incidentId && propertyId;
 
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [mediaAssets, setMediaAssets] = useState<MediaLibrary.Asset[]>([]);
@@ -49,21 +56,30 @@ const IncidentGallerySelectScreen = () => {
     total: number;
   }>({ completed: 0, total: 0 });
 
-  // Initialize the upload hook
+  // Initialize hooks
   const {
     addImages,
-    isPending: isUploadLoading,
+    isPending: isAddingImages,
     isSuccess,
-    isError,
     data,
-  } = useAddIncidentImages(incidentId);
+  } = useAddIncidentImages(incidentId || "");
+
+  // Initialize S3 upload hook for new incidents
+  const { uploadToS3 } = useS3Upload();
+
+  // Initialize create incident hook
+  const {
+    createIncident,
+    isPending: isCreatingIncident,
+    isSuccess: isCreateSuccess,
+    data: createdIncident,
+  } = useCreateIncident();
 
   const windowWidth = Dimensions.get("window").width;
-  const imageSize = (windowWidth - 24) / 3; // 3 columns with 8px spacing between
+  const imageSize = (windowWidth - 24) / 3;
 
   useEffect(() => {
     (async () => {
-      // Request permissions
       const { status } = await MediaLibrary.requestPermissionsAsync();
       setHasPermission(status === "granted");
 
@@ -75,10 +91,27 @@ const IncidentGallerySelectScreen = () => {
     })();
   }, []);
 
-  // Effect to handle successful uploads
+  // Effect to handle successful incident creation for new incidents
   useEffect(() => {
-    if (isSuccess && data) {
-      // If all uploads are complete, navigate back to incident edit
+    if (isCreateSuccess && createdIncident && isNewIncident) {
+      console.log(
+        "[Effect] New incident created successfully, navigating to details",
+      );
+      console.log("[Effect] Created incident data:", createdIncident);
+
+      // Add a small delay to ensure the API has processed everything
+      setTimeout(() => {
+        router.push({
+          pathname: "/(tabs)/(incidents)/details",
+          params: { incidentId: createdIncident.id.toString() },
+        });
+      }, 500);
+    }
+  }, [isCreateSuccess, createdIncident, isNewIncident]);
+
+  // Effect to handle successful uploads for existing incidents
+  useEffect(() => {
+    if (isSuccess && data && !isNewIncident) {
       if (
         uploadProgress.completed === uploadProgress.total &&
         uploadProgress.total > 0
@@ -89,12 +122,11 @@ const IncidentGallerySelectScreen = () => {
         });
       }
     }
-  }, [isSuccess, uploadProgress, data, incidentId]);
+  }, [isSuccess, uploadProgress, data, incidentId, isNewIncident]);
 
   const loadMediaAssets = async () => {
     try {
       setLoading(true);
-      // Get only photos (not videos)
       const { assets } = await MediaLibrary.getAssetsAsync({
         mediaType: MediaLibrary.MediaType.photo,
         first: 100,
@@ -134,11 +166,9 @@ const IncidentGallerySelectScreen = () => {
   };
 
   const getImageFileName = (uri: string): string => {
-    // Extract filename from URI and ensure it has an appropriate extension
     const uriParts = uri.split("/");
     const fileName = uriParts[uriParts.length - 1];
 
-    // If no extension, add .jpg
     if (!fileName.includes(".")) {
       return `${fileName}.jpg`;
     }
@@ -146,13 +176,13 @@ const IncidentGallerySelectScreen = () => {
     return fileName;
   };
 
+  // Enhanced getImageBlob function (from your working example)
   const getImageBlob = async (uri: string): Promise<Blob> => {
     console.log(
       "[getImageBlob] Starting blob creation for URI:",
       uri.substring(0, 30) + "...",
     );
 
-    // Create a unique temporary file name for each image
     const generateUniqueFileName = () => {
       const timestamp = new Date().getTime();
       const random = Math.floor(Math.random() * 10000);
@@ -162,19 +192,15 @@ const IncidentGallerySelectScreen = () => {
     let tempFileUri: string | null = null;
 
     try {
-      // For photo library URIs (ph://) we need a different approach
       if (uri.startsWith("ph://")) {
         console.log(
           "[getImageBlob] Detected photo library URI, using FileSystem to read",
         );
 
-        // First, try to get a file:// URI from the photo library
         try {
-          // Extract asset ID from the ph:// URI
           const assetId = uri.replace("ph://", "").split("/")[0];
           console.log("[getImageBlob] Extracted asset ID:", assetId);
 
-          // Try to get asset info with just the ID
           const asset = await MediaLibrary.getAssetInfoAsync(assetId);
           console.log("[getImageBlob] Got asset info:", {
             id: asset.id,
@@ -182,7 +208,6 @@ const IncidentGallerySelectScreen = () => {
             hasUri: !!asset.uri,
           });
 
-          // If we have a localUri, use that instead of the original uri
           if (asset.localUri) {
             console.log("[getImageBlob] Using localUri instead of photo URI");
             uri = asset.localUri;
@@ -193,7 +218,6 @@ const IncidentGallerySelectScreen = () => {
             assetError,
           );
 
-          // As a fallback, try to read the image data using FileSystem
           try {
             const uniqueFileName = generateUniqueFileName();
             tempFileUri = FileSystem.cacheDirectory + uniqueFileName;
@@ -202,14 +226,12 @@ const IncidentGallerySelectScreen = () => {
               tempFileUri,
             );
 
-            // First check if the file exists and delete it if it does
             const fileInfo = await FileSystem.getInfoAsync(tempFileUri);
             if (fileInfo.exists) {
               console.log("[getImageBlob] File already exists, deleting it");
               await FileSystem.deleteAsync(tempFileUri);
             }
 
-            // Copy the photo to a temporary file
             await FileSystem.copyAsync({
               from: uri,
               to: tempFileUri,
@@ -253,7 +275,6 @@ const IncidentGallerySelectScreen = () => {
       console.error("[getImageBlob] Error creating blob:", error);
       throw error;
     } finally {
-      // Clean up temporary file if it was created
       if (tempFileUri) {
         try {
           const fileInfo = await FileSystem.getInfoAsync(tempFileUri);
@@ -272,11 +293,11 @@ const IncidentGallerySelectScreen = () => {
   };
 
   const handleNext = async () => {
-    // Convert map to array of selected images
     const selectedImageArray = Array.from(selectedImages.values());
 
-    console.log("[handleNext] Starting upload process", {
+    console.log("[handleNext] Starting process", {
       selectedImagesCount: selectedImageArray.length,
+      isNewIncident,
     });
 
     if (selectedImageArray.length === 0) {
@@ -287,138 +308,146 @@ const IncidentGallerySelectScreen = () => {
     try {
       setUploading(true);
       setUploadProgress({ completed: 0, total: selectedImageArray.length });
-      console.log(
-        "[handleNext] Upload started, total images:",
-        selectedImageArray.length,
-      );
 
-      const imagesToUpload: IncidentImageData[] = [];
-      // Process each image sequentially
-      for (const [index, image] of selectedImageArray.entries()) {
-        try {
+      if (isNewIncident) {
+        // NEW INCIDENT FLOW: Upload to S3 first, then create incident automatically
+        console.log("[handleNext] New incident flow - uploading to S3 first");
+
+        const uploadedUrls: string[] = [];
+
+        for (const [index, image] of selectedImageArray.entries()) {
+          try {
+            console.log(
+              `[handleNext] Processing image ${index + 1}/${selectedImageArray.length}`,
+            );
+
+            // Get blob using the existing function that handles special URIs
+            const blob = await getImageBlob(image.uri);
+            const fileName = getImageFileName(image.uri);
+
+            // Upload to S3 using the new hook
+            console.log(`[handleNext] Uploading to S3: ${fileName}`);
+            const publicUrl = await uploadToS3(blob, fileName);
+
+            if (publicUrl) {
+              uploadedUrls.push(publicUrl);
+              console.log(
+                `[handleNext] Successfully uploaded image ${index + 1}, URL:`,
+                publicUrl,
+              );
+            }
+
+            // Update progress
+            setUploadProgress((prev) => ({
+              ...prev,
+              completed: index + 1,
+            }));
+          } catch (error) {
+            console.error(
+              `[handleNext] Error uploading image ${index + 1}:`,
+              error,
+            );
+          }
+        }
+
+        if (uploadedUrls.length > 0) {
           console.log(
-            `[handleNext] Processing image ${index + 1}/${selectedImageArray.length}`,
-            {
-              imageId: image.id,
-              imageUri: image.uri.substring(0, 30) + "...",
-            },
+            "[handleNext] All uploads complete, creating incident automatically",
           );
 
-          // Get image info
-          console.log(`[handleNext] Getting file info for image ${index + 1}`);
-          const imageInfo = await FileSystem.getInfoAsync(image.uri);
-
-          // Convert URI to blob for upload
-          console.log(`[handleNext] Converting image ${index + 1} to blob`);
-          let imageBlob;
-          try {
-            imageBlob = await getImageBlob(image.uri);
-            console.log(`[handleNext] Blob created successfully:`, {
-              type: imageBlob.type || "unknown",
-              size: imageBlob.size,
-            });
-          } catch (blobError) {
-            console.error(
-              `[handleNext] Error creating blob for image ${index + 1}:`,
-              blobError,
-            );
-            throw blobError;
-          }
-          const fileName = getImageFileName(image.uri);
-          console.log(`[handleNext] Filename generated:`, { fileName });
-
-          // Prepare metadata
-          const metadata: Record<string, any> = {
-            originalFileName: fileName,
-            source: "device_gallery",
+          // Automatically create incident with uploaded images
+          // Let AI handle the classification
+          const incidentData = {
+            propertyId: parseInt(propertyId),
+            incidentType: "Pending Classification", // AI will classify
+            description:
+              "Incident reported with photos - awaiting AI classification",
+            severity: "Medium" as const, // Default, AI may adjust
+            status: "Open" as const,
+            reportedAt: new Date().toISOString(),
+            aiClassified: false, // Will be true after AI processes
+            images: uploadedUrls.map((url, index) => ({
+              imageUrl: url,
+              caption: `Photo ${index + 1}`,
+              takenAt: new Date().toISOString(),
+              metadata: {
+                source: "gallery_upload",
+              },
+            })),
           };
 
-          // Add size if it exists in the file info
-          if (imageInfo.exists && "size" in imageInfo) {
-            metadata.size = imageInfo.size;
-          }
-
           console.log(
-            `[handleNext] Calling uploadIncidentPhoto for image ${index + 1}`,
-            {
-              incidentId,
-              fileName,
-              blobSize: imageBlob.size,
-              blobType: imageBlob.type,
-              metadata,
-            },
+            "[handleNext] Creating incident with data:",
+            incidentData,
           );
-
-          imagesToUpload.push({
-            file: imageBlob,
-            fileName,
-            metadata,
-            imageUrl: "",
-          });
-          // Upload image
-          //const result = await uploadIncidentPhoto(
-          //  incidentId,
-          // imageBlob,
-          // fileName,
-          // metadata,
-          // );
-
-          //console.log(`[handleNext] Successfully uploaded image ${index + 1}`, {
-          // imageId: result?.id,
-          //imageUrl: result?.imageUrl?.substring(0, 30) + "...",
-          //});
-
-          // Update progress
-          setUploadProgress((prev) => ({
-            ...prev,
-            completed: index + 1,
-          }));
-          console.log(`[handleNext] Progress updated:`, {
-            completed: index + 1,
-            total: selectedImageArray.length,
-          });
-        } catch (err) {
-          console.error(
-            `[handleNext] Error uploading image ${index + 1}:`,
-            err,
+          createIncident(incidentData);
+        } else {
+          Alert.alert(
+            "Upload Failed",
+            "No images were uploaded successfully. Please try again.",
+            [{ text: "OK" }],
           );
-          // Continue with next image even if one fails
+        }
+      } else {
+        // EXISTING INCIDENT FLOW: Add images to existing incident
+        console.log(
+          "[handleNext] Existing incident flow - adding images to incident",
+        );
+
+        const imagesToAdd: IncidentImageData[] = [];
+
+        for (const [index, image] of selectedImageArray.entries()) {
+          try {
+            console.log(
+              `[handleNext] Processing image ${index + 1}/${selectedImageArray.length}`,
+            );
+
+            // Get blob and upload to S3
+            const blob = await getImageBlob(image.uri);
+            const fileName = getImageFileName(image.uri);
+
+            console.log(`[handleNext] Uploading to S3: ${fileName}`);
+            const publicUrl = await uploadToS3(blob, fileName);
+
+            if (publicUrl) {
+              imagesToAdd.push({
+                imageUrl: publicUrl,
+                caption: `Image ${index + 1}`,
+                takenAt: new Date().toISOString(),
+                metadata: {
+                  source: "device_gallery",
+                  originalFileName: fileName,
+                },
+              });
+            }
+
+            setUploadProgress((prev) => ({
+              ...prev,
+              completed: index + 1,
+            }));
+          } catch (err) {
+            console.error(
+              `[handleNext] Error processing image ${index + 1}:`,
+              err,
+            );
+          }
+        }
+
+        if (imagesToAdd.length > 0) {
+          console.log(
+            `[handleNext] Adding ${imagesToAdd.length} images to incident ${incidentId}`,
+          );
+          addImages(imagesToAdd);
         }
       }
-
-      if (imagesToUpload.length > 0) {
-        console.log(
-          `[handleNext] Uploading ${imagesToUpload.length} images to incident ${incidentId}`,
-        );
-        await addImages(imagesToUpload);
-      }
-      console.log("[handleNext] All uploads attempted, final status:", {
-        isError,
-        uploadProgress: `${uploadProgress.completed}/${uploadProgress.total}`,
-      });
-
-      // All uploads complete
-      if (isError) {
-        console.log("[handleNext] Showing error alert due to detected errors");
-        Alert.alert(
-          "Upload Error",
-          "Some images could not be uploaded. Please try again.",
-          [{ text: "OK" }],
-        );
-      } else {
-        console.log("[handleNext] Upload process completed successfully");
-      }
     } catch (error) {
-      console.error("[handleNext] Fatal error in handleNext:", error);
+      console.error("[handleNext] Fatal error:", error);
       Alert.alert(
         "Upload Failed",
         "There was a problem uploading your images. Please try again.",
         [{ text: "OK" }],
       );
     } finally {
-      console.log(
-        "[handleNext] Upload process finished, resetting uploading state",
-      );
       setUploading(false);
     }
   };
@@ -482,20 +511,27 @@ const IncidentGallerySelectScreen = () => {
           <BackButton />
 
           <ThemedText className="text-lg font-medium">
-            Select Incident Photos
+            {isNewIncident ? "Select Photos" : "Select Photos"}
           </ThemedText>
 
           <Button
             variant="solid"
-            disabled={selectedCount === 0 || uploading || isUploadLoading}
+            disabled={
+              selectedCount === 0 ||
+              uploading ||
+              isAddingImages ||
+              isCreatingIncident
+            }
             onPress={handleNext}
             className={`bg-primary-500`}
           >
-            {uploading ? (
+            {uploading || isCreatingIncident ? (
               <Box className="flex-row items-center">
                 <ActivityIndicator size="small" color="white" />
                 <Text className="text-white ml-2">
-                  {uploadProgress.completed}/{uploadProgress.total}
+                  {isCreatingIncident
+                    ? "Creating..."
+                    : `${uploadProgress.completed}/${uploadProgress.total}`}
                 </Text>
               </Box>
             ) : (
@@ -507,21 +543,26 @@ const IncidentGallerySelectScreen = () => {
         </Box>
       </Box>
 
-      {/* Upload Progress Indicator (shows when uploading) */}
-      {uploading && (
+      {/* Upload Progress Indicator */}
+      {(uploading || isCreatingIncident) && (
         <Box className="p-4 bg-gray-100 rounded-lg my-2">
           <ThemedText className="text-center">
-            Uploading {uploadProgress.completed} of {uploadProgress.total}{" "}
-            images...
+            {isCreatingIncident
+              ? "Creating incident with AI classification..."
+              : isNewIncident
+                ? `Uploading ${uploadProgress.completed} of ${uploadProgress.total} images...`
+                : `Processing ${uploadProgress.completed} of ${uploadProgress.total} images...`}
           </ThemedText>
-          <Box className="h-2 bg-gray-300 rounded-full mt-2">
-            <Box
-              className="h-2 bg-primary-500 rounded-full"
-              style={{
-                width: `${(uploadProgress.completed / uploadProgress.total) * 100}%`,
-              }}
-            />
-          </Box>
+          {!isCreatingIncident && (
+            <Box className="h-2 bg-gray-300 rounded-full mt-2">
+              <Box
+                className="h-2 bg-primary-500 rounded-full"
+                style={{
+                  width: `${(uploadProgress.completed / uploadProgress.total) * 100}%`,
+                }}
+              />
+            </Box>
+          )}
         </Box>
       )}
 
