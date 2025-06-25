@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
-import { useState, useRef, useEffect, useCallback, memo } from "react";
+import { useState, useRef, useEffect, useCallback, memo, useMemo } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -120,7 +120,6 @@ const ConversationScreen = () => {
   const conversationId = params.conversation as string;
 
   const { backendUser, isLoading: isLoadingUser } = useAuthUser();
-
   const [newMessage, setNewMessage] = useState("");
   const [formattedMessages, setFormattedMessages] = useState<ChatMessage[]>([]);
   const [unreadMessagesToMark, setUnreadMessagesToMark] = useState<string[]>(
@@ -130,7 +129,7 @@ const ConversationScreen = () => {
   const flatListRef = useRef<FlatList>(null);
   const textInputRef = useRef<TextInput>(null);
 
-  const otherUserId = Number(params.userId);
+  const otherUserId = useMemo(() => Number(params.userId), [params.userId]);
 
   const { conversation, isLoading: isLoadingConversation } =
     useGetConversation(conversationId);
@@ -223,9 +222,7 @@ const ConversationScreen = () => {
       }
     };
 
-    const timeoutId = setTimeout(processMessages, 50);
-
-    return () => clearTimeout(timeoutId);
+    processMessages(); // Remove the timeout
   }, [
     messages,
     otherUserId,
