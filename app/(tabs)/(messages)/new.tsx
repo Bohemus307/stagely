@@ -372,16 +372,18 @@ const NewMessageScreen = () => {
   const isProcessing = isCreatingConversation || isInviting;
 
   return (
-    <ThemedView className="flex-1">
+    <ThemedView className="flex-1 p-2">
       <SafeAreaView className="flex-1">
         <BackButton />
-        <View className="flex-row items-center px-4 mb-4">
-          <ThemedText type="defaultSemiBold">New Message</ThemedText>
+        <View className="flex-row items-center px-4 mb-2">
+          <ThemedText type="defaultSemiBold">
+            Send A Message or Invite someone new!
+          </ThemedText>
         </View>
 
         <View className="p-4 flex-1">
           {/* Search Input */}
-          <Input className="rounded-2xl border mb-4">
+          <Input className="rounded-2xl border border-gray-400 bg-gray-100 mb-4">
             <InputSlot className="pl-3">
               {isLoadingConversations ? (
                 <ActivityIndicator size="small" color="#0056b3" />
@@ -390,7 +392,8 @@ const NewMessageScreen = () => {
               )}
             </InputSlot>
             <InputField
-              placeholder="Search previously messaged users or enter email to invite..."
+              className="placeholder:text-gray-700"
+              placeholder="Search users or enter email to invite..."
               value={searchQuery}
               onChangeText={handleSearchChange}
               autoCapitalize="none"
@@ -399,9 +402,10 @@ const NewMessageScreen = () => {
           </Input>
 
           {/* Initial Message Input */}
-          <Input className="rounded-2xl border mb-4">
+          <Input className="rounded-2xl border border-gray-400 bg-gray-100 mb-4">
             <InputField
-              placeholder="Initial message (optional)"
+              className="placeholder:text-gray-700 ml-8 mt-4"
+              placeholder="Intial Message...."
               value={initialMessage}
               onChangeText={setInitialMessage}
               multiline

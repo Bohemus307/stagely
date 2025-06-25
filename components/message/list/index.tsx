@@ -252,7 +252,7 @@ const MessagesList: React.FC<MessageListProps> = ({
         refreshing={isLoading || false}
       />
 
-      <Box className="absolute bottom-6 right-6">
+      <Box className="absolute bottom-6 lg:bottom-12 right-6">
         <Fab size="lg" placement="bottom right" onPress={handleNewMessage}>
           <FabIcon size="xl" as={AddIcon} />
         </Fab>

@@ -93,10 +93,10 @@ const MessageCard: React.FC<MessageCardProps> = ({ message, onPress }) => {
   return (
     <TouchableOpacity onPress={() => onPress(message)} className="mb-2">
       <Box
-        className={`bg-white p-4 shadow-sm rounded-lg ${message.unread ? "border-l-4 border-blue-500" : ""}`}
+        className={`bg-white p-2 shadow-sm rounded-lg ${message.unread ? "border-l-4 border-blue-500" : ""}`}
       >
-        <HStack className="items-center space-x-3">
-          <Avatar size="md">
+        <HStack className="justify-between items-center">
+          <Avatar size="sm">
             {message.user.avatar ? (
               <AvatarImage source={{ uri: message.user.avatar }} />
             ) : (
@@ -107,15 +107,15 @@ const MessageCard: React.FC<MessageCardProps> = ({ message, onPress }) => {
           </Avatar>
 
           <VStack className="flex-1">
-            <HStack className="justify-between items-start">
-              <VStack className="flex-1">
+            <HStack className="flex-1">
+              <VStack className="flex-1 ml-2">
                 <ThemedText type="defaultSemiBold" numberOfLines={1}>
                   {displayName}
                 </ThemedText>
                 {/* Show email as subtitle when appropriate */}
                 {shouldShowEmail() && (
                   <ThemedText
-                    className="text-xs text-gray-500"
+                    className="text-xs text-primary-500"
                     numberOfLines={1}
                   >
                     {message.user.email}
@@ -123,12 +123,12 @@ const MessageCard: React.FC<MessageCardProps> = ({ message, onPress }) => {
                 )}
               </VStack>
 
-              <HStack className="items-center ml-2">
-                <ThemedText className="text-xs text-gray-500">
+              <HStack className="items-center">
+                <ThemedText className="text-xs text-primary-500">
                   {formatMessageTime(message.timestamp)}
                 </ThemedText>
                 {message.unread && (
-                  <Badge className="bg-blue-500 h-2 w-2 rounded-full ml-2" />
+                  <Badge className="bg-blue-500 h-2 w-2 rounded-full" />
                 )}
               </HStack>
             </HStack>
@@ -136,7 +136,7 @@ const MessageCard: React.FC<MessageCardProps> = ({ message, onPress }) => {
             <ThemedText
               type="default"
               numberOfLines={2}
-              className={`mt-1 ${message.unread ? "font-medium" : "text-gray-600"}`}
+              className={`mt-1 ml-2 ${message.unread ? "font-medium" : "text-primary-600"}`}
             >
               {message.lastMessage}
             </ThemedText>
