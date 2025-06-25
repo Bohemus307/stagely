@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import Search from "@/components/Search";
 
 export interface MessageSearchProps {
@@ -8,28 +8,31 @@ export interface MessageSearchProps {
   onStatusFilterChange: (status: string | null) => void;
 }
 
-const MessageSearch: React.FC<MessageSearchProps> = ({
-  searchQuery,
-  onSearchChange,
-  statusFilter,
-  onStatusFilterChange,
-}) => {
-  const messageFilterOptions = [
-    { label: "All", value: null },
-    { label: "Unread", value: "Unread" },
-    { label: "Urgent", value: "Urgent" },
-  ];
+const MessageSearch: React.FC<MessageSearchProps> = React.memo(
+  ({ searchQuery, onSearchChange, statusFilter, onStatusFilterChange }) => {
+    // Memoize the filter options to prevent recreation
+    const messageFilterOptions = useMemo(
+      () => [
+        { label: "All", value: null },
+        { label: "Unread", value: "Unread" },
+        { label: "Urgent", value: "Urgent" },
+      ],
+      [],
+    );
 
-  return (
-    <Search
-      searchQuery={searchQuery}
-      onSearchChange={onSearchChange}
-      statusFilter={statusFilter}
-      onStatusFilterChange={onStatusFilterChange}
-      placeholderText="Search Messages..."
-      filterOptions={messageFilterOptions}
-    />
-  );
-};
+    return (
+      <Search
+        searchQuery={searchQuery}
+        onSearchChange={onSearchChange}
+        statusFilter={statusFilter}
+        onStatusFilterChange={onStatusFilterChange}
+        placeholderText="Search Messages..."
+        filterOptions={messageFilterOptions}
+      />
+    );
+  },
+);
+
+MessageSearch.displayName = "MessageSearch";
 
 export default MessageSearch;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { View } from "react-native";
 import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
 import MessagesList from "@/components/message/list";
@@ -12,6 +12,19 @@ const MessagesScreen = () => {
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [isBannerHidden, setIsBannerHidden] = useState(false);
 
+  // Memoize the handlers to prevent recreation on every render
+  const handleSearchChange = useCallback((query: string) => {
+    setSearchQuery(query);
+  }, []);
+
+  const handleStatusFilterChange = useCallback((status: string | null) => {
+    setStatusFilter(status);
+  }, []);
+
+  const handleBannerHide = useCallback(() => {
+    setIsBannerHidden(true);
+  }, []);
+
   // Show banner only for placeholder users who haven't dismissed it
   const showInvitationBanner = backendUser?.isPlaceholder && !isBannerHidden;
 
@@ -21,16 +34,14 @@ const MessagesScreen = () => {
       <View className="px-4 p-2 bg-white">
         <MessageSearch
           searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
+          onSearchChange={handleSearchChange}
           statusFilter={statusFilter}
-          onStatusFilterChange={setStatusFilter}
+          onStatusFilterChange={handleStatusFilterChange}
         />
       </View>
 
       {/* Invitation Banner - only shows for placeholder users */}
-      {showInvitationBanner && (
-        <InvitationBanner onHide={() => setIsBannerHidden(true)} />
-      )}
+      {showInvitationBanner && <InvitationBanner onHide={handleBannerHide} />}
 
       {/* Messages List */}
       <View className="flex-1">
