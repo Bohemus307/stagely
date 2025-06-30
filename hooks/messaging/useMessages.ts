@@ -147,7 +147,6 @@ export const useMarkAsRead = (conversationId: string) => {
         throw new Error("Access token not available");
       }
 
-      // Mark messages as read
       const response = await fetch(
         `https://${apiUrl}/messaging/conversations/${conversationId}/read`,
         {

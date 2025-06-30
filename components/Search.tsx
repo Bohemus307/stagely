@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from "react";
+import React, { useCallback } from "react";
 import { SearchIcon } from "@/components/ui/icon";
 import { Input, InputSlot, InputIcon, InputField } from "@/components/ui/input";
 import { View, Text } from "react-native";
@@ -27,8 +27,6 @@ const Search: React.FC<SearchProps> = React.memo(
     placeholderText,
     filterOptions = [],
   }) => {
-    const inputRef = useRef(null);
-
     const handleStatusSelect = useCallback(
       (status: string | null) => {
         onStatusFilterChange(status);
@@ -60,7 +58,6 @@ const Search: React.FC<SearchProps> = React.memo(
               <InputIcon as={SearchIcon} />
             </InputSlot>
             <InputField
-              ref={inputRef}
               placeholder={placeholderText}
               value={searchQuery}
               onChangeText={handleTextChange}

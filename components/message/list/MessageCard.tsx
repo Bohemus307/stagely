@@ -28,7 +28,6 @@ const MessageCard: React.FC<MessageCardProps> = ({ message, onPress }) => {
     }
   };
 
-  // Helper function to get display name
   const getDisplayName = (user: MessageUser): string => {
     if (user.firstName && user.lastName) {
       if (user.firstName === "Invited" && user.lastName === "User") {
@@ -78,7 +77,6 @@ const MessageCard: React.FC<MessageCardProps> = ({ message, onPress }) => {
   const displayName = getDisplayName(message.user);
 
   const shouldShowEmail = () => {
-    // Show email if the display name was derived from email or if using placeholder name
     return (
       message.user.email &&
       (displayName.includes("@") ||

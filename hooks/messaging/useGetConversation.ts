@@ -63,17 +63,14 @@ export const useGetConversation = (conversationId: string) => {
       }
 
       const conversationData = await response.json();
-      console.log("✅ Conversation data received:", conversationData);
 
       return conversationData;
     },
     enabled:
       !!apiUrl && !!backendUser?.id && !!conversationId && !isLoadingUser,
     retry: (failureCount, error: any) => {
-      console.log(`🔄 Retry attempt ${failureCount} for error:`, error.message);
       // Don't retry on 401 or 404 errors
       if (error.message.includes("401") || error.message.includes("404")) {
-        console.log("❌ Not retrying auth or not found error");
         return false;
       }
       return failureCount < 3;

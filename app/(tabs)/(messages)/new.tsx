@@ -7,7 +7,7 @@ import {
 import { HStack } from "@/components/ui/hstack";
 import { Pressable } from "@/components/ui/pressable";
 import { router } from "expo-router";
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { ThemedView } from "@/components/ThemedView";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BackButton from "@/components/BackButton";
@@ -17,7 +17,7 @@ import { SearchIcon } from "@/components/ui/icon";
 import { useCreateConversation } from "@/hooks/messaging/useCreateConversation";
 import { useInviteConversation } from "@/hooks/messaging/useInviteConversation";
 import { useAuthUser } from "@/hooks/useAuthUser";
-import { useGetConversations } from "@/hooks/messaging/useConversations"; // Fixed import path
+import { usePreviouslyMessagedUsers } from "@/hooks/messaging/usePreviouslyMessagedUsers";
 import { User } from "@/components/message/data/messages";
 
 const NewMessageScreen = () => {
@@ -30,87 +30,20 @@ const NewMessageScreen = () => {
 
   const { backendUser, isLoading: isLoadingUser } = useAuthUser();
 
-  // Get user's existing conversations to filter previously messaged users
-  const { conversations, isLoading: isLoadingConversations } =
-    useGetConversations();
-
-  // Remove unused allUsers - we only search previously messaged users now
+  const {
+    data: previousUsersData,
+    isLoading: isLoadingPreviousUsers,
+    error: previousUsersError,
+  } = usePreviouslyMessagedUsers(
+    debouncedSearch,
+    selectedMode === "search" && debouncedSearch.length >= 2,
+  );
 
   const { mutate: createConversation, isPending: isCreatingConversation } =
     useCreateConversation();
 
   const { mutate: inviteConversation, isPending: isInviting } =
     useInviteConversation();
-
-  // Extract previously messaged users from conversations
-  const previouslyMessagedUsers = useMemo(() => {
-    if (!conversations || !backendUser?.id) return [];
-
-    const users: User[] = [];
-    const seenUserIds = new Set<number>();
-
-    conversations.forEach((conversation: any) => {
-      // Get the other participant(s) from the conversation
-      if (
-        conversation.otherParticipant &&
-        conversation.otherParticipant.id !== backendUser.id
-      ) {
-        const otherUser = conversation.otherParticipant;
-        if (!seenUserIds.has(otherUser.id)) {
-          seenUserIds.add(otherUser.id);
-          users.push({
-            id: otherUser.id,
-            firstName: otherUser.firstName,
-            lastName: otherUser.lastName,
-            email: otherUser.email,
-            profilePictureUrl: otherUser.profilePictureUrl,
-          });
-        }
-      }
-
-      // If conversation has participant data in other formats, handle those too
-      if (conversation.participantNames && conversation.participants) {
-        conversation.participants.forEach(
-          (participantId: number, index: number) => {
-            if (
-              participantId !== backendUser.id &&
-              !seenUserIds.has(participantId)
-            ) {
-              seenUserIds.add(participantId);
-              users.push({
-                id: participantId,
-                firstName: conversation.participantNames[index] || "User",
-                lastName: "",
-                email: conversation.participantEmails?.[index] || "",
-                profilePictureUrl:
-                  conversation.participantAvatars?.[index] || "",
-              });
-            }
-          },
-        );
-      }
-    });
-
-    return users;
-  }, [conversations, backendUser?.id]);
-
-  // Filter previously messaged users based on search query
-  const filteredPreviousUsers = useMemo(() => {
-    if (!debouncedSearch || debouncedSearch.length < 2) {
-      return previouslyMessagedUsers;
-    }
-
-    const query = debouncedSearch.toLowerCase();
-    return previouslyMessagedUsers.filter((user) => {
-      const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
-      return (
-        fullName.includes(query) ||
-        user.email.toLowerCase().includes(query) ||
-        user.firstName.toLowerCase().includes(query) ||
-        user.lastName.toLowerCase().includes(query)
-      );
-    });
-  }, [previouslyMessagedUsers, debouncedSearch]);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
@@ -186,7 +119,6 @@ const NewMessageScreen = () => {
     [backendUser?.id, initialMessage, createConversation],
   );
 
-  // Handle inviting a new user by email
   const handleEmailInvite = useCallback(() => {
     if (!isEmailLike(searchQuery.trim())) {
       Alert.alert(
@@ -230,7 +162,6 @@ const NewMessageScreen = () => {
     (text: string) => {
       setSearchQuery(text);
 
-      // Auto-switch mode based on input
       if (isEmailLike(text.trim())) {
         setSelectedMode("invite");
       } else {
@@ -240,7 +171,7 @@ const NewMessageScreen = () => {
     [isEmailLike],
   );
 
-  if (isLoadingUser || isLoadingConversations) {
+  if (isLoadingUser) {
     return (
       <ThemedView className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" color="#0056b3" />
@@ -249,15 +180,8 @@ const NewMessageScreen = () => {
     );
   }
 
-  // Filter out placeholder users (invited but not joined)
   const filteredUsers =
-    selectedMode === "search"
-      ? filteredPreviousUsers.filter((user: User) => {
-          const isPlaceholder =
-            user.firstName === "Invited" && user.lastName === "User";
-          return !isPlaceholder;
-        })
-      : [];
+    selectedMode === "search" ? previousUsersData?.users || [] : [];
 
   const renderUserItem = ({ item }: { item: User }) => (
     <Pressable
@@ -331,16 +255,32 @@ const NewMessageScreen = () => {
     }
 
     if (searchQuery.length >= 2 && selectedMode === "search") {
+      if (isLoadingPreviousUsers) {
+        return (
+          <View className="flex-1 items-center justify-center py-8">
+            <ActivityIndicator size="small" color="#0056b3" />
+            <ThemedText className="text-gray-500 text-center mt-2">
+              Searching users...
+            </ThemedText>
+          </View>
+        );
+      }
+
+      if (previousUsersError) {
+        return (
+          <View className="flex-1 items-center justify-center py-8">
+            <ThemedText className="text-red-500 text-center">
+              Error loading users. Please try again.
+            </ThemedText>
+          </View>
+        );
+      }
+
       return (
         <View className="flex-1 items-center justify-center py-8">
           <ThemedText className="text-gray-500 text-center">
             No previously messaged users found matching "{searchQuery}"
           </ThemedText>
-          {isEmailLike(searchQuery.trim()) && (
-            <ThemedText className="text-blue-500 text-center mt-2">
-              Try sending an invitation to this email address instead
-            </ThemedText>
-          )}
         </View>
       );
     }
@@ -358,9 +298,7 @@ const NewMessageScreen = () => {
     return (
       <View className="flex-1 items-center justify-center py-8">
         <ThemedText className="text-gray-500 text-center">
-          {previouslyMessagedUsers.length === 0
-            ? "No previous conversations found. Enter an email to invite someone new."
-            : "Search for someone you've previously messaged"}
+          Search for someone you've previously messaged
         </ThemedText>
         <ThemedText className="text-gray-400 text-center mt-2 text-sm">
           Enter an email address to send an invitation to someone new
@@ -385,7 +323,7 @@ const NewMessageScreen = () => {
           {/* Search Input */}
           <Input className="rounded-2xl border border-gray-400 bg-gray-100 mb-4">
             <InputSlot className="pl-3">
-              {isLoadingConversations ? (
+              {isLoadingPreviousUsers ? (
                 <ActivityIndicator size="small" color="#0056b3" />
               ) : (
                 <InputIcon as={SearchIcon} />

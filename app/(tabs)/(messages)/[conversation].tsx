@@ -32,7 +32,6 @@ import {
 import { ChatMessage } from "@/components/message/data/messages";
 import { useAuthUser } from "@/hooks/useAuthUser";
 
-// Helper functions for display names
 const getDisplayName = (participant: any): string => {
   if (
     participant?.firstName &&
@@ -155,7 +154,6 @@ const ConversationScreen = () => {
     setNewMessage("");
   }, [backendUser?.id]);
 
-  // Format message time
   const formatMessageTime = useCallback((timestamp: string) => {
     try {
       const date = new Date(timestamp);
@@ -174,9 +172,7 @@ const ConversationScreen = () => {
     }
   }, []);
 
-  // Convert messages from API to match your ChatMessage format
   useEffect(() => {
-    // Don't process if we're still loading
     if (isLoadingMessages || isLoadingConversation) {
       return;
     }
@@ -222,7 +218,7 @@ const ConversationScreen = () => {
       }
     };
 
-    processMessages(); // Remove the timeout
+    processMessages();
   }, [
     messages,
     otherUserId,
@@ -271,7 +267,6 @@ const ConversationScreen = () => {
     setFormattedMessages((prev) => [tempMessage, ...prev]);
     setNewMessage("");
 
-    // Send the message
     sendMessageMutation(
       {
         userId: backendUser.id,

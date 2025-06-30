@@ -92,7 +92,6 @@ export const useGetConversations = (limit = 20) => {
             conv.participants?.filter((p: number) => p !== backendUser?.id) ||
             [];
 
-          // Get participant details for this conversation
           const participantNames: string[] = [];
           const participantEmails: string[] = [];
           const participantFirstNames: string[] = [];
@@ -105,14 +104,12 @@ export const useGetConversations = (limit = 20) => {
             const participant = participantDetails[participantId];
 
             if (participant) {
-              // Build name - handle different response structures
               let displayName = "User";
               let firstName = participant.firstName;
               let lastName = participant.lastName;
               let email = participant.email;
               let avatar = participant.profilePictureUrl;
 
-              // Handle different API response structures
               if (participant.user) {
                 firstName = participant.user.firstName || participant.firstName;
                 lastName = participant.user.lastName || participant.lastName;
@@ -126,7 +123,6 @@ export const useGetConversations = (limit = 20) => {
                 if (!(firstName === "Invited" && lastName === "User")) {
                   displayName = `${firstName} ${lastName}`;
                 } else if (email) {
-                  // Create name from email for invited users
                   const emailUsername = email.split("@")[0];
                   displayName = emailUsername
                     .replace(/[._-]/g, " ")
@@ -138,7 +134,6 @@ export const useGetConversations = (limit = 20) => {
                     .join(" ");
                 }
               } else if (email) {
-                // Create name from email
                 const emailUsername = email.split("@")[0];
                 displayName = emailUsername
                   .replace(/[._-]/g, " ")
@@ -156,7 +151,6 @@ export const useGetConversations = (limit = 20) => {
               participantLastNames.push(lastName || "");
               participantAvatars.push(avatar || null);
 
-              // For one-on-one conversations, set the other participant
               if (otherParticipants.length === 1) {
                 otherParticipant = {
                   id: participantId,
@@ -168,7 +162,6 @@ export const useGetConversations = (limit = 20) => {
                 };
               }
             } else {
-              // Fallback if we couldn't fetch participant details
               participantNames.push(`User ${participantId}`);
               participantEmails.push("");
               participantFirstNames.push("");
@@ -262,7 +255,6 @@ export const useGetConversation = (conversationId: string) => {
             const userData = await userResponse.json();
             let displayName = "User";
 
-            // Handle different API response structures
             let firstName = userData.firstName;
             let lastName = userData.lastName;
             let email = userData.email;
