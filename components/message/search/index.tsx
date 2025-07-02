@@ -1,30 +1,56 @@
-import React, { useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { SearchIcon } from "@/components/ui/icon";
 import { Input, InputSlot, InputIcon, InputField } from "@/components/ui/input";
-import { View, Text } from "react-native";
+import { View, Text, Keyboard } from "react-native";
 import { Pressable } from "@/components/ui/pressable";
 
 export interface MessageSearchProps {
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
+  onSearchSubmit: (query: string) => void;
+  onSearchClear: () => void;
   statusFilter: string | null;
   onStatusFilterChange: (status: string | null) => void;
+  initialQuery?: string;
 }
 
 const MESSAGE_FILTER_OPTIONS = [
   { label: "All", value: null },
   { label: "Unread", value: "Unread" },
-  { label: "Urgent", value: "Urgent" },
 ];
 
 const MessageSearch: React.FC<MessageSearchProps> = React.memo(
-  ({ searchQuery, onSearchChange, statusFilter, onStatusFilterChange }) => {
+  ({
+    onSearchSubmit,
+    onSearchClear,
+    statusFilter,
+    onStatusFilterChange,
+    initialQuery = "",
+  }) => {
+    const [localSearchQuery, setLocalSearchQuery] = useState(initialQuery);
+    const inputRef = useRef<any>(null);
+
     const handleStatusSelect = useCallback(
       (status: string | null) => {
         onStatusFilterChange(status);
       },
       [onStatusFilterChange],
     );
+
+    const handleTextChange = useCallback(
+      (text: string) => {
+        console.log("🔍 Local search changed:", text);
+        setLocalSearchQuery(text);
+
+        if (text.trim() === "") {
+          onSearchClear();
+        }
+      },
+      [onSearchClear],
+    );
+
+    const handleSubmitEditing = useCallback(() => {
+      onSearchSubmit(localSearchQuery.trim());
+      Keyboard.dismiss();
+    }, [localSearchQuery, onSearchSubmit]);
 
     return (
       <View>
@@ -35,11 +61,16 @@ const MessageSearch: React.FC<MessageSearchProps> = React.memo(
               <InputIcon as={SearchIcon} />
             </InputSlot>
             <InputField
+              ref={inputRef}
               placeholder="Search Messages..."
-              value={searchQuery}
-              onChangeText={onSearchChange}
+              value={localSearchQuery}
+              onChangeText={handleTextChange}
+              onSubmitEditing={handleSubmitEditing}
+              returnKeyType="search"
               autoCorrect={false}
               autoCapitalize="none"
+              clearButtonMode="while-editing"
+              selectTextOnFocus={false}
             />
           </Input>
         </View>
@@ -77,7 +108,6 @@ const MessageSearch: React.FC<MessageSearchProps> = React.memo(
   },
 );
 
-// ✅ Add display name for debugging
 MessageSearch.displayName = "MessageSearch";
 
 export default MessageSearch;

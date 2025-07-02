@@ -1,27 +1,36 @@
-import React, { useState, useCallback } from "react";
-import { View, Text } from "react-native";
-import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
+import React, { useState, useCallback, useMemo } from "react";
+import { View } from "react-native";
 import MessagesList from "@/components/message/list";
 import InvitationBanner from "@/components/InvitationBanner";
 import { useAuthUser } from "@/hooks/useAuthUser";
-import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
-import { SearchIcon } from "@/components/ui/icon";
-import { Pressable } from "@/components/ui/pressable";
-
-const MESSAGE_FILTER_OPTIONS = [
-  { label: "All", value: null },
-  { label: "Unread", value: "Unread" },
-  { label: "Urgent", value: "Urgent" },
-];
+import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
+import MessageSearch from "@/components/message/search";
+import { useFocusEffect } from "@react-navigation/native";
 
 const MessagesScreen = () => {
   const { backendUser } = useAuthUser();
-  const [searchQuery, setSearchQuery] = useState("");
+
+  const [submittedQuery, setSubmittedQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [isBannerHidden, setIsBannerHidden] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
 
-  const handleSearchChange = useCallback((text: string) => {
-    setSearchQuery(text);
+  useFocusEffect(
+    useCallback(() => {
+      console.log("📱 Messages screen focused - resetting search");
+
+      setSubmittedQuery("");
+      setStatusFilter(null);
+      setResetKey((prev) => prev + 1);
+    }, []),
+  );
+
+  const handleSearchSubmit = useCallback((query: string) => {
+    setSubmittedQuery(query);
+  }, []);
+
+  const handleSearchClear = useCallback(() => {
+    setSubmittedQuery("");
   }, []);
 
   const handleStatusFilterChange = useCallback((status: string | null) => {
@@ -32,62 +41,38 @@ const MessagesScreen = () => {
     setIsBannerHidden(true);
   }, []);
 
-  const showInvitationBanner = backendUser?.isPlaceholder && !isBannerHidden;
+  const showInvitationBanner = useMemo(() => {
+    return backendUser?.isPlaceholder && !isBannerHidden;
+  }, [backendUser?.isPlaceholder, isBannerHidden]);
 
   return (
-    <ResponsiveScreenWrapper scrollable={false} withKeyboardAvoid={false}>
-      {/* Search Input */}
-      <View className="px-4 pt-2 pb-4 bg-white">
-        <Input className="rounded-2xl border border-gray-400 bg-gray-100 mb-4">
-          <InputSlot className="pl-3">
-            <InputIcon as={SearchIcon} />
-          </InputSlot>
-          <InputField
-            className="placeholder:text-gray-700"
-            placeholder="Search messages..."
-            value={searchQuery}
-            onChangeText={handleSearchChange}
-            autoCapitalize="none"
-            autoCorrect={false}
+    <ResponsiveScreenWrapper scrollable={false}>
+      <View className="flex-1">
+        {/* Search Component */}
+        <View className="px-4 py-2 bg-white">
+          <MessageSearch
+            key={resetKey}
+            onSearchSubmit={handleSearchSubmit}
+            onSearchClear={handleSearchClear}
+            statusFilter={statusFilter}
+            onStatusFilterChange={handleStatusFilterChange}
           />
-        </Input>
+        </View>
 
-        {/* Filter Badges */}
-        {MESSAGE_FILTER_OPTIONS.length > 0 && (
-          <View className="flex-row flex-wrap gap-2">
-            {MESSAGE_FILTER_OPTIONS.map((item) => (
-              <Pressable
-                key={item.label}
-                onPress={() => handleStatusFilterChange(item.value)}
-                className={`px-3 py-1.5 rounded-full border ${
-                  statusFilter === item.value ||
-                  (statusFilter === null && item.value === null)
-                    ? "bg-primary-500 border-primary-500"
-                    : "bg-white border-gray-300"
-                }`}
-              >
-                <Text
-                  className={`text-sm ${
-                    statusFilter === item.value ||
-                    (statusFilter === null && item.value === null)
-                      ? "text-white"
-                      : "text-gray-700"
-                  }`}
-                >
-                  {item.label}
-                </Text>
-              </Pressable>
-            ))}
+        {/* Invitation Banner */}
+        {showInvitationBanner && (
+          <View className="px-4">
+            <InvitationBanner onHide={handleBannerHide} />
           </View>
         )}
-      </View>
 
-      {/* Invitation Banner - only shows for placeholder users */}
-      {showInvitationBanner && <InvitationBanner onHide={handleBannerHide} />}
-
-      {/* Messages List */}
-      <View className="flex-1">
-        <MessagesList searchQuery={searchQuery} statusFilter={statusFilter} />
+        {/* Messages List */}
+        <View className="flex-1">
+          <MessagesList
+            searchQuery={submittedQuery}
+            statusFilter={statusFilter}
+          />
+        </View>
       </View>
     </ResponsiveScreenWrapper>
   );

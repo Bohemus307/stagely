@@ -1,7 +1,7 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useRef } from "react";
 import { SearchIcon } from "@/components/ui/icon";
 import { Input, InputSlot, InputIcon, InputField } from "@/components/ui/input";
-import { View, Text } from "react-native";
+import { View, Text, Keyboard } from "react-native";
 import { Pressable } from "@/components/ui/pressable";
 
 interface FilterOption {
@@ -12,6 +12,7 @@ interface FilterOption {
 interface SearchProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  onSearchSubmit: (query: string) => void;
   statusFilter: string | null;
   onStatusFilterChange: (status: string | null) => void;
   placeholderText: string;
@@ -22,11 +23,14 @@ const Search: React.FC<SearchProps> = React.memo(
   ({
     searchQuery,
     onSearchChange,
+    onSearchSubmit,
     statusFilter,
     onStatusFilterChange,
     placeholderText,
     filterOptions = [],
   }) => {
+    const inputRef = useRef<any>(null);
+
     const handleStatusSelect = useCallback(
       (status: string | null) => {
         onStatusFilterChange(status);
@@ -43,11 +47,10 @@ const Search: React.FC<SearchProps> = React.memo(
 
     // Handle submit/enter key press
     const handleSubmitEditing = useCallback(() => {
-      // Prevent any default form submission behavior
-      // The search is already handled by onChangeText, so we just dismiss keyboard
       console.log("Search submitted:", searchQuery);
-      return;
-    }, [searchQuery]);
+      onSearchSubmit(searchQuery.trim());
+      Keyboard.dismiss();
+    }, [searchQuery, onSearchSubmit]);
 
     return (
       <View>
@@ -58,6 +61,7 @@ const Search: React.FC<SearchProps> = React.memo(
               <InputIcon as={SearchIcon} />
             </InputSlot>
             <InputField
+              ref={inputRef}
               placeholder={placeholderText}
               value={searchQuery}
               onChangeText={handleTextChange}
