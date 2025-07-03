@@ -1,74 +1,152 @@
-import React, { useState, useEffect } from "react";
-import { ScrollView, View } from "react-native";
+import React, { useMemo } from "react";
+import {
+  ScrollView,
+  View,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
 import { HStack } from "../ui/hstack";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { useGetProperties } from "@/hooks/properties/useGetProperties";
+import { useGetIncidents } from "@/hooks/incidents/useGetIncidents";
+import { Property, Incident } from "@/lib/@types/properties";
 
-// Define an interface for the activity item
 interface ActivityItem {
-  id: number;
-  description: string;
+  id: string;
+  type:
+    | "incident"
+    | "maintenance"
+    | "document"
+    | "tenant"
+    | "inspection"
+    | "property_created";
   timestamp: string;
-  type: "incident" | "maintenance" | "document" | "tenant" | "inspection";
+  description: string;
+  details: any;
 }
 
 export default function RecentActivity(): JSX.Element {
-  const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
+  const {
+    properties: propertiesData,
+    isLoading: propertiesLoading,
+    error: propertiesError,
+    refetch: refetchProperties,
+  } = useGetProperties({
+    limit: 10,
+    sortBy: "createdAt",
+    sortOrder: "desc",
+  });
 
-  useEffect(() => {
-    setRecentActivity([
-      {
-        id: 1,
-        description: "New incident reported at Property A",
-        timestamp: "2 hours ago",
-        type: "incident",
-      },
-      {
-        id: 6,
-        description: "Inspection scheduled for Property E",
-        timestamp: "Yesterday, 10:15 AM",
-        type: "inspection",
-      },
-      {
-        id: 2,
-        description: "Maintenance completed at Property B",
-        timestamp: "4 hours ago",
-        type: "maintenance",
-      },
-      {
-        id: 7,
-        description: "Document updated for Property C",
-        timestamp: "Yesterday, 3:45 PM",
-        type: "document",
-      },
-      {
-        id: 3,
-        description: "New incident reported at Property A",
-        timestamp: "2 hours ago",
-        type: "incident",
-      },
-      {
-        id: 4,
-        description: "Maintenance completed at Property B",
-        timestamp: "4 hours ago",
-        type: "maintenance",
-      },
-      {
-        id: 5,
-        description: "Document updated for Property C",
-        timestamp: "Yesterday, 3:45 PM",
-        type: "document",
-      },
+  const {
+    incidents: incidentsData,
+    isLoading: incidentsLoading,
+    error: incidentsError,
+    refetch: refetchIncidents,
+  } = useGetIncidents({
+    limit: 10,
+    sortBy: "reportedAt",
+    sortOrder: "desc",
+  });
 
-      {
-        id: 8,
-        description: "Inspection scheduled for Property E",
-        timestamp: "Yesterday, 10:15 AM",
-        type: "inspection",
-      },
-    ]);
-  }, []);
+  const isLoading = propertiesLoading || incidentsLoading;
+  const hasError = propertiesError || incidentsError;
+
+  const recentActivity = useMemo(() => {
+    const activities: ActivityItem[] = [];
+
+    if (propertiesData?.data) {
+      propertiesData.data.forEach((property: Property) => {
+        activities.push({
+          id: `property-${property.id}`,
+          type: "property_created",
+          timestamp: property.createdAt,
+          description: `New property : ${property.address}`,
+          details: property,
+        });
+      });
+    }
+
+    if (incidentsData) {
+      incidentsData.forEach((incident: Incident) => {
+        activities.push({
+          id: `incident-${incident.id}`,
+          type: "incident",
+          timestamp: incident.reportedAt,
+          description: `${incident.incidentType} incident reported${incident.property ? ` at ${incident.property.address}` : ""}`,
+          details: incident,
+        });
+      });
+    }
+
+    // TODO: Add other activity types when hooks are available
+    // You can add these as you create the hooks:
+
+    // Add inspections
+    // if (inspectionsData) {
+    //   inspectionsData.forEach((inspection) => {
+    //     activities.push({
+    //       id: `inspection-${inspection.id}`,
+    //       type: "inspection",
+    //       timestamp: inspection.inspectionDate,
+    //       description: `Inspection scheduled for ${inspection.property?.address}`,
+    //       details: inspection,
+    //     });
+    //   });
+    // }
+
+    // Add maintenance activities
+    // if (maintenanceData) {
+    //   maintenanceData.forEach((maintenance) => {
+    //     activities.push({
+    //       id: `maintenance-${maintenance.id}`,
+    //       type: "maintenance",
+    //       timestamp: maintenance.completedAt || maintenance.scheduledAt,
+    //       description: `Maintenance ${maintenance.status} at ${maintenance.property?.address}`,
+    //       details: maintenance,
+    //     });
+    //   });
+    // }
+
+    // Add document activities
+    // if (documentsData) {
+    //   documentsData.forEach((document) => {
+    //     activities.push({
+    //       id: `document-${document.id}`,
+    //       type: "document",
+    //       timestamp: document.updatedAt,
+    //       description: `Document updated: ${document.title}`,
+    //       details: document,
+    //     });
+    //   });
+    // }
+
+    // Add tenant activities
+    // if (tenantsData) {
+    //   tenantsData.forEach((tenant) => {
+    //     activities.push({
+    //       id: `tenant-${tenant.id}`,
+    //       type: "tenant",
+    //       timestamp: tenant.createdAt,
+    //       description: `New tenant added: ${tenant.firstName} ${tenant.lastName}`,
+    //       details: tenant,
+    //     });
+    //   });
+    // }
+
+    return activities
+      .sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+      )
+      .slice(0, 8);
+  }, [propertiesData, incidentsData]);
+
+  const refetchAll = () => {
+    refetchProperties();
+    refetchIncidents();
+  };
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -82,6 +160,8 @@ export default function RecentActivity(): JSX.Element {
         return "person.fill";
       case "inspection":
         return "magnifyingglass";
+      case "property_created":
+        return "house.fill";
       default:
         return "circle.fill";
     }
@@ -90,28 +170,105 @@ export default function RecentActivity(): JSX.Element {
   const getActivityIconColor = (type: string) => {
     switch (type) {
       case "incident":
-        return "#DC2626";
+        return "#DC2626"; // Red
       case "maintenance":
-        return "#D97706";
+        return "#D97706"; // Orange
       case "document":
-        return "#2563EB";
+        return "#2563EB"; // Blue
       case "tenant":
-        return "#059669";
+        return "#059669"; // Green
       case "inspection":
-        return "#7C3AED";
+        return "#7C3AED"; // Purple
+      case "property_created":
+        return "#059669"; // Green
       default:
-        return "#6B7280";
+        return "#6B7280"; // Gray
     }
   };
 
+  const formatTimestamp = (timestamp: string) => {
+    try {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diffInHours = Math.floor(
+        (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+      );
+
+      if (diffInHours < 1) {
+        const diffInMinutes = Math.floor(
+          (now.getTime() - date.getTime()) / (1000 * 60),
+        );
+        return diffInMinutes < 1 ? "Just now" : `${diffInMinutes} minutes ago`;
+      } else if (diffInHours < 24) {
+        return `${diffInHours} hours ago`;
+      } else {
+        const diffInDays = Math.floor(diffInHours / 24);
+        if (diffInDays === 1) return "Yesterday";
+        if (diffInDays < 7) return `${diffInDays} days ago`;
+        return date.toLocaleDateString();
+      }
+    } catch (e) {
+      return timestamp;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Box className="mr-2 ml-2 p-4 rounded-2xl flex flex-col shadow-sm bg-white mt-2">
+        <ThemedText type="defaultSemiBold" className="text-left mb-2">
+          Recent Activity
+        </ThemedText>
+        <Box className="flex-1 justify-center items-center py-8">
+          <ActivityIndicator size="large" color="#6B7280" />
+          <ThemedText className="text-center mt-2 text-gray-500">
+            Loading recent activity...
+          </ThemedText>
+        </Box>
+      </Box>
+    );
+  }
+
+  if (hasError) {
+    return (
+      <Box className="mr-2 ml-2 p-4 rounded-2xl flex flex-col shadow-sm bg-white mt-2">
+        <ThemedText type="defaultSemiBold" className="text-left mb-2">
+          Recent Activity
+        </ThemedText>
+        <Box className="flex-1 justify-center items-center py-8">
+          <IconSymbol
+            name="exclamationmark.triangle.fill"
+            size={32}
+            color="#DC2626"
+          />
+          <ThemedText className="text-center mt-2 text-red-600">
+            Error loading activity
+          </ThemedText>
+          <ThemedText
+            className="text-center mt-1 text-blue-600 underline"
+            onPress={refetchAll}
+          >
+            Tap to retry
+          </ThemedText>
+        </Box>
+      </Box>
+    );
+  }
+
   return (
     <Box className="mr-2 ml-2 p-4 rounded-2xl flex flex-col shadow-sm bg-white mt-2">
-      <ThemedText type="defaultSemiBold" className="text-left mb-2 ">
+      <ThemedText type="defaultSemiBold" className="text-left mb-2">
         Recent Activity
       </ThemedText>
       <ScrollView
         style={{ maxHeight: 250 }}
         contentContainerStyle={{ paddingBottom: 10 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isLoading}
+            onRefresh={refetchAll}
+            colors={["#6B7280"]}
+          />
+        }
       >
         <View>
           {recentActivity.length > 0 ? (
@@ -129,15 +286,20 @@ export default function RecentActivity(): JSX.Element {
                     <ThemedText type="defaultSemiBold">
                       {activity.description}
                     </ThemedText>
-                    <ThemedText>{activity.timestamp}</ThemedText>
+                    <ThemedText>
+                      {formatTimestamp(activity.timestamp)}
+                    </ThemedText>
                   </Box>
                 </HStack>
               </Box>
             ))
           ) : (
-            <ThemedText className="text-center text-gray-500">
-              No recent activity
-            </ThemedText>
+            <Box className="flex-1 justify-center items-center py-8">
+              <IconSymbol name="clock.fill" size={32} color="#9CA3AF" />
+              <ThemedText className="text-center mt-2 text-gray-500">
+                No recent activity
+              </ThemedText>
+            </Box>
           )}
         </View>
       </ScrollView>
