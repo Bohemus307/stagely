@@ -40,7 +40,6 @@ const MessagesList: React.FC<MessageListProps> = ({
 
       const otherParticipantId = participants.find((p) => p !== backendUser.id);
 
-      // Helper function to create a meaningful display name
       const getUserInfo = () => {
         let firstName = "";
         let lastName = "";
@@ -48,14 +47,12 @@ const MessagesList: React.FC<MessageListProps> = ({
         let avatar = "";
         let displayName = "";
 
-        // Try to get info from otherParticipant object first
         if (conv.otherParticipant) {
           firstName = conv.otherParticipant.firstName || "";
           lastName = conv.otherParticipant.lastName || "";
           email = conv.otherParticipant.email || "";
           avatar = conv.otherParticipant.profilePictureUrl || "";
 
-          // Check if we have a proper name (not placeholder)
           if (
             firstName &&
             lastName &&
@@ -70,7 +67,6 @@ const MessagesList: React.FC<MessageListProps> = ({
           }
         }
 
-        // Fallback to participant arrays if otherParticipant doesn't have info
         if (!firstName && conv.participantFirstNames?.length) {
           firstName = conv.participantFirstNames[0] || "";
         }
@@ -84,7 +80,6 @@ const MessagesList: React.FC<MessageListProps> = ({
           avatar = conv.participantAvatars[0] || "";
         }
 
-        // If we still don't have a display name, try to create one
         if (!displayName) {
           if (
             firstName &&
@@ -98,7 +93,6 @@ const MessagesList: React.FC<MessageListProps> = ({
           ) {
             displayName = conv.participantNames[0];
           } else if (email) {
-            // Create name from email
             const emailUsername = email.split("@")[0];
             displayName = emailUsername
               .replace(/[._-]/g, " ")
@@ -108,7 +102,6 @@ const MessagesList: React.FC<MessageListProps> = ({
               )
               .join(" ");
           } else {
-            // Last resort
             displayName = `User ${otherParticipantId || "Unknown"}`;
           }
         }
@@ -252,7 +245,7 @@ const MessagesList: React.FC<MessageListProps> = ({
         refreshing={isLoading || false}
       />
 
-      <Box className="absolute bottom-6 right-6">
+      <Box className="absolute bottom-6 lg:bottom-12 right-6">
         <Fab size="lg" placement="bottom right" onPress={handleNewMessage}>
           <FabIcon size="xl" as={AddIcon} />
         </Fab>

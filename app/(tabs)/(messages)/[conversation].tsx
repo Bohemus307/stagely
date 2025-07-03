@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
-import { useState, useRef, useEffect, useCallback, memo } from "react";
+import { useState, useRef, useEffect, useCallback, memo, useMemo } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -32,7 +32,6 @@ import {
 import { ChatMessage } from "@/components/message/data/messages";
 import { useAuthUser } from "@/hooks/useAuthUser";
 
-// Helper functions for display names
 const getDisplayName = (participant: any): string => {
   if (
     participant?.firstName &&
@@ -120,7 +119,6 @@ const ConversationScreen = () => {
   const conversationId = params.conversation as string;
 
   const { backendUser, isLoading: isLoadingUser } = useAuthUser();
-
   const [newMessage, setNewMessage] = useState("");
   const [formattedMessages, setFormattedMessages] = useState<ChatMessage[]>([]);
   const [unreadMessagesToMark, setUnreadMessagesToMark] = useState<string[]>(
@@ -130,7 +128,7 @@ const ConversationScreen = () => {
   const flatListRef = useRef<FlatList>(null);
   const textInputRef = useRef<TextInput>(null);
 
-  const otherUserId = Number(params.userId);
+  const otherUserId = useMemo(() => Number(params.userId), [params.userId]);
 
   const { conversation, isLoading: isLoadingConversation } =
     useGetConversation(conversationId);
@@ -156,7 +154,6 @@ const ConversationScreen = () => {
     setNewMessage("");
   }, [backendUser?.id]);
 
-  // Format message time
   const formatMessageTime = useCallback((timestamp: string) => {
     try {
       const date = new Date(timestamp);
@@ -175,9 +172,7 @@ const ConversationScreen = () => {
     }
   }, []);
 
-  // Convert messages from API to match your ChatMessage format
   useEffect(() => {
-    // Don't process if we're still loading
     if (isLoadingMessages || isLoadingConversation) {
       return;
     }
@@ -223,9 +218,7 @@ const ConversationScreen = () => {
       }
     };
 
-    const timeoutId = setTimeout(processMessages, 50);
-
-    return () => clearTimeout(timeoutId);
+    processMessages();
   }, [
     messages,
     otherUserId,
@@ -274,7 +267,6 @@ const ConversationScreen = () => {
     setFormattedMessages((prev) => [tempMessage, ...prev]);
     setNewMessage("");
 
-    // Send the message
     sendMessageMutation(
       {
         userId: backendUser.id,
