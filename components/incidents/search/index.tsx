@@ -28,6 +28,9 @@ const IncidentSearch: React.FC<IncidentSearchProps> = ({
       onStatusFilterChange={onStatusFilterChange}
       placeholderText="Search Incidents..."
       filterOptions={incidentFilterOptions}
+      onSearchSubmit={function (query: string): void {
+        throw new Error("Function not implemented.");
+      }}
     />
   );
 };

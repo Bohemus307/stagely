@@ -24,8 +24,9 @@ import { AlertCircleIcon } from "@/components/ui/icon";
 import { Spinner } from "@/components/ui/spinner";
 import { ThemedText } from "@/components/ThemedText";
 import useS3ImageUpload from "@/hooks/useImageUpload";
-import { User } from "@/lib/@types/properties";
+
 import { UpdateUserData } from "@/hooks/profile/useUpdateUser";
+import { User } from "@/lib/@types/properties";
 
 interface FormData {
   firstName: string;
