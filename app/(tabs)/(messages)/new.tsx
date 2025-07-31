@@ -17,7 +17,7 @@ import { SearchIcon } from "@/components/ui/icon";
 import { useCreateConversation } from "@/hooks/messaging/useCreateConversation";
 import { useInviteConversation } from "@/hooks/messaging/useInviteConversation";
 import { useAuthUser } from "@/hooks/useAuthUser";
-import { useGetUsers } from "@/hooks/profile/useSearchUsers";
+import { usePreviouslyMessagedUsers } from "@/hooks/messaging/usePreviouslyMessagedUsers";
 import { User } from "@/components/message/data/messages";
 
 const NewMessageScreen = () => {
@@ -30,10 +30,14 @@ const NewMessageScreen = () => {
 
   const { backendUser, isLoading: isLoadingUser } = useAuthUser();
 
-  const { users: searchResults, isLoading: isSearchingUsers } = useGetUsers({
-    search: debouncedSearch,
-    limit: 10,
-  });
+  const {
+    data: previousUsersData,
+    isLoading: isLoadingPreviousUsers,
+    error: previousUsersError,
+  } = usePreviouslyMessagedUsers(
+    debouncedSearch,
+    selectedMode === "search" && debouncedSearch.length >= 2,
+  );
 
   const { mutate: createConversation, isPending: isCreatingConversation } =
     useCreateConversation();
@@ -115,7 +119,6 @@ const NewMessageScreen = () => {
     [backendUser?.id, initialMessage, createConversation],
   );
 
-  // Handle inviting a new user by email
   const handleEmailInvite = useCallback(() => {
     if (!isEmailLike(searchQuery.trim())) {
       Alert.alert(
@@ -159,7 +162,6 @@ const NewMessageScreen = () => {
     (text: string) => {
       setSearchQuery(text);
 
-      // Auto-switch mode based on input
       if (isEmailLike(text.trim())) {
         setSelectedMode("invite");
       } else {
@@ -179,11 +181,7 @@ const NewMessageScreen = () => {
   }
 
   const filteredUsers =
-    searchResults?.filter((user: User) => {
-      const isPlaceholder =
-        user.firstName === "Invited" && user.lastName === "User";
-      return !isPlaceholder;
-    }) || [];
+    selectedMode === "search" ? previousUsersData?.users || [] : [];
 
   const renderUserItem = ({ item }: { item: User }) => (
     <Pressable
@@ -248,7 +246,7 @@ const NewMessageScreen = () => {
   };
 
   const renderEmptyState = () => {
-    if (isSearchingUsers || isInviting || isCreatingConversation) {
+    if (isInviting || isCreatingConversation) {
       return null;
     }
 
@@ -257,16 +255,32 @@ const NewMessageScreen = () => {
     }
 
     if (searchQuery.length >= 2 && selectedMode === "search") {
+      if (isLoadingPreviousUsers) {
+        return (
+          <View className="flex-1 items-center justify-center py-8">
+            <ActivityIndicator size="small" color="#0056b3" />
+            <ThemedText className="text-gray-500 text-center mt-2">
+              Searching users...
+            </ThemedText>
+          </View>
+        );
+      }
+
+      if (previousUsersError) {
+        return (
+          <View className="flex-1 items-center justify-center py-8">
+            <ThemedText className="text-red-500 text-center">
+              Error loading users. Please try again.
+            </ThemedText>
+          </View>
+        );
+      }
+
       return (
         <View className="flex-1 items-center justify-center py-8">
           <ThemedText className="text-gray-500 text-center">
-            No users found matching "{searchQuery}"
+            No previously messaged users found matching "{searchQuery}"
           </ThemedText>
-          {isEmailLike(searchQuery.trim()) && (
-            <ThemedText className="text-blue-500 text-center mt-2">
-              Try sending an invitation to this email address instead
-            </ThemedText>
-          )}
         </View>
       );
     }
@@ -284,10 +298,10 @@ const NewMessageScreen = () => {
     return (
       <View className="flex-1 items-center justify-center py-8">
         <ThemedText className="text-gray-500 text-center">
-          Search for a user by name or email to start a conversation
+          Search for someone you've previously messaged
         </ThemedText>
         <ThemedText className="text-gray-400 text-center mt-2 text-sm">
-          Enter an email address to send an invitation
+          Enter an email address to send an invitation to someone new
         </ThemedText>
       </View>
     );
@@ -296,25 +310,28 @@ const NewMessageScreen = () => {
   const isProcessing = isCreatingConversation || isInviting;
 
   return (
-    <ThemedView className="flex-1">
+    <ThemedView className="flex-1 p-2">
       <SafeAreaView className="flex-1">
         <BackButton />
-        <View className="flex-row items-center px-4 mb-4">
-          <ThemedText type="defaultSemiBold">New Message</ThemedText>
+        <View className="flex-row items-center px-4 mb-2">
+          <ThemedText type="defaultSemiBold">
+            Send A Message or Invite someone new!
+          </ThemedText>
         </View>
 
         <View className="p-4 flex-1">
           {/* Search Input */}
-          <Input className="rounded-2xl border mb-4">
+          <Input className="rounded-2xl border border-gray-400 bg-gray-100 mb-4">
             <InputSlot className="pl-3">
-              {isSearchingUsers ? (
+              {isLoadingPreviousUsers ? (
                 <ActivityIndicator size="small" color="#0056b3" />
               ) : (
                 <InputIcon as={SearchIcon} />
               )}
             </InputSlot>
             <InputField
-              placeholder="Search for users by name or email..."
+              className="placeholder:text-gray-700"
+              placeholder="Search users or enter email to invite..."
               value={searchQuery}
               onChangeText={handleSearchChange}
               autoCapitalize="none"
@@ -323,9 +340,10 @@ const NewMessageScreen = () => {
           </Input>
 
           {/* Initial Message Input */}
-          <Input className="rounded-2xl border mb-4">
+          <Input className="rounded-2xl border border-gray-400 bg-gray-100 mb-4">
             <InputField
-              placeholder="Initial message (optional)"
+              className="placeholder:text-gray-700 ml-8 mt-4"
+              placeholder="Intial Message...."
               value={initialMessage}
               onChangeText={setInitialMessage}
               multiline
@@ -338,7 +356,7 @@ const NewMessageScreen = () => {
             <ThemedText type="defaultSemiBold">
               {selectedMode === "invite"
                 ? "Send Invitation"
-                : "Select a user to message"}
+                : "Previously messaged users"}
             </ThemedText>
             {selectedMode === "invite" && (
               <View className="ml-2 px-2 py-1 bg-blue-100 rounded">
@@ -351,7 +369,7 @@ const NewMessageScreen = () => {
 
           {/* Results List */}
           <FlatList
-            data={selectedMode === "search" ? filteredUsers : []}
+            data={filteredUsers}
             renderItem={renderUserItem}
             keyExtractor={(item) => item.id.toString()}
             contentContainerStyle={{ paddingBottom: 20 }}

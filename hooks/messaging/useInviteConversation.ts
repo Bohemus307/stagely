@@ -16,200 +16,161 @@ export const useInviteConversation = () => {
   const apiUrl =
     Constants.expoConfig?.extra?.stagelyApiUrl || process.env.STAGELY_API_URL;
 
-  // Helper function to show success alerts
-  const showSuccessAlert = (email: string, isExistingUser: boolean = false) => {
-    const message = isExistingUser
-      ? `${email} is already a user and can start conversations with you immediately.`
-      : `An invitation has been sent to ${email}. They will receive an email with instructions to join.`;
+  // Helper function to try resending invitation
+  const tryResendInvitation = async (email: string, accessToken: string) => {
+    const resendResponse = await fetch(
+      `https://${apiUrl}/users/resend-invitation`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          email: email,
+        }),
+      },
+    );
 
-    Alert.alert("Invitation Sent", message, [{ text: "OK" }]);
+    if (!resendResponse.ok) {
+      const errorText = await resendResponse.text();
+      throw new Error(errorText || "Failed to resend invitation");
+    }
+
+    const result = await resendResponse.json();
+    if (result.success) {
+      Alert.alert(
+        "Invitation Resent",
+        `Invitation has been resent to ${email}`,
+      );
+    } else {
+      throw new Error(result.error || "Failed to resend invitation");
+    }
   };
 
-  // Helper function to handle different types of errors
-  const handleInviteError = (error: Error, email: string) => {
-    const errorMessage = error.message.toLowerCase();
-
-    // Handle duplicate email error
-    if (
-      errorMessage.includes("unique constraint failed") &&
-      errorMessage.includes("email")
-    ) {
-      Alert.alert(
-        "User Already Invited",
-        `The email "${email}" has already been invited or is already registered.\n\nCheck if they already have an account or previous invitation.`,
-        [
-          {
-            text: "Resend Invitation",
-            onPress: async () => {
-              try {
-                console.log("Resending invitation for:", email);
-
-                const credentials = await getCredentials();
-                if (!credentials?.accessToken) {
-                  throw new Error("Access token not available");
-                }
-
-                const resendResponse = await fetch(
-                  `https://${apiUrl}/users/resend-invitation`,
-                  {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                      Authorization: `Bearer ${credentials.accessToken}`,
-                    },
-                    body: JSON.stringify({
-                      email: email,
-                      userId: backendUser?.id,
-                    }),
-                  },
-                );
-
-                const resendResponseText = await resendResponse.text();
-                console.log("Resend response:", resendResponseText);
-
-                if (resendResponse.ok) {
-                  showSuccessAlert(email, false);
-                  queryClient.invalidateQueries({
-                    queryKey: ["conversations"],
-                  });
-                } else {
-                  let errorMessage = "Failed to resend invitation";
-                  try {
-                    const errorData = JSON.parse(resendResponseText);
-                    errorMessage = errorData.error || errorMessage;
-                  } catch (e) {
-                    // Use default message
-                  }
-
-                  Alert.alert("Resend Failed", errorMessage);
-                }
-              } catch (error: any) {
-                console.error("Resend failed:", error);
-                Alert.alert(
-                  "Resend Failed",
-                  error.message || "Failed to resend invitation",
-                );
-              }
-            },
+  // Helper function to search for existing user by email
+  const findUserByEmail = async (
+    email: string,
+    accessToken: string,
+  ): Promise<any | null> => {
+    try {
+      // Try to search for the user
+      const searchResponse = await fetch(
+        `https://${apiUrl}/users/search?query=${encodeURIComponent(email)}&limit=10`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
           },
-          { text: "OK", style: "default" },
-        ],
+        },
       );
-      return;
-    }
 
-    // Handle invalid email errors
-    if (
-      errorMessage.includes("invalid email") ||
-      errorMessage.includes("email format")
-    ) {
-      Alert.alert(
-        "Invalid Email Address",
-        `"${email}" is not a valid email address.\n\nPlease check the email address and try again.`,
-        [{ text: "OK" }],
-      );
-      return;
-    }
+      if (searchResponse.ok) {
+        const searchResults = await searchResponse.json();
 
-    // Handle authentication errors
-    if (
-      errorMessage.includes("unauthorized") ||
-      errorMessage.includes("authentication") ||
-      errorMessage.includes("access token")
-    ) {
-      Alert.alert(
-        "Authentication Required",
-        "Your session has expired.\n\nPlease log out and log back in to continue.",
-        [
-          {
-            text: "Log Out",
-            style: "destructive",
-            onPress: () => {
-              console.log("User should be logged out");
-            },
-          },
-          { text: "Cancel", style: "cancel" },
-        ],
-      );
-      return;
-    }
+        // Look for exact email match (case insensitive) - INCLUDE placeholder users
+        if (searchResults && searchResults.length > 0) {
+          const exactMatch = searchResults.find(
+            (user: any) =>
+              user.email && user.email.toLowerCase() === email.toLowerCase(),
+          );
 
-    // Handle permission errors
-    if (
-      errorMessage.includes("forbidden") ||
-      errorMessage.includes("permission") ||
-      errorMessage.includes("not authorized")
-    ) {
-      Alert.alert(
-        "Permission Denied",
-        "You don't have permission to invite users.\n\nContact your administrator to get invitation permissions.",
-        [{ text: "OK" }],
-      );
-      return;
-    }
+          if (exactMatch) {
+            return exactMatch;
+          }
+        } else if (searchResults.users && searchResults.users.length > 0) {
+          const exactMatch = searchResults.users.find(
+            (user: any) =>
+              user.email && user.email.toLowerCase() === email.toLowerCase(),
+          );
 
-    // Handle rate limit errors
-    if (
-      errorMessage.includes("rate limit") ||
-      errorMessage.includes("too many requests") ||
-      errorMessage.includes("429")
-    ) {
-      Alert.alert(
-        "Rate Limit Exceeded",
-        "Too many invitation attempts.\n\nPlease wait a few minutes before trying again.",
-        [{ text: "OK" }],
-      );
-      return;
-    }
+          if (exactMatch) {
+            return exactMatch;
+          }
+        } else {
+        }
+      } else {
+        const errorText = await searchResponse.text();
+        console.log("Search request failed:", errorText);
+      }
 
-    // Handle network errors
-    if (
-      errorMessage.includes("network") ||
-      errorMessage.includes("connection") ||
-      errorMessage.includes("timeout") ||
-      errorMessage.includes("fetch")
-    ) {
-      Alert.alert(
-        "Connection Error",
-        "Network connection error.\n\nCheck your internet connection and try again.",
-        [
-          {
-            text: "Retry",
-            onPress: () => {
-              // Retry the invitation
-              mutate({ email });
-            },
-          },
-          { text: "Cancel", style: "cancel" },
-        ],
-      );
-      return;
+      return null;
+    } catch (error) {
+      console.log("Could not search for existing user:", error);
+      return null;
     }
+  };
 
-    // Default error handling
-    Alert.alert(
-      "Invitation Failed",
-      `An unexpected error occurred: ${error.message}\n\nPlease try again or contact support if the problem persists.`,
-      [{ text: "OK" }],
+  // Helper function to create conversation with existing user
+  const createConversationWithUser = async (
+    targetUserId: number,
+    initialMessage?: string,
+    accessToken?: string,
+  ) => {
+    const conversationResponse = await fetch(
+      `https://${apiUrl}/messaging/conversations`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          userId: backendUser!.id,
+          participants: [targetUserId],
+          initialMessage: initialMessage,
+        }),
+      },
     );
+
+    if (!conversationResponse.ok) {
+      const errorText = await conversationResponse.text();
+      throw new Error(errorText || "Failed to create conversation");
+    }
+
+    return await conversationResponse.json();
+  };
+
+  // Helper function to send invitation to new user
+  const sendInvitationToNewUser = async (
+    email: string,
+    accessToken: string,
+  ) => {
+    const inviteResponse = await fetch(`https://${apiUrl}/users/invite`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        email: email,
+        userId: backendUser!.id,
+      }),
+    });
+
+    if (!inviteResponse.ok) {
+      const errorText = await inviteResponse.text();
+      let errorMessage = errorText;
+
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.error || errorData.message || errorText;
+      } catch (parseError) {
+        // Use raw text if parsing fails
+      }
+
+      throw new Error(errorMessage);
+    }
+
+    return await inviteResponse.json();
   };
 
   const mutation = useMutation({
     mutationFn: async (params: InviteConversationParams) => {
-      if (!apiUrl) {
-        throw new Error("API URL not available");
+      // Validate required data
+      if (!backendUser?.id) {
+        throw new Error("User information not available. Please login again.");
       }
-
-      if (!backendUser || !backendUser.id) {
-        throw new Error("Backend user ID not available, please login again");
-      }
-
-      console.log("Starting invite process with params:", {
-        email: params.email,
-        hasInitialMessage: !!params.initialMessage,
-        backendUserId: backendUser.id,
-        apiUrl,
-      });
 
       // Get the access token
       const credentials = await getCredentials();
@@ -217,82 +178,139 @@ export const useInviteConversation = () => {
         throw new Error("Access token not available");
       }
 
-      // Send invitation to the user
-      const inviteEndpoint = `https://${apiUrl}/users/invite`;
-      console.log(`Inviting user via: ${inviteEndpoint}`);
+      // Check if user already exists
+      const existingUser = await findUserByEmail(
+        params.email,
+        credentials.accessToken,
+      );
 
-      const inviteRequestBody = {
-        email: params.email,
-        userId: backendUser.id,
-      };
+      if (existingUser) {
+        // Check if this is a placeholder user (invited but not accepted)
+        if (existingUser.isPlaceholder) {
+          // User was already invited
+          Alert.alert(
+            "Already Invited",
+            `${params.email} has already been invited. They need to check their email and accept the invitation to start chatting.`,
+            [
+              {
+                text: "OK",
+                style: "default",
+              },
+              {
+                text: "Resend Invitation",
+                onPress: async () => {
+                  try {
+                    await tryResendInvitation(
+                      params.email,
+                      credentials.accessToken,
+                    );
+                  } catch (error) {
+                    console.error("Resend failed:", error);
+                    Alert.alert(
+                      "Resend Failed",
+                      "Could not resend invitation.",
+                    );
+                  }
+                },
+              },
+            ],
+          );
 
-      console.log("Invite request body:", JSON.stringify(inviteRequestBody));
+          // Don't proceed with conversation creation or new invitation
+          throw new Error("user_already_invited");
+        } else {
+          // User exists and is active create conversation directly
 
-      const inviteResponse = await fetch(inviteEndpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${credentials.accessToken}`,
-        },
-        body: JSON.stringify(inviteRequestBody),
-      });
+          const conversationResult = await createConversationWithUser(
+            existingUser.id,
+            params.initialMessage,
+            credentials.accessToken,
+          );
 
-      console.log("Invite response status:", inviteResponse.status);
-      const responseText = await inviteResponse.text();
-      console.log("Invite response text:", responseText);
-
-      if (!inviteResponse.ok) {
-        // Try to parse error response for better error messages
-        let errorMessage = responseText;
-        try {
-          const errorData = JSON.parse(responseText);
-          errorMessage = errorData.error || errorData.message || responseText;
-        } catch (parseError) {
-          // If parsing fails, use the raw response text
+          return {
+            success: true,
+            user: {
+              id: existingUser.id,
+              email: existingUser.email,
+              isPlaceholder: false,
+            },
+            conversation: conversationResult.conversation || conversationResult,
+            message: conversationResult.message,
+            isExistingUser: true,
+          };
         }
+      } else {
+        // User doesn't exist - send invitation
 
-        throw new Error(errorMessage);
-      }
-
-      // Parse the response
-      const inviteData = JSON.parse(responseText);
-
-      if (!inviteData.success || !inviteData.user || !inviteData.user.id) {
-        throw new Error(
-          "Failed to create or find invited user: " +
-            JSON.stringify(inviteData),
+        const inviteResult = await sendInvitationToNewUser(
+          params.email,
+          credentials.accessToken,
         );
+
+        return {
+          success: true,
+          user: inviteResult.user,
+          conversation: {},
+          message: undefined,
+          isExistingUser: false,
+        };
       }
-
-      console.log("Successfully invited user:", inviteData.user.id);
-
-      // Return a standardized response
-      return {
-        success: true,
-        user: inviteData.user,
-        conversation: {},
-        message: undefined,
-      };
     },
     onSuccess: (data, variables) => {
-      console.log("Invitation sent successfully");
+      console.log("Process completed successfully");
 
-      // Show success message based on user type
-      const isExistingUser = data.user.isPlaceholder === false;
-      showSuccessAlert(variables.email, isExistingUser);
+      if (data.isExistingUser) {
+        // User exists
+        Alert.alert(
+          "Conversation Started",
+          `${variables.email} is already a user. You can start chatting immediately!`,
+          [{ text: "OK" }],
+        );
+      } else {
+        // New invitation sent
+        Alert.alert(
+          "Invitation Sent",
+          `An invitation has been sent to ${variables.email}. They will receive an email with instructions to join.`,
+          [{ text: "OK" }],
+        );
+      }
 
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
     },
     onError: (error: Error, variables) => {
-      console.error("Invitation failed:", error);
+      console.error("Process failed:", error);
 
-      // Handle the error with appropriate UI
-      handleInviteError(error, variables.email);
+      // Don't show error for already invited users
+      if (error.message === "user_already_invited") {
+        return;
+      }
+
+      const errorMessage = error.message.toLowerCase();
+
+      // Handle specific errors
+      if (
+        errorMessage.includes("unique constraint failed") &&
+        errorMessage.includes("email")
+      ) {
+        Alert.alert(
+          "User Already Invited",
+          `The email "${variables.email}" has already been invited. They may need to check their email and accept the invitation.`,
+          [{ text: "OK" }],
+        );
+      } else if (errorMessage.includes("participants not found")) {
+        Alert.alert(
+          "User Not Found",
+          `Could not find or create conversation with ${variables.email}. Please try again.`,
+          [{ text: "OK" }],
+        );
+      } else {
+        Alert.alert("Error", `Failed to process request: ${error.message}`, [
+          { text: "OK" },
+        ]);
+      }
     },
   });
-
-  const { mutate } = mutation;
 
   return mutation;
 };
