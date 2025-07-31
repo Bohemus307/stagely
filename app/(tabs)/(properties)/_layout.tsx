@@ -11,6 +11,13 @@ export default function PropertiesLayout() {
         name="index"
         options={{
           headerShown: false,
+          presentation: "card",
+        }}
+      />
+      <Stack.Screen
+        name="addProperty"
+        options={{
+          headerShown: false,
           presentation: "modal",
         }}
       />

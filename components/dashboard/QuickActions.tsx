@@ -12,7 +12,7 @@ export default function QuickActions(): JSX.Element {
   const router = useRouter();
 
   const addProperty = (): void =>
-    router.push("/(tabs)/(properties)/addProperty");
+    router.push("/(tabs)/(dashboard)/addProperty");
 
   return (
     <Box className="mr-2 ml-2 p-4 rounded-2xl flex flex-col shadow-sm bg-white mt-4">

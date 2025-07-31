@@ -20,11 +20,15 @@ jest.mock("expo-location", () => ({
   }),
 }));
 
-// Mock dependencies
+// Mock dependencies - ADD useRouter to the mock
 jest.mock("expo-router", () => ({
   router: {
     push: jest.fn(),
   },
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+  })),
+  usePathname: jest.fn(() => "/(tabs)/(incidents)"),
 }));
 
 // Mock AddIncidentButton to avoid dependency on expo-location
@@ -32,6 +36,26 @@ jest.mock("@/components/incidents/AddIncidentButton", () => ({
   __esModule: true,
   default: ({ className }: { className?: string }) => (
     <TouchableOpacity testID="add-incident-button">
+      <Text>Add Incident</Text>
+    </TouchableOpacity>
+  ),
+}));
+
+// Mock AddIncidentButtonFab component - THIS IS THE KEY ADDITION
+jest.mock("@/components/incidents/AddIncidentButtonFab", () => ({
+  __esModule: true,
+  default: () => (
+    <TouchableOpacity
+      testID="fab"
+      onPress={() => {
+        const { router } = require("expo-router");
+        router.push({
+          pathname: "/(tabs)/(incidents)/addIncident",
+          params: { addIncident: "new" },
+        });
+      }}
+    >
+      <View testID="fab-icon" />
       <Text>Add Incident</Text>
     </TouchableOpacity>
   ),
@@ -248,7 +272,7 @@ describe("IncidentList", () => {
 
     // Check if router.push was called with the correct parameters
     expect(router.push).toHaveBeenCalledWith({
-      pathname: "/(tabs)/(incidents)/[addIncident]",
+      pathname: "/(tabs)/(incidents)/addIncident",
       params: { addIncident: "new" },
     });
   });

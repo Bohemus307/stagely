@@ -174,10 +174,9 @@ export default function AddIncidentButtonFab() {
       );
       setShowModal(false);
       router.push({
-        pathname: "/(tabs)/(incidents)/[addIncident]",
+        pathname: "/(tabs)/(incidents)/addIncident",
         params: {
           propertyId: nearestProperty.id.toString(),
-          addIncident: "[addIncident]",
         },
       });
     }

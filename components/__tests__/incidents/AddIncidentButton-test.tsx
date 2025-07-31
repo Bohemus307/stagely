@@ -13,6 +13,9 @@ jest.mock("expo-router", () => ({
   router: {
     push: jest.fn(),
   },
+  usePathname: jest.fn(() => "/(tabs)/(incidents)"),
+  useLocalSearchParams: jest.fn(() => ({})),
+  useSegments: jest.fn(() => []),
 }));
 
 jest.mock("@/hooks/properties/useGetProperties", () => ({

@@ -45,8 +45,7 @@ const IncidentList: React.FC<IncidentListProps> = ({
 
   const handleAddIncident = () => {
     router.push({
-      pathname: "/(tabs)/(incidents)/[addIncident]",
-      params: { addIncident: "new" },
+      pathname: "/(tabs)/(incidents)/addIncident",
     });
   };
 
