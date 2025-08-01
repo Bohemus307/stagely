@@ -5,6 +5,7 @@ import LocationSearchMap from "@/components/LocationSearchMap";
 import BackButton from "@/components/BackButton";
 import { useCreateProperty } from "@/hooks/properties/useCreateProperty";
 import { Location } from "@/lib/@types/properties";
+
 export default function AddProperty() {
   // Initialize our property creation mutation hook
   const {

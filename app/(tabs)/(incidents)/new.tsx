@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Alert, ScrollView, Text, View } from "react-native";
+import { Alert, ScrollView, Text } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { Spinner } from "@/components/ui/spinner";
 import BackButton from "@/components/BackButton";

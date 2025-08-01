@@ -11,7 +11,22 @@ export default function AddPropertyLayout() {
         name="index"
         options={{
           headerShown: false,
+          presentation: "card",
+        }}
+      />
+      <Stack.Screen
+        name="addIncident"
+        options={{
+          headerShown: false,
           presentation: "modal",
+        }}
+      />
+      <Stack.Screen
+        name="addProperty"
+        options={{
+          headerShown: false,
+          presentation: "modal",
+          animationTypeForReplace: "push",
         }}
       />
     </Stack>

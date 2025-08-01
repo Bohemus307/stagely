@@ -19,6 +19,19 @@ const formatDate = (dateString: string): string => {
   return date.toLocaleDateString() + " " + date.toLocaleTimeString();
 };
 
+// Function to convert S3 URL to CloudFront URL
+export const getCloudFrontUrl = (s3Url: string): string | null => {
+  if (!s3Url) return null;
+
+  // Extract the S3 key from the URL
+  const s3Key = s3Url.split("amazonaws.com/")[1];
+
+  if (!s3Key) return s3Url; // Return original if we can't extract the key
+
+  // Construct CloudFront URL
+  return `https://d24y6hzot6c372.cloudfront.net/${s3Key}`;
+};
+
 const PhotoDetailScreen: React.FC = () => {
   const params = useLocalSearchParams();
   const propertyId = params.propertyId as string;
@@ -37,19 +50,6 @@ const PhotoDetailScreen: React.FC = () => {
     isLoading: spacesLoading,
     error: spacesError,
   } = useGetPropertySpaces(propertyId, {});
-
-  // Function to convert S3 URL to CloudFront URL
-  const getCloudFrontUrl = (s3Url: string): string | null => {
-    if (!s3Url) return null;
-
-    // Extract the S3 key from the URL
-    const s3Key = s3Url.split("amazonaws.com/")[1];
-
-    if (!s3Key) return s3Url; // Return original if we can't extract the key
-
-    // Construct CloudFront URL
-    return `https://d24y6hzot6c372.cloudfront.net/${s3Key}`;
-  };
 
   // Find the photo and space from propertySpaces
   useEffect(() => {

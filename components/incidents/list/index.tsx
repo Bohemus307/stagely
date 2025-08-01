@@ -13,7 +13,7 @@ import { Fab, FabIcon } from "@/components/ui/fab";
 import { AddIcon } from "@/components/ui/icon";
 import IncidentCard from "@/components/incidents/list/IncidentCard";
 import { Incident } from "@/lib/@types/properties";
-import AddIncidentButton from "../AddIncidentButton";
+import AddIncidentButtonFab from "@/components/incidents/AddIncidentButtonFab";
 
 export interface IncidentListProps {
   incidents: Incident[];
@@ -45,8 +45,7 @@ const IncidentList: React.FC<IncidentListProps> = ({
 
   const handleAddIncident = () => {
     router.push({
-      pathname: "/(tabs)/(incidents)/[addIncident]",
-      params: { addIncident: "new" },
+      pathname: "/(tabs)/(incidents)/addIncident",
     });
   };
 
@@ -108,8 +107,9 @@ const IncidentList: React.FC<IncidentListProps> = ({
         No incidents found. Report a new incident to get started.
       </ThemedText>
       <Box className="mt-4">
-        {/* Using the AddIncidentButton component here */}
-        <AddIncidentButton />
+        <Fab size="lg" placement="bottom right" onPress={handleAddIncident}>
+          <FabIcon size="xl" as={AddIcon} />
+        </Fab>
       </Box>
     </View>
   );
@@ -134,9 +134,7 @@ const IncidentList: React.FC<IncidentListProps> = ({
       />
 
       <Box className="absolute bottom-6 right-6">
-        <Fab size="lg" placement="bottom right" onPress={handleAddIncident}>
-          <FabIcon size="xl" as={AddIcon} />
-        </Fab>
+        <AddIncidentButtonFab />
       </Box>
     </Box>
   );

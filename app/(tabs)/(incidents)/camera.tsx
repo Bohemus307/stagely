@@ -24,6 +24,8 @@ import { useRouter } from "expo-router";
 import { properties } from "@/components/properties/data/properties";
 import { Property } from "@/lib/@types/properties";
 import { useAddIncidentImages } from "@/hooks/incidents/useAddIncidentImages";
+import useS3ImageUpload from "@/hooks/useImageUpload";
+import { useCreateIncident } from "@/hooks/incidents/useCreateIncident";
 
 interface ReferencePhoto {
   id: string;
@@ -63,7 +65,6 @@ export default function IncidentCameraScreen(): React.ReactElement {
   const [capturedPhotos, setCapturedPhotos] = useState<CapturedPhoto[]>([]);
   const [referencePhotos, setReferencePhotos] = useState<ReferencePhoto[]>([]);
   const [angleMatchScore, setAngleMatchScore] = useState<number>(0);
-  const [property, setProperty] = useState<ExtendedProperty | null>(null);
   const [activePhotoIndex, setActivePhotoIndex] = useState<number>(0);
   const [showGallery, setShowGallery] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
@@ -75,9 +76,18 @@ export default function IncidentCameraScreen(): React.ReactElement {
     addImages,
     isPending: isAddingImages,
     isSuccess: isAddImagesSuccess,
-    isError: isAddImagesError,
-    error: addImagesError,
   } = useAddIncidentImages(incidentId || "");
+
+  // Initialize S3 upload hook for new incidents
+  const { uploadToS3 } = useS3ImageUpload();
+
+  // Initialize create incident hook
+  const {
+    createIncident,
+    isPending: isCreatingIncident,
+    isSuccess: isCreateSuccess,
+    data: createdIncident,
+  } = useCreateIncident();
 
   // Get the property details based on the ID
   useEffect(() => {
@@ -85,10 +95,6 @@ export default function IncidentCameraScreen(): React.ReactElement {
       const selectedProperty = properties.find(
         (p) => p.property_id === parseInt(propertyId),
       ) as ExtendedProperty | undefined;
-
-      if (selectedProperty) {
-        setProperty(selectedProperty);
-      }
 
       // Load reference photos for this property
       // In a real app, these would likely come from an API
@@ -122,6 +128,19 @@ export default function IncidentCameraScreen(): React.ReactElement {
       });
     }
   }, [isAddImagesSuccess, incidentId, router]);
+
+  // React to create incident success
+  useEffect(() => {
+    if (isCreateSuccess && createdIncident && isNewIncident) {
+      console.log(
+        "[Effect] New incident created successfully, navigating to details",
+      );
+      router.push({
+        pathname: "/(tabs)/(incidents)/details",
+        params: { incidentId: createdIncident.id.toString() },
+      });
+    }
+  }, [isCreateSuccess, createdIncident, isNewIncident, router]);
 
   // Request camera and media library permissions
   useEffect(() => {
@@ -292,7 +311,7 @@ export default function IncidentCameraScreen(): React.ReactElement {
   };
 
   // Continue to incident details
-  const continueToIncidentDetails = (): void => {
+  const continueToIncidentDetails = async (): Promise<void> => {
     if (capturedPhotos.length === 0) {
       Alert.alert(
         "No Photos",
@@ -306,17 +325,88 @@ export default function IncidentCameraScreen(): React.ReactElement {
       // If we have an incident ID, upload photos to existing incident
       uploadPhotosToIncident();
     } else {
-      // For new incidents, navigate to incident form with photos
-      const photoURLs = capturedPhotos.map((photo) => photo.uri);
+      // For new incidents, upload photos to S3 first
+      setUploading(true);
+      try {
+        const uploadedUrls: string[] = [];
 
-      // Navigate to incident details with photos
-      router.push({
-        pathname: "/(tabs)/(incidents)/edit",
-        params: {
-          propertyId: propertyId || "",
-          photos: JSON.stringify(photoURLs),
-        },
-      });
+        // Upload each photo to S3
+        for (const photo of capturedPhotos) {
+          try {
+            // For camera photos, the URI should already be a file:// URI
+            // but let's fetch and convert to blob for consistency
+            const response = await fetch(photo.uri);
+            const blob = await response.blob();
+
+            // Convert blob to base64
+            const reader = new FileReader();
+            const base64 = await new Promise<string>((resolve, reject) => {
+              reader.onerror = reject;
+              reader.onload = () => {
+                if (typeof reader.result === "string") {
+                  const base64Data = reader.result.split(",")[1];
+                  resolve(base64Data);
+                } else {
+                  reject(new Error("Failed to convert to base64"));
+                }
+              };
+              reader.readAsDataURL(blob);
+            });
+
+            // Upload to S3
+            const result = await uploadToS3({
+              uri: photo.uri,
+              base64: base64,
+              width: 0,
+              height: 0,
+              type: "image/jpeg",
+              fileName: `incident_photo_${Date.now()}.jpg`,
+            });
+
+            if (result?.url) {
+              uploadedUrls.push(result.url);
+            }
+          } catch (error) {
+            console.error("Error uploading photo:", error);
+          }
+        }
+
+        if (uploadedUrls.length > 0) {
+          // Automatically create incident with uploaded images
+          console.log(
+            "[continueToIncidentDetails] Creating incident with uploaded images",
+          );
+
+          createIncident({
+            propertyId: parseInt(propertyId || "0"),
+            incidentType: "Pending Classification", // AI will classify
+            description:
+              "Incident reported with photos - awaiting AI classification",
+            severity: "Medium" as const, // Default, AI may adjust
+            status: "Open" as const,
+            reportedAt: new Date().toISOString(),
+            aiClassified: false, // Will be true after AI processes
+            images: uploadedUrls.map((url, index) => ({
+              imageUrl: url,
+              caption: `Photo ${index + 1} - Match score: ${capturedPhotos[index]?.matchScore || 0}%`,
+              takenAt:
+                capturedPhotos[index]?.timestamp || new Date().toISOString(),
+              metadata: {
+                source: "camera",
+                matchScore: capturedPhotos[index]?.matchScore || 0,
+              },
+            })),
+          });
+        } else {
+          Alert.alert(
+            "Upload Failed",
+            "Failed to upload photos. Please try again.",
+            [{ text: "OK" }],
+          );
+        }
+      } finally {
+        setUploading(false);
+      }
     }
   };
 
@@ -553,11 +643,13 @@ export default function IncidentCameraScreen(): React.ReactElement {
 
               <Button
                 onPress={continueToIncidentDetails}
-                disabled={isAddingImages || uploading}
+                disabled={isAddingImages || uploading || isCreatingIncident}
                 className="rounded-md bg-primary-500"
               >
-                {isAddingImages || uploading ? (
-                  <ButtonText>Uploading...</ButtonText>
+                {isAddingImages || uploading || isCreatingIncident ? (
+                  <ButtonText>
+                    {isCreatingIncident ? "Creating..." : "Uploading..."}
+                  </ButtonText>
                 ) : (
                   <ButtonText>Continue</ButtonText>
                 )}

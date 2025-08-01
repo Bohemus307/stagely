@@ -9,9 +9,11 @@ import { Spinner } from "@/components/ui/spinner";
 import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import { useAuth0 } from "react-native-auth0";
+import { User } from "@/lib/@types/properties";
 
 const ProfileScreen = () => {
   const { auth0User, backendUser: user, isLoading } = useAuthUser();
+
   const { clearSession } = useAuth0();
   if (isLoading) {
     return (
@@ -74,7 +76,7 @@ const ProfileScreen = () => {
           <View className="">
             {user && (
               <ProfileHeader
-                user={user}
+                user={user as User}
                 fallbackPicture={auth0User?.picture}
                 onEditProfile={navigateToEditProfile}
               />

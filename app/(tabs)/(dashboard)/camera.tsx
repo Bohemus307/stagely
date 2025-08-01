@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { View, Text, Alert, SafeAreaView, ScrollView } from "react-native";
 import {
   CameraView,
@@ -7,8 +7,10 @@ import {
   FlashMode,
 } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
+import * as FileSystem from "expo-file-system";
+
 import { StatusBar } from "expo-status-bar";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import Swiper from "react-native-swiper";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Button, ButtonText } from "@/components/ui/button";
@@ -18,9 +20,10 @@ import { VStack } from "@/components/ui/vstack";
 import { Heading } from "@/components/ui/heading";
 import { Badge } from "@/components/ui/badge";
 import { Image } from "@/components/ui/image";
-
+import { useRouter } from "expo-router";
 import { properties } from "@/components/properties/data/properties";
 import { Property } from "@/lib/@types/properties";
+import { useAddIncidentImages } from "@/hooks/incidents/useAddIncidentImages";
 
 interface ReferencePhoto {
   id: string;
@@ -40,10 +43,14 @@ interface ExtendedProperty extends Property {
   referencePhotos?: ReferencePhoto[];
 }
 
-export default function SmartPhotoCapture(): React.ReactElement {
+export default function IncidentCameraScreen(): React.ReactElement {
   const router = useRouter();
-  const params = useLocalSearchParams<{ propertyId: string }>();
+  const params = useLocalSearchParams<{
+    propertyId: string;
+    incidentId?: string;
+  }>();
   const propertyId = params.propertyId;
+  const incidentId = params.incidentId;
 
   const cameraRef = useRef<any>(null);
   const swiperRef = useRef<any>(null);
@@ -61,6 +68,14 @@ export default function SmartPhotoCapture(): React.ReactElement {
   const [showGallery, setShowGallery] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [cameraReady, setCameraReady] = useState<boolean>(false);
+  const [uploading, setUploading] = useState<boolean>(false);
+
+  // Initialize the add incident images hook if we have an incidentId
+  const {
+    addImages,
+    isPending: isAddingImages,
+    isSuccess: isAddImagesSuccess,
+  } = useAddIncidentImages(incidentId || "");
 
   // Get the property details based on the ID
   useEffect(() => {
@@ -94,6 +109,17 @@ export default function SmartPhotoCapture(): React.ReactElement {
       }
     }
   }, [propertyId]);
+
+  // React to add images success
+  useEffect(() => {
+    if (isAddImagesSuccess && incidentId) {
+      // Navigate to incident details after successful upload
+      router.push({
+        pathname: `/(tabs)/(incidents)/details`,
+        params: { incidentId },
+      });
+    }
+  }, [isAddImagesSuccess, incidentId, router]);
 
   // Request camera and media library permissions
   useEffect(() => {
@@ -219,6 +245,50 @@ export default function SmartPhotoCapture(): React.ReactElement {
     setCameraType(cameraType === "back" ? "front" : "back");
   };
 
+  // New function to upload photos to existing incident
+  const uploadPhotosToIncident = async (): Promise<void> => {
+    if (capturedPhotos.length === 0 || !incidentId) {
+      return;
+    }
+
+    try {
+      setUploading(true);
+      // Process images for upload
+      const imageData = await Promise.all(
+        capturedPhotos.map(async (photo) => {
+          // Get the file info to ensure we have the right data
+          const fileInfo = await FileSystem.getInfoAsync(photo.uri);
+
+          // Create image data object
+          return {
+            imageUrl: photo.uri,
+            caption: `Match quality: ${photo.matchScore}%`,
+            takenAt: photo.timestamp,
+            metadata: {
+              matchScore: photo.matchScore,
+              size:
+                fileInfo.exists && "size" in fileInfo
+                  ? fileInfo.size
+                  : undefined,
+              source: "camera",
+            },
+          };
+        }),
+      );
+
+      // Add images to the incident
+      addImages(imageData);
+    } catch (error) {
+      console.error("Error uploading photos to incident:", error);
+      Alert.alert(
+        "Upload Error",
+        "There was a problem uploading your photos. Please try again.",
+      );
+    } finally {
+      setUploading(false);
+    }
+  };
+
   // Continue to incident details
   const continueToIncidentDetails = (): void => {
     if (capturedPhotos.length === 0) {
@@ -230,17 +300,22 @@ export default function SmartPhotoCapture(): React.ReactElement {
       return;
     }
 
-    // In a real app, you would upload photos and get URLs
-    const photoURLs = capturedPhotos.map((photo) => photo.uri);
+    if (incidentId) {
+      // If we have an incident ID, upload photos to existing incident
+      uploadPhotosToIncident();
+    } else {
+      // For new incidents, navigate to incident form with photos
+      const photoURLs = capturedPhotos.map((photo) => photo.uri);
 
-    // Navigate to incident details with photos
-    router.push({
-      pathname: "/(tabs)/(incidents)",
-      params: {
-        propertyId: propertyId || "",
-        photos: JSON.stringify(photoURLs),
-      },
-    });
+      // Navigate to incident details with photos
+      router.push({
+        pathname: "/(tabs)/(incidents)/edit",
+        params: {
+          propertyId: propertyId || "",
+          photos: JSON.stringify(photoURLs),
+        },
+      });
+    }
   };
 
   // Handle back button
@@ -259,7 +334,7 @@ export default function SmartPhotoCapture(): React.ReactElement {
         ],
       );
     } else {
-      router.push("/(tabs)/(incidents)");
+      router.back();
     }
   };
 
@@ -319,7 +394,6 @@ export default function SmartPhotoCapture(): React.ReactElement {
     return (
       <SafeAreaView className="flex-1 flex-col">
         <View className="flex-1 justify-center items-center">
-          {/* <IconSymbol name="camera.slash" size={48} color="gray" /> */}
           <Text className="text-typography-700 mt-4">
             Camera access denied. Please enable camera permissions in your
             device settings.
@@ -477,9 +551,14 @@ export default function SmartPhotoCapture(): React.ReactElement {
 
               <Button
                 onPress={continueToIncidentDetails}
+                disabled={isAddingImages || uploading}
                 className="rounded-md bg-primary-500"
               >
-                <ButtonText>Continue</ButtonText>
+                {isAddingImages || uploading ? (
+                  <ButtonText>Uploading...</ButtonText>
+                ) : (
+                  <ButtonText>Continue</ButtonText>
+                )}
               </Button>
             </HStack>
 

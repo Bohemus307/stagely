@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useRouter } from "expo-router";
+import { useRouter, usePathname } from "expo-router";
 import { Alert, Text } from "react-native";
 import * as Location from "expo-location";
 import { Button, ButtonText } from "@/components/ui/button";
@@ -26,6 +26,7 @@ import { Property } from "@/lib/@types/properties";
 
 export default function AddIncidentButton() {
   const router = useRouter();
+  const pathname = usePathname();
   const [showModal, setShowModal] = useState(false);
   const [nearestProperty, setNearestProperty] = useState<Property | null>(null);
   const [streetViewError, setStreetViewError] = useState(false);
@@ -42,6 +43,13 @@ export default function AddIncidentButton() {
   });
 
   const GOOGLE_MAPS_API_KEY = Constants.expoConfig?.extra?.googleMapsKey || "";
+
+  const getDestinationRoute = () => {
+    if (pathname.includes("/incidents")) {
+      return "/(tabs)/(incidents)/addIncident";
+    }
+    return "/(tabs)/(dashboard)/addIncident";
+  };
 
   const findNearestProperty = (
     latitude: number,
@@ -172,11 +180,14 @@ export default function AddIncidentButton() {
         `You've selected: ${nearestProperty.address}, ${nearestProperty.city}`,
       );
       setShowModal(false);
+
+      // Use dynamic routing based on current location
+      const destinationRoute = getDestinationRoute();
+
       router.push({
-        pathname: "/(tabs)/(incidents)/[addIncident]",
+        pathname: destinationRoute,
         params: {
           propertyId: nearestProperty.id.toString(),
-          addIncident: "[addIncident]",
         },
       });
     }

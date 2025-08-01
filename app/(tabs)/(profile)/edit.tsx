@@ -16,6 +16,7 @@ import ProfileEdit from "@/components/profile/ProfileEditForm";
 import { useUpdateUser } from "@/hooks/profile/useUpdateUser";
 import { UpdateUserData } from "@/hooks/profile/useUpdateUser";
 import { useAuthUser } from "@/hooks/useAuthUser";
+import { User } from "@/lib/@types/properties";
 
 const EditProfileScreen = () => {
   const {
@@ -98,9 +99,8 @@ const EditProfileScreen = () => {
           <HStack className="items-center px-4 py-2">
             <BackButton />
           </HStack>
-
           <ProfileEdit
-            userData={user}
+            userData={user as User}
             onSave={handleSaveProfile}
             isSaving={isUpdating}
             error={

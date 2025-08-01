@@ -11,7 +11,7 @@ export default function PhotosLayout() {
         name="index"
         options={{
           headerShown: false,
-          presentation: "modal",
+          presentation: "card",
         }}
       />
     </Stack>
