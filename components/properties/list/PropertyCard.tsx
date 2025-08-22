@@ -18,6 +18,7 @@ interface PropertyCardProps {
   onDetailsPress: (property: Property) => void;
   onPhotosPress: (property: Property) => void;
   onDocumentsPress: (property: Property) => void;
+  selectionMode?: boolean;
 }
 
 // Street View Image Component
@@ -64,9 +65,11 @@ const StreetViewImage: React.FC<StreetViewImageProps> = ({
 
 const PropertyCard: React.FC<PropertyCardProps> = ({
   property,
+  onPress,
   onDetailsPress,
   onPhotosPress,
   onDocumentsPress,
+  selectionMode = false,
 }) => {
   // Initialize with true if there's no valid location data
   const [streetViewError, setStreetViewError] = useState(
@@ -98,6 +101,11 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   };
 
   const statusBadge = getStatusBadge();
+
+  // Dynamic styling based on selection mode
+  const cardClassName = selectionMode
+    ? "bg-white rounded-xl shadow-lg mb-4 border-2 border-primary-300 hover:border-primary-500"
+    : "bg-white rounded-xl shadow-lg mb-4";
 
   // Function to render the street view image or unavailable placeholder
   const renderPropertyImage = () => {
@@ -131,87 +139,93 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   };
 
   return (
-    <Box className="rounded-lg shadow-lg overflow-hidden bg-white">
-      {/* Main Card Content - Horizontal layout */}
-      <HStack className="p-4 justify-between items-center">
-        {/* Left: Property Image or Street View */}
-        <Box className="h-24 w-24 rounded-md overflow-hidden mr-4 flex-shrink-0">
-          {renderPropertyImage()}
+    <Pressable onPress={() => onPress(property)} className={cardClassName}>
+      <Box className="rounded-lg shadow-lg overflow-hidden bg-white">
+        {/* Main Card Content - Horizontal layout */}
+        <HStack className="p-4 justify-between items-center">
+          {/* Left: Property Image or Street View */}
+          <Box className="h-24 w-24 rounded-md overflow-hidden mr-4 flex-shrink-0">
+            {renderPropertyImage()}
 
-          {/* Show Street View indicator if using street view */}
-          {!streetViewError && property.latitude && (
-            <Badge className="absolute bottom-0 left-0 bg-primary-400/70 text-white text-xs py-0.5 px-1 rounded-tr">
-              <Text className="text-white text-xs">Street View</Text>
-            </Badge>
-          )}
-
-          {/* Show Preview Unavailable badge when street view errors */}
-          {streetViewError && (
-            <Badge className="absolute bottom-0 left-0 bg-amber-400/70 text-white text-xs py-0.5 px-1 rounded-tr">
-              <Text className="text-xs">No Preview</Text>
-            </Badge>
-          )}
-        </Box>
-
-        {/* Middle: Address and Details */}
-        <VStack className="flex-1 mr-4">
-          <Heading className="text-lg font-semibold">
-            {property.address}
-          </Heading>
-          <HStack className="items-center text-sm text-primary-500 mt-1">
-            <Text className="ml-1">
-              {property.city}, {property.state} {property.zipCode}
-            </Text>
-          </HStack>
-          <HStack className="items-center mt-2 space-x-2">
-            {activeIncidents > 0 && (
-              <Badge className="bg-red-100/80 py-0.5 px-2 rounded">
-                <Text className="text-xs text-red-500/90">
-                  {activeIncidents} Issue{activeIncidents > 1 ? "s" : ""}
-                </Text>
+            {/* Show Street View indicator if using street view */}
+            {!streetViewError && property.latitude && (
+              <Badge className="absolute bottom-0 left-0 bg-primary-400/70 text-white text-xs py-0.5 px-1 rounded-tr">
+                <Text className="text-white text-xs">Street View</Text>
               </Badge>
             )}
-          </HStack>
-        </VStack>
 
-        {/* Right: Status Badge - Moved higher in the same column */}
-        <VStack className="flex-shrink-0 h-full justify-start">
-          <Badge
-            className={`${statusBadge.color} text-white py-1 px-3 rounded-full flex-shrink-0 mt-0`}
-          >
-            <Text>{statusBadge.text}</Text>
-          </Badge>
-        </VStack>
-      </HStack>
+            {/* Show Preview Unavailable badge when street view errors */}
+            {streetViewError && (
+              <Badge className="absolute bottom-0 left-0 bg-amber-400/70 text-white text-xs py-0.5 px-1 rounded-tr">
+                <Text className="text-xs">No Preview</Text>
+              </Badge>
+            )}
+          </Box>
 
-      {/* Bottom Buttons - White background with divider above */}
-      <Box className="border-t-2 border-primary-100">
-        <HStack className="bg-white">
-          <Pressable
-            className="flex-1 py-3 flex items-center justify-center border-r border-primary-100"
-            onPress={() => onDetailsPress(property)}
-          >
-            <Text className="text-sm font-medium text-primary-700">
-              Details
-            </Text>
-          </Pressable>
-          <Pressable
-            className="flex-1 py-3 flex items-center justify-center border-r border-primary-100"
-            onPress={() => onPhotosPress(property)}
-          >
-            <Text className="text-sm font-medium text-primary-700">Photos</Text>
-          </Pressable>
-          <Pressable
-            className="flex-1 py-3 flex items-center justify-center"
-            onPress={() => onDocumentsPress(property)}
-          >
-            <Text className="text-sm font-medium text-primary-700">
-              Documents
-            </Text>
-          </Pressable>
+          {/* Middle: Address and Details */}
+          <VStack className="flex-1 mr-4">
+            <Heading className="text-lg font-semibold">
+              {property.address}
+            </Heading>
+            <HStack className="items-center text-sm text-primary-500 mt-1">
+              <Text className="ml-1">
+                {property.city}, {property.state} {property.zipCode}
+              </Text>
+            </HStack>
+            <HStack className="items-center mt-2 space-x-2">
+              {activeIncidents > 0 && (
+                <Badge className="bg-red-100/80 py-0.5 px-2 rounded">
+                  <Text className="text-xs text-red-500/90">
+                    {activeIncidents} Issue{activeIncidents > 1 ? "s" : ""}
+                  </Text>
+                </Badge>
+              )}
+            </HStack>
+          </VStack>
+
+          {/* Right: Status Badge - Moved higher in the same column */}
+          <VStack className="flex-shrink-0 h-full justify-start">
+            <Badge
+              className={`${statusBadge.color} text-white py-1 px-3 rounded-full flex-shrink-0 mt-0`}
+            >
+              <Text>{statusBadge.text}</Text>
+            </Badge>
+          </VStack>
         </HStack>
+
+        {/* Bottom Buttons - White background with divider above */}
+        {!selectionMode && (
+          <Box className="border-t-2 border-primary-100">
+            <HStack className="bg-white">
+              <Pressable
+                className="flex-1 py-3 flex items-center justify-center border-r border-primary-100"
+                onPress={() => onDetailsPress(property)}
+              >
+                <Text className="text-sm font-medium text-primary-700">
+                  Details
+                </Text>
+              </Pressable>
+              <Pressable
+                className="flex-1 py-3 flex items-center justify-center border-r border-primary-100"
+                onPress={() => onPhotosPress(property)}
+              >
+                <Text className="text-sm font-medium text-primary-700">
+                  Photos
+                </Text>
+              </Pressable>
+              <Pressable
+                className="flex-1 py-3 flex items-center justify-center"
+                onPress={() => onDocumentsPress(property)}
+              >
+                <Text className="text-sm font-medium text-primary-700">
+                  Documents
+                </Text>
+              </Pressable>
+            </HStack>
+          </Box>
+        )}
       </Box>
-    </Box>
+    </Pressable>
   );
 };
 

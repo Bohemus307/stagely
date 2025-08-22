@@ -12,17 +12,25 @@ import { Property } from "@/lib/@types/properties";
 export interface PropertyListProps {
   properties: Property[];
   onSelectProperty?: (property: Property) => void;
+  selectionMode?: boolean;
+  onPropertySelect?: (property: Property) => void;
 }
 
 const PropertyList: React.FC<PropertyListProps> = ({
   properties = [],
   onSelectProperty,
+  selectionMode = false,
+  onPropertySelect,
 }) => {
   // Make sure properties is an array before logging length
   const safeProperties = Array.isArray(properties) ? properties : [];
 
   const handlePropertyPress = (property: Property) => {
-    if (onSelectProperty) {
+    if (selectionMode && onPropertySelect) {
+      // In selection mode, selecting a property triggers incident creation
+      onPropertySelect(property);
+    } else if (onSelectProperty) {
+      // In normal mode, use the standard selection handler
       onSelectProperty(property);
     }
   };
@@ -63,6 +71,7 @@ const PropertyList: React.FC<PropertyListProps> = ({
           onDetailsPress={() => handleDetailsPress(item)}
           onPhotosPress={() => handlePhotosPress(item)}
           onDocumentsPress={() => handleDocumentsPress(item)}
+          selectionMode={selectionMode}
         />
       </View>
     );
@@ -76,14 +85,18 @@ const PropertyList: React.FC<PropertyListProps> = ({
         color={Colors.light.tabIconDefault}
       />
       <Text className="text-center my-3">
-        No properties found. Add your first property to get started.
+        {selectionMode
+          ? "No properties found. Please add a property first before reporting an incident."
+          : "No properties found. Add your first property to get started."}
       </Text>
-      <TouchableOpacity
-        className="bg-primary-500 rounded-lg px-4 py-2 mt-4"
-        onPress={handleAddProperty}
-      >
-        <Text className="text-white font-medium">Add Property</Text>
-      </TouchableOpacity>
+      {!selectionMode && (
+        <TouchableOpacity
+          className="bg-primary-500 rounded-lg px-4 py-2 mt-4"
+          onPress={handleAddProperty}
+        >
+          <Text className="text-white font-medium">Add Property</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 
@@ -106,9 +119,11 @@ const PropertyList: React.FC<PropertyListProps> = ({
 
       {/* Fab button in bottom right corner */}
       <Box className="absolute bottom-6 lg:bottom-12 right-6">
-        <Fab size="lg" placement="bottom right" onPress={handleAddProperty}>
-          <FabIcon size="xl" as={AddIcon} />
-        </Fab>
+        {!selectionMode && (
+          <Fab size="lg" placement="bottom right" onPress={handleAddProperty}>
+            <FabIcon size="xl" as={AddIcon} />
+          </Fab>
+        )}
       </Box>
     </Box>
   );
