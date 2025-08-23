@@ -6,8 +6,15 @@ import PropertyMetrics from "@/components/properties/PropertyMetrics";
 import { usePropertySearch } from "@/hooks/properties/usePropertiesSearch";
 import { Property } from "@/lib/@types/properties";
 import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
+import { router, useLocalSearchParams } from "expo-router";
+import { Box } from "@/components/ui/box";
+import { ThemedText } from "@/components/ThemedText";
 
 const PropertiesScreen = () => {
+  const params = useLocalSearchParams();
+  const mode = params.mode as string;
+  const isIncidentSelectionMode = mode === "incident-selection";
+
   // Use property search hook directly in the screen component for initial load
   const { properties: initialProperties, isLoading } = usePropertySearch(
     "",
@@ -30,11 +37,29 @@ const PropertiesScreen = () => {
     setIsSearching(false);
   };
 
+  // Handler for property selection in incident mode
+  const handlePropertySelect = (property: Property) => {
+    if (isIncidentSelectionMode) {
+      router.push({
+        pathname: "/(tabs)/(incidents)/addIncident",
+        params: { propertyId: property.id.toString() },
+      });
+    }
+  };
+
   // Properties to display - either search results or initial properties
   const displayProperties = isSearching ? searchResults : initialProperties;
 
   return (
     <ResponsiveScreenWrapper scrollable={false}>
+      {/* Header */}
+      {isIncidentSelectionMode && (
+        <Box className="px-4 py-3 bg-primary-50 border-b border-gray-200">
+          <ThemedText className="text-lg font-semibold text-center">
+            Select Property for Incident
+          </ThemedText>
+        </Box>
+      )}
       <View className="p-3 w-screen bg-white">
         <PropertySearch
           onSearchResults={handleSearchResults}
@@ -42,11 +67,16 @@ const PropertiesScreen = () => {
         />
       </View>
 
-      {!isLoading && initialProperties && (
+      {/* Only show metrics in normal mode */}
+      {!isIncidentSelectionMode && !isLoading && initialProperties && (
         <PropertyMetrics properties={initialProperties.data} />
       )}
       <View className="flex-1">
-        <PropertyList properties={displayProperties?.data || []} />
+        <PropertyList
+          properties={displayProperties?.data || []}
+          selectionMode={isIncidentSelectionMode}
+          onPropertySelect={handlePropertySelect}
+        />
       </View>
     </ResponsiveScreenWrapper>
   );
