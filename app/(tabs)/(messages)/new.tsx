@@ -18,7 +18,7 @@ import { useCreateConversation } from "@/hooks/messaging/useCreateConversation";
 import { useInviteConversation } from "@/hooks/messaging/useInviteConversation";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import { usePreviouslyMessagedUsers } from "@/hooks/messaging/usePreviouslyMessagedUsers";
-import { User } from "@/components/message/data/messages";
+import { User } from "@/lib/@types/messages";
 
 const NewMessageScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");

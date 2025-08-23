@@ -61,7 +61,7 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
   onPress,
   onDetailsPress,
 }) => {
-  const { property } = useGetProperty(incident.propertyId);
+  const { property } = useGetProperty(incident.propertyId.toString());
 
   const [streetViewError, setStreetViewError] = useState(
     !incident.property ||

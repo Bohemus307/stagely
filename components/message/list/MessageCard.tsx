@@ -11,6 +11,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { Badge } from "@/components/ui/badge";
 import { Box } from "@/components/ui/box";
 import { formatDate } from "../lib/utils/timeHelpers";
+import { Message, MessageUser } from "@/lib/@types/messages";
 
 interface MessageCardProps {
   message: Message;

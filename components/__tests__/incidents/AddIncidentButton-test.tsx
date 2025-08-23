@@ -175,42 +175,6 @@ jest.mock("expo-constants", () => ({
   },
 }));
 
-// Mock properties data
-jest.mock("@/components/properties/data/properties", () => ({
-  properties: [
-    {
-      property_id: 1,
-      address: "123 Test St",
-      city: "Test City",
-      state: "TS",
-      zip_code: "12345",
-      status: "Active",
-      location: {
-        latitude: 37.7749,
-        longitude: -122.4194,
-      },
-      incidents: [{ status: "Open" }, { status: "In Progress" }],
-      created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-02-01T00:00:00Z",
-    },
-    {
-      property_id: 2,
-      address: "456 Sample Ave",
-      city: "Sample City",
-      state: "SS",
-      zip_code: "67890",
-      status: "Maintenance",
-      location: {
-        latitude: 34.0522,
-        longitude: -118.2437,
-      },
-      incidents: [],
-      created_at: "2025-01-01T00:00:00Z",
-      updated_at: "2025-02-01T00:00:00Z",
-    },
-  ],
-}));
-
 // Mock UI components
 jest.mock("@/components/ui/button", () => ({
   Button: ({ children, onPress, className, variant, action }: any) => (
@@ -341,7 +305,7 @@ describe("AddIncidentButton", () => {
     // Check button and icon
     expect(getByTestId("button-primary")).toBeTruthy();
     expect(getByTestId("icon-symbol")).toBeTruthy();
-    expect(getByText("New Incident")).toBeTruthy();
+    expect(getByText("Add Incident")).toBeTruthy();
   });
 
   test("shows loading state while fetching location", async () => {
@@ -362,7 +326,7 @@ describe("AddIncidentButton", () => {
     const { queryByText, getByTestId } = render(<AddIncidentButton />);
 
     // Initial state should be "New Incident"
-    expect(queryByText("New Incident")).toBeTruthy();
+    expect(queryByText("Add Incident")).toBeTruthy();
 
     // Click button to start location process
     fireEvent.press(getByTestId("button-primary"));
@@ -372,7 +336,7 @@ describe("AddIncidentButton", () => {
 
     // Wait for location process to complete
     await waitFor(() => {
-      expect(queryByText("New Incident")).toBeTruthy();
+      expect(queryByText("Add Incident")).toBeTruthy();
     });
   });
 

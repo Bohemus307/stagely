@@ -151,6 +151,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           <Heading className="text-lg font-semibold">
             {property.address}
           </Heading>
+          <Text>{`${property.city}, ${property.state} ${property.zipCode}`}</Text>
           <HStack className="items-center mt-2 space-x-2">
             {activeIncidents > 0 && (
               <Badge className="bg-red-100/80 py-0.5 px-2 rounded">
