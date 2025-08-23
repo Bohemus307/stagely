@@ -7,28 +7,26 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import BackButton from "@/components/BackButton";
 
 /**
- * Photo source selection screen for incidents
- * Based on the design mockup and matching the property version
+ * Modern photo source selection screen
+ * Based on the design mockup
  */
-const IncidentPhotoSelectionScreen = () => {
+const PhotoSelectionScreen = () => {
   const params = useLocalSearchParams();
-  const incidentId = params.incidentId as string;
+  const propertyId = params.propertyId as string;
 
   const handleTakePhoto = (): void => {
-    console.log("Taking a photo for incident:", incidentId);
-
-    router.push({
-      pathname: "/(tabs)/(incidents)/camera",
-      params: { incidentId },
-    });
+    console.log("Taking a photo for property:", propertyId);
+    // Navigate to camera screen
+    // router.push({
+    //   pathname: "/properties/[propertyId]/photos/camera",
+    //   params: { propertyId },
+    // });
   };
 
   const handleSelectFromGallery = (): void => {
-    console.log("Selecting from gallery for incident:", incidentId);
-    // Navigate to gallery selection screen
     router.push({
-      pathname: "/(tabs)/(incidents)/(photos)/select",
-      params: { incidentId },
+      pathname: "/(tabs)/(properties)/(photos)/select",
+      params: { propertyId },
     });
   };
 
@@ -37,10 +35,12 @@ const IncidentPhotoSelectionScreen = () => {
       <Box className="flex-row justify-between items-center py-2">
         <BackButton />
         <ThemedText className="text-lg font-medium text-center flex-1 mr-24">
-          Add Incident Photos
+          Add Photos
         </ThemedText>
       </Box>
       <Box className="flex-1 px-2 py-4">
+        {/* Header with title and close button */}
+
         {/* Option Cards */}
         <Box className="gap-4">
           {/* Take Photo Option */}
@@ -78,4 +78,4 @@ const IncidentPhotoSelectionScreen = () => {
   );
 };
 
-export default IncidentPhotoSelectionScreen;
+export default PhotoSelectionScreen;

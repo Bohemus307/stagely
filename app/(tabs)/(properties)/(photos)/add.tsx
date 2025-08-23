@@ -24,8 +24,6 @@ const PhotoSelectionScreen = () => {
   };
 
   const handleSelectFromGallery = (): void => {
-    console.log("Selecting from gallery for property:", propertyId);
-    // Navigate to gallery selection screen
     router.push({
       pathname: "/(tabs)/(properties)/(photos)/select",
       params: { propertyId },

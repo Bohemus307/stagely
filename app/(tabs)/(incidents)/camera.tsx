@@ -21,11 +21,10 @@ import { Heading } from "@/components/ui/heading";
 import { Badge } from "@/components/ui/badge";
 import { Image } from "@/components/ui/image";
 import { useRouter } from "expo-router";
-import { properties } from "@/components/properties/data/properties";
-import { Property } from "@/lib/@types/properties";
 import { useAddIncidentImages } from "@/hooks/incidents/useAddIncidentImages";
 import useS3ImageUpload from "@/hooks/useImageUpload";
 import { useCreateIncident } from "@/hooks/incidents/useCreateIncident";
+import { useGetProperty } from "@/hooks/properties/useGetPropertyById";
 
 interface ReferencePhoto {
   id: string;
@@ -40,11 +39,6 @@ interface CapturedPhoto {
   timestamp: string;
 }
 
-// Extend the Property interface to include referencePhotos
-interface ExtendedProperty extends Property {
-  referencePhotos?: ReferencePhoto[];
-}
-
 export default function IncidentCameraScreen(): React.ReactElement {
   const router = useRouter();
   const params = useLocalSearchParams<{
@@ -53,6 +47,8 @@ export default function IncidentCameraScreen(): React.ReactElement {
   }>();
   const propertyId = params.propertyId;
   const incidentId = params.incidentId;
+  const currentProperty = useGetProperty(propertyId);
+
   const isNewIncident = !incidentId;
 
   const cameraRef = useRef<any>(null);
@@ -92,31 +88,11 @@ export default function IncidentCameraScreen(): React.ReactElement {
   // Get the property details based on the ID
   useEffect(() => {
     if (propertyId) {
-      const selectedProperty = properties.find(
-        (p) => p.property_id === parseInt(propertyId),
-      ) as ExtendedProperty | undefined;
-
-      // Load reference photos for this property
-      // In a real app, these would likely come from an API
-      if (selectedProperty && selectedProperty.referencePhotos) {
-        setReferencePhotos(selectedProperty.referencePhotos);
-      } else {
-        // Mock reference photos for demo
-        setReferencePhotos([
-          {
-            id: "ref1",
-            uri: "https://via.placeholder.com/400x300?text=Reference+Photo+1",
-            area: "Kitchen",
-          },
-          {
-            id: "ref2",
-            uri: "https://via.placeholder.com/400x300?text=Reference+Photo+2",
-            area: "Living Room",
-          },
-        ]);
+      if (currentProperty && currentProperty.property.referencePhotos) {
+        setReferencePhotos(currentProperty.property.referencePhotos);
       }
     }
-  }, [propertyId]);
+  }, [currentProperty, propertyId]);
 
   // React to add images success
   useEffect(() => {

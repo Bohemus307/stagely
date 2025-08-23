@@ -1,5 +1,4 @@
 import React from "react";
-import { Message, MessageUser } from "../data/messages";
 import { TouchableOpacity } from "react-native";
 import { HStack } from "@/components/ui/hstack";
 import {

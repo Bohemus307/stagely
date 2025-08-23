@@ -1,28 +1,28 @@
 import React, { useState, useEffect } from "react";
-import {
-  SafeAreaView,
-  FlatList,
-  Image,
-  ActivityIndicator,
-  TouchableOpacity,
-  Dimensions,
-  Text,
-  Alert,
-} from "react-native";
+import { SafeAreaView, Dimensions, Alert, Modal } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
-import { ThemedText } from "@/components/ThemedText";
-import { IconSymbol } from "@/components/ui/IconSymbol";
-import { Button } from "@/components/ui/button";
-import { Box } from "@/components/ui/box";
-import BackButton from "@/components/BackButton";
 import { useCreateSpace } from "@/hooks/spaces/useUploadAndCreateSpace";
+import ProcessingScreen from "@/components/photos/room-detection/ProcessingScreen";
+import RoomDetectionCard from "@/components/photos/room-detection/RoomDetectionCard";
+import SuccessAnimation from "@/components/photos/room-detection/SuccessAnimation";
+import GalleryHeader from "@/components/photos/GalleryHeader";
+import GalleryImageGrid from "@/components/photos/GalleryImageGrid";
+import GalleryPermissionDenied from "@/components/photos/GalleryPermissionDenied";
+import GalleryLoadingState from "@/components/photos/GalleryLoadingState";
 
 interface SelectedImage {
   id: string;
   uri: string;
   selected: boolean;
+}
+
+interface UploadResult {
+  imageUri: string;
+  spaceData: any;
+  confirmedRoomType?: string;
+  updatedLabels?: any[];
 }
 
 const GallerySelectScreen = () => {
@@ -36,20 +36,19 @@ const GallerySelectScreen = () => {
   >(new Map());
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-  const [uploading, setUploading] = useState<boolean>(false);
-  const [uploadProgress, setUploadProgress] = useState<{
-    completed: number;
-    total: number;
-  }>({ completed: 0, total: 0 });
+
+  // New state for room detection flow
+  const [currentStep, setCurrentStep] = useState<
+    "selecting" | "processing" | "confirming" | "success"
+  >("selecting");
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [uploadResults, setUploadResults] = useState<UploadResult[]>([]);
+  const [processingProgress, setProcessingProgress] = useState(0);
+  const [processingStatus, setProcessingStatus] = useState("");
 
   // Initialize the useCreateSpace hook
-  const {
-    uploadImageAndCreateSpace,
-    isLoading: isSpaceCreationLoading,
-    isSuccess,
-    isError,
-    data,
-  } = useCreateSpace();
+  const { uploadImageAndCreateSpace, isLoading: isSpaceCreationLoading } =
+    useCreateSpace();
 
   const windowWidth = Dimensions.get("window").width;
   const imageSize = (windowWidth - 24) / 3; // 3 columns with 8px spacing between
@@ -68,29 +67,12 @@ const GallerySelectScreen = () => {
     })();
   }, []);
 
-  // Effect to handle successful space creation
-  useEffect(() => {
-    if (isSuccess && data) {
-      // If all uploads are complete, navigate to a success screen or property details
-      if (
-        uploadProgress.completed === uploadProgress.total &&
-        uploadProgress.total > 0
-      ) {
-        router.push({
-          pathname: "/(tabs)/(properties)/(photos)",
-          params: { propertyId: propertyId.toString() },
-        });
-      }
-    }
-  }, [isSuccess, uploadProgress, data, propertyId]);
-
   const loadMediaAssets = async () => {
     try {
       setLoading(true);
-      // Get only photos (not videos)
       const { assets } = await MediaLibrary.getAssetsAsync({
         mediaType: MediaLibrary.MediaType.photo,
-        first: 100, // Increase number of photos for better UX
+        first: 10,
         sortBy: [MediaLibrary.SortBy.creationTime],
       });
 
@@ -139,174 +121,7 @@ const GallerySelectScreen = () => {
     return fileName;
   };
 
-  // Improved handleNext function with detailed logging
-  const handleNext = async () => {
-    // Convert map to array of selected images
-    const selectedImageArray = Array.from(selectedImages.values());
-
-    console.log("[handleNext] Starting upload process", {
-      selectedImagesCount: selectedImageArray.length,
-    });
-
-    if (selectedImageArray.length === 0) {
-      console.log("[handleNext] No images selected, aborting");
-      return; // Don't proceed if no images selected
-    }
-
-    try {
-      setUploading(true);
-      setUploadProgress({ completed: 0, total: selectedImageArray.length });
-      console.log(
-        "[handleNext] Upload started, total images:",
-        selectedImageArray.length,
-      );
-
-      // Process each image sequentially
-      for (const [index, image] of selectedImageArray.entries()) {
-        try {
-          console.log(
-            `[handleNext] Processing image ${index + 1}/${selectedImageArray.length}`,
-            {
-              imageId: image.id,
-              imageUri: image.uri.substring(0, 30) + "...", // Truncate for logging
-            },
-          );
-
-          // Get image info to determine file name and type
-          console.log(`[handleNext] Getting file info for image ${index + 1}`);
-          const imageInfo = await FileSystem.getInfoAsync(image.uri);
-          console.log(`[handleNext] File info retrieved:`, {
-            exists: imageInfo.exists,
-            uri: imageInfo.uri?.substring(0, 30) + "...", // Truncate for logging
-            ...(imageInfo.exists && {
-              isDirectory: imageInfo.isDirectory,
-              // Only include these properties if they exist
-              ...("size" in imageInfo ? { size: imageInfo.size } : {}),
-              ...("modificationTime" in imageInfo
-                ? { modificationTime: imageInfo.modificationTime }
-                : {}),
-            }),
-          });
-
-          // Convert URI to blob for upload
-          console.log(`[handleNext] Converting image ${index + 1} to blob`);
-          let imageBlob;
-          try {
-            imageBlob = await getImageBlob(image.uri);
-            console.log(`[handleNext] Blob created successfully:`, {
-              type: imageBlob.type || "unknown",
-              size: imageBlob.size,
-            });
-          } catch (blobError) {
-            console.error(
-              `[handleNext] Error creating blob for image ${index + 1}:`,
-              blobError,
-            );
-            throw blobError;
-          }
-          const fileName = getImageFileName(image.uri);
-          console.log(`[handleNext] Filename generated:`, { fileName });
-
-          // Prepare metadata - only include size if available
-          const metadata: Record<string, any> = {
-            originalFileName: fileName,
-            source: "device_gallery",
-          };
-
-          // Only add size if it exists in the file info
-          if (imageInfo.exists && "size" in imageInfo) {
-            metadata.size = imageInfo.size;
-          }
-
-          console.log(
-            `[handleNext] Calling uploadImageAndCreateSpace for image ${index + 1}`,
-            {
-              propertyId,
-              fileName,
-              blobSize: imageBlob.size,
-              blobType: imageBlob.type,
-              metadata,
-            },
-          );
-
-          // Upload image and create space
-          const result = await uploadImageAndCreateSpace(
-            propertyId,
-            imageBlob,
-            fileName,
-            metadata,
-          );
-
-          console.log(`[handleNext] Successfully uploaded image ${index + 1}`, {
-            spaceId: result?.id,
-            imageUrl: result?.images?.[0]?.imageUrl?.substring(0, 30) + "...", // Truncate for logging
-          });
-
-          // Update progress
-          setUploadProgress((prev) => ({
-            ...prev,
-            completed: index + 1,
-          }));
-          console.log(`[handleNext] Progress updated:`, {
-            completed: index + 1,
-            total: selectedImageArray.length,
-          });
-        } catch (err) {
-          console.error(
-            `[handleNext] Error uploading image ${index + 1}:`,
-            err,
-          );
-          // More detailed error information
-          if (err instanceof Error) {
-            console.error(`[handleNext] Error details:`, {
-              message: err.message,
-              stack: err.stack,
-              name: err.name,
-            });
-          }
-          // Continue with next image even if one fails
-        }
-      }
-
-      console.log("[handleNext] All uploads attempted, final status:", {
-        isError,
-        uploadProgress: `${uploadProgress.completed}/${uploadProgress.total}`,
-      });
-
-      // All uploads complete
-      if (isError) {
-        console.log("[handleNext] Showing error alert due to detected errors");
-        Alert.alert(
-          "Upload Error",
-          "Some images could not be uploaded. Please try again.",
-          [{ text: "OK" }],
-        );
-      } else {
-        console.log("[handleNext] Upload process completed successfully");
-      }
-    } catch (error) {
-      console.error("[handleNext] Fatal error in handleNext:", error);
-      if (error instanceof Error) {
-        console.error("[handleNext] Error details:", {
-          message: error.message,
-          stack: error.stack,
-          name: error.name,
-        });
-      }
-      Alert.alert(
-        "Upload Failed",
-        "There was a problem uploading your images. Please try again.",
-        [{ text: "OK" }],
-      );
-    } finally {
-      console.log(
-        "[handleNext] Upload process finished, resetting uploading state",
-      );
-      setUploading(false);
-    }
-  };
-
-  // Enhanced getImageBlob function with photo library URI handling
+  // Enhanced getImageBlob function
   const getImageBlob = async (uri: string): Promise<Blob> => {
     console.log(
       "[getImageBlob] Starting blob creation for URI:",
@@ -434,127 +249,285 @@ const GallerySelectScreen = () => {
           }
         } catch (cleanupError) {
           console.log("[getImageBlob] Error during cleanup:", cleanupError);
-          // Don't throw here, as we're in finally block
         }
       }
     }
   };
 
-  const handleBack = () => {
-    router.back();
+  const updateProgressWithDelay = async (
+    progress: number,
+    status: string,
+    delay: number = 300,
+  ) => {
+    setProcessingStatus(status);
+    setProcessingProgress(progress);
+    await new Promise((resolve) => setTimeout(resolve, delay));
   };
 
-  const renderImageItem = ({ item }: { item: MediaLibrary.Asset }) => {
-    const isSelected = selectedImages.has(item.id);
+  const handleNext = async () => {
+    const selectedImageArray = Array.from(selectedImages.values());
 
-    return (
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={() => toggleImageSelection(item)}
-        style={{
-          width: imageSize,
-          height: imageSize,
-          margin: 4,
-        }}
-        className={`rounded-lg overflow-hidden ${isSelected ? "border-4 border-primary-500" : ""}`}
-      >
-        <Image source={{ uri: item.uri }} className="w-full h-full" />
-        {isSelected && (
-          <Box className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary-500 justify-center items-center">
-            <IconSymbol name="checkmark" size={16} color="white" />
-          </Box>
-        )}
-      </TouchableOpacity>
+    if (selectedImageArray.length === 0) {
+      return;
+    }
+
+    setCurrentStep("processing");
+    setUploadResults([]);
+    setCurrentImageIndex(0);
+    setProcessingProgress(0);
+
+    // Track results locally during processing
+    const localUploadResults: UploadResult[] = [];
+
+    try {
+      // Process each image
+      for (const [index, image] of selectedImageArray.entries()) {
+        try {
+          setCurrentImageIndex(index);
+
+          const baseProgress = (index / selectedImageArray.length) * 100;
+          const stepProgress = 100 / selectedImageArray.length;
+          const isLastImage = index === selectedImageArray.length - 1;
+
+          // Step 1: Preparing image (0-20% of this image's progress)
+          await updateProgressWithDelay(
+            baseProgress + stepProgress * 0.1,
+            "Preparing image...",
+          );
+
+          // Get image info
+          const imageInfo = await FileSystem.getInfoAsync(image.uri);
+
+          // Step 2: Converting image (20-40% of this image's progress)
+          await updateProgressWithDelay(
+            baseProgress + stepProgress * 0.3,
+            "Converting image for upload...",
+          );
+
+          // Convert URI to blob
+          const imageBlob = await getImageBlob(image.uri);
+          const fileName = getImageFileName(image.uri);
+
+          // Prepare metadata
+          const metadata: Record<string, any> = {
+            originalFileName: fileName,
+            source: "device_gallery",
+          };
+
+          if (imageInfo.exists && "size" in imageInfo) {
+            metadata.size = imageInfo.size;
+          }
+
+          // Step 3: Uploading image (40-70% of this image's progress)
+          await updateProgressWithDelay(
+            baseProgress + stepProgress * 0.5,
+            "Uploading image to server...",
+          );
+
+          // Upload image and create space
+          const result = await uploadImageAndCreateSpace(
+            propertyId,
+            imageBlob,
+            fileName,
+            metadata,
+          );
+
+          // Step 4: Processing with AI (70-90% of this image's progress)
+          await updateProgressWithDelay(
+            baseProgress + stepProgress * 0.8,
+            "Analyzing room with AI...",
+          );
+
+          // Store the result locally and in state
+          const uploadResult: UploadResult = {
+            imageUri: image.uri,
+            spaceData: result,
+          };
+
+          localUploadResults.push(uploadResult);
+
+          setUploadResults((prev) => [...prev, uploadResult]);
+
+          // Complete this image
+          await updateProgressWithDelay(
+            baseProgress + stepProgress * 0.95,
+            "Finalizing...",
+          );
+
+          setProcessingProgress(baseProgress + stepProgress);
+
+          // If this is the last image, show final status
+          if (isLastImage) {
+            await updateProgressWithDelay(100, "Processing complete!", 500);
+          }
+
+          // Don't show confirmation during the loop - we'll handle it after all uploads
+        } catch (err) {
+          console.error(`Error uploading image ${index + 1}:`, err);
+          // Continue with next image
+        }
+      }
+
+      // After all images are processed, decide what to do next
+      if (localUploadResults.length > 0) {
+        // Small delay before transitioning
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        setCurrentStep("confirming");
+        setCurrentImageIndex(0);
+      } else {
+        // No successful uploads
+        Alert.alert(
+          "Upload Failed",
+          "No images were uploaded successfully. Please try again.",
+          [{ text: "OK", onPress: () => setCurrentStep("selecting") }],
+        );
+      }
+    } catch (error) {
+      console.error("Fatal error in handleNext:", error);
+      Alert.alert(
+        "Upload Failed",
+        "There was a problem uploading your images. Please try again.",
+        [{ text: "OK", onPress: () => setCurrentStep("selecting") }],
+      );
+    }
+  };
+
+  const handleRoomConfirmation = async (updatedSpace?: any) => {
+    console.log(
+      "Room confirmed with updated space:",
+      updatedSpace,
+      "for image",
+      currentImageIndex,
     );
+
+    // Store the updated space data for this image
+    setUploadResults((prev) => {
+      const updated = [...prev];
+      if (updated[currentImageIndex] && updatedSpace) {
+        updated[currentImageIndex] = {
+          ...updated[currentImageIndex],
+          spaceData: updatedSpace, // Replace with updated space data
+          confirmedRoomType: updatedSpace.type,
+        };
+      }
+      return updated;
+    });
+
+    // Move to next image or complete
+    if (currentImageIndex < uploadResults.length - 1) {
+      setCurrentImageIndex(currentImageIndex + 1);
+    } else {
+      setCurrentStep("success");
+    }
+  };
+
+  const handleSuccessComplete = () => {
+    router.dismissAll();
+  };
+
+  const handleBack = () => {
+    if (currentStep === "selecting") {
+      router.back();
+    } else {
+      setCurrentStep("selecting");
+    }
   };
 
   if (hasPermission === null || loading) {
-    return (
-      <SafeAreaView className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" className="text-primary-500" />
-      </SafeAreaView>
-    );
+    return <GalleryLoadingState />;
   }
 
   if (hasPermission === false) {
-    return (
-      <SafeAreaView className="flex-1 justify-center items-center p-4">
-        <ThemedText className="text-lg text-center mb-4">
-          Media library access is required to select photos.
-        </ThemedText>
-        <Button onPress={handleBack}>
-          <ThemedText className="text-white">Go Back</ThemedText>
-        </Button>
-      </SafeAreaView>
-    );
+    return <GalleryPermissionDenied onBack={handleBack} />;
   }
 
   const selectedCount = selectedImages.size;
 
+  // Show processing screen
+  if (currentStep === "processing") {
+    return (
+      <Modal animationType="slide" presentationStyle="fullScreen">
+        <ProcessingScreen
+          progress={processingProgress}
+          currentStatus={processingStatus}
+          totalImages={selectedImages.size}
+          currentImage={currentImageIndex + 1}
+        />
+      </Modal>
+    );
+  }
+
+  // Show room confirmation
+  if (currentStep === "confirming" && uploadResults[currentImageIndex]) {
+    const currentResult = uploadResults[currentImageIndex];
+    const spaceData = currentResult.spaceData;
+
+    return (
+      <Modal animationType="slide" presentationStyle="fullScreen">
+        <SafeAreaView className="flex-1">
+          <RoomDetectionCard
+            imageUri={currentResult.imageUri}
+            detectedRoom={spaceData?.type || "other"}
+            confidence={
+              spaceData?.confidenceScore
+                ? parseFloat(spaceData.confidenceScore) * 100
+                : 50
+            }
+            objectLabels={spaceData?.objectLabels || []}
+            onConfirm={handleRoomConfirmation}
+            onCancel={() => setCurrentStep("selecting")}
+            spaceId={spaceData?.id?.toString() || ""}
+          />
+        </SafeAreaView>
+      </Modal>
+    );
+  }
+
+  // Show success animation
+  if (currentStep === "success") {
+    const confirmedRoom =
+      uploadResults[0]?.confirmedRoomType ||
+      uploadResults[0]?.spaceData?.type ||
+      "space";
+
+    console.log("Success screen - showing room type:", confirmedRoom);
+    console.log(
+      "Upload results:",
+      uploadResults.map((r) => ({
+        confirmed: r.confirmedRoomType,
+        detected: r.spaceData?.type,
+      })),
+    );
+
+    return (
+      <Modal animationType="fade" presentationStyle="fullScreen">
+        <SuccessAnimation
+          roomType={confirmedRoom}
+          imageCount={uploadResults.length}
+          onComplete={handleSuccessComplete}
+        />
+      </Modal>
+    );
+  }
+
+  // Default: Show selection screen
   return (
     <SafeAreaView className="flex-1 p-4">
       {/* Header */}
-      <Box className="px-2 py-2 border-b border-gray-200">
-        <Box className="flex-row justify-between items-center">
-          <BackButton />
-
-          <ThemedText className="text-lg font-medium">Select Photos</ThemedText>
-
-          <Button
-            variant="solid"
-            disabled={
-              selectedCount === 0 || uploading || isSpaceCreationLoading
-            }
-            onPress={handleNext}
-            className={`bg-primary-500`}
-          >
-            {uploading ? (
-              <Box className="flex-row items-center">
-                <ActivityIndicator size="small" color="white" />
-                <Text className="text-white ml-2">
-                  {uploadProgress.completed + 1}/{uploadProgress.total}
-                </Text>
-              </Box>
-            ) : (
-              <Text className="text-white">
-                Next {selectedCount > 0 ? `(${selectedCount})` : ""}
-              </Text>
-            )}
-          </Button>
-        </Box>
-      </Box>
-
-      {/* Upload Progress Indicator (shows when uploading) */}
-      {uploading && (
-        <Box className="p-4 bg-gray-100 rounded-lg my-2">
-          <ThemedText className="text-center">
-            Uploading {uploadProgress.completed + 1} of {uploadProgress.total}{" "}
-            images...
-          </ThemedText>
-          <Box className="h-2 bg-gray-300 rounded-full mt-2">
-            <Box
-              className="h-2 bg-primary-500 rounded-full"
-              style={{
-                width: `${(uploadProgress.completed / uploadProgress.total) * 100}%`,
-              }}
-            />
-          </Box>
-        </Box>
-      )}
+      <GalleryHeader
+        selectedCount={selectedCount}
+        isLoading={isSpaceCreationLoading}
+        onNext={handleNext}
+      />
 
       {/* Image Grid */}
-      <FlatList
-        data={mediaAssets}
-        renderItem={renderImageItem}
-        keyExtractor={(item) => item.id}
-        numColumns={3}
-        showsVerticalScrollIndicator={true}
-        initialNumToRender={21}
-        maxToRenderPerBatch={21}
+      <GalleryImageGrid
+        mediaAssets={mediaAssets}
+        selectedImages={selectedImages}
+        onToggleSelection={toggleImageSelection}
         onRefresh={handleRefresh}
         refreshing={refreshing}
-        removeClippedSubviews={true}
-        windowSize={7}
+        imageSize={imageSize}
       />
     </SafeAreaView>
   );

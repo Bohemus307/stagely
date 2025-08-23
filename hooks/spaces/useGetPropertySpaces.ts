@@ -2,6 +2,7 @@ import { useAuth0 } from "react-native-auth0";
 import { useQuery } from "@tanstack/react-query";
 import Constants from "expo-constants";
 import { PropertySpace, SpaceType } from "@/lib/@types/properties";
+import { ObjectLabel } from "@/hooks/spaces/useUpdatePropertySpace";
 
 // Define interface for query parameters
 interface PropertySpacesQueryParams {
@@ -10,6 +11,7 @@ interface PropertySpacesQueryParams {
   search?: string;
   sortBy?: "createdAt" | "name" | "type";
   sortOrder?: "asc" | "desc";
+  objectLabels?: ObjectLabel[];
 }
 
 /**

@@ -1,7 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Box } from "@/components/ui/box";
-import { Heading } from "@/components/ui/heading";
 import { HStack } from "@/components/ui/hstack";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { VStack } from "@/components/ui/vstack";
@@ -16,9 +15,7 @@ type Props = {
 
 const QuickActions = ({ property }: Props) => {
   return (
-    <Box className="bg-primary-50 p-4 mb-6 rounded-2xl">
-      <Heading className="text-lg font-semibold mb-3">Quick Actions</Heading>
-
+    <Box className="bg-primary-50 p-4 mb-2 rounded-2xl">
       <VStack className="gap-1">
         <Button
           className="bg-white border border-primary-300 "

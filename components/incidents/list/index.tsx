@@ -1,16 +1,9 @@
-import {
-  FlatList,
-  View,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
+import { FlatList, View, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
 import { Colors } from "@/constants/Colors";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
-import { Fab, FabIcon } from "@/components/ui/fab";
-import { AddIcon } from "@/components/ui/icon";
 import IncidentCard from "@/components/incidents/list/IncidentCard";
 import { Incident } from "@/lib/@types/properties";
 import AddIncidentButtonFab from "@/components/incidents/AddIncidentButtonFab";
@@ -43,12 +36,6 @@ const IncidentList: React.FC<IncidentListProps> = ({
     });
   };
 
-  const handleAddIncident = () => {
-    router.push({
-      pathname: "/(tabs)/(incidents)/addIncident",
-    });
-  };
-
   const renderIncident = ({ item }: { item: Incident }) => (
     <View className="mb-4">
       <IncidentCard
@@ -58,15 +45,6 @@ const IncidentList: React.FC<IncidentListProps> = ({
       />
     </View>
   );
-
-  if (isLoading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-primary-50">
-        <ActivityIndicator size="large" color={Colors.light.tint} />
-        <ThemedText className="mt-4">Loading incidents...</ThemedText>
-      </View>
-    );
-  }
 
   if (error) {
     return (
@@ -106,11 +84,6 @@ const IncidentList: React.FC<IncidentListProps> = ({
       <ThemedText className="text-center my-3">
         No incidents found. Report a new incident to get started.
       </ThemedText>
-      <Box className="mt-4">
-        <Fab size="lg" placement="bottom right" onPress={handleAddIncident}>
-          <FabIcon size="xl" as={AddIcon} />
-        </Fab>
-      </Box>
     </View>
   );
 
@@ -133,7 +106,7 @@ const IncidentList: React.FC<IncidentListProps> = ({
         refreshing={isLoading}
       />
 
-      <Box className="absolute bottom-6 right-6">
+      <Box className="absolute bottom-0 right-6">
         <AddIncidentButtonFab />
       </Box>
     </Box>

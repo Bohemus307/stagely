@@ -175,10 +175,6 @@ export default function AddIncidentButton() {
 
   const handleConfirmProperty = () => {
     if (nearestProperty) {
-      Alert.alert(
-        "Property Confirmed",
-        `You've selected: ${nearestProperty.address}, ${nearestProperty.city}`,
-      );
       setShowModal(false);
 
       // Use dynamic routing based on current location
@@ -251,7 +247,7 @@ export default function AddIncidentButton() {
               ? "Locating..."
               : propertiesLoading
                 ? "Loading..."
-                : "New Incident"}
+                : "Add Incident"}
           </ButtonText>
         </VStack>
       </Button>
@@ -290,7 +286,7 @@ export default function AddIncidentButton() {
                       {nearestProperty.zipCode}
                     </Text>
 
-                    <HStack className="mt-2 space-x-2">
+                    <HStack className="mt-2 space-x-2 gap-4">
                       {nearestProperty.status && (
                         <Badge
                           className={
@@ -308,7 +304,7 @@ export default function AddIncidentButton() {
                       )}
 
                       {getActiveIncidents(nearestProperty) > 0 && (
-                        <Badge className="bg-red-500">
+                        <Badge className="bg-red-500 rounded-xl">
                           <Text className="text-white text-xs">
                             {getActiveIncidents(nearestProperty)} Issue
                             {getActiveIncidents(nearestProperty) > 1 ? "s" : ""}

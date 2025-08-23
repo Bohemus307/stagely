@@ -14,7 +14,6 @@ const PropertiesScreen = () => {
     1,
     10,
   );
-
   // State to hold search results when searching
   const [searchResults, setSearchResults] = useState<Property[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
@@ -46,7 +45,9 @@ const PropertiesScreen = () => {
         <PropertyMetrics properties={initialProperties.data} />
       )}
       <View className="flex-1">
-        <PropertyList properties={displayProperties?.data || []} />
+        {displayProperties && (
+          <PropertyList properties={displayProperties?.data} />
+        )}
       </View>
     </ResponsiveScreenWrapper>
   );

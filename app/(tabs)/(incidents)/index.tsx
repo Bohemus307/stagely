@@ -6,7 +6,6 @@ import IncidentMetrics from "@/components/incidents/details/IncidentMetrics";
 import { useLocalSearchParams } from "expo-router";
 import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
 import { useGetIncidents } from "@/hooks/incidents/useGetIncidents";
-import { Incident } from "@/lib/@types/properties";
 
 const IncidentsScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -27,20 +26,6 @@ const IncidentsScreen = () => {
     sortOrder: "desc",
   });
 
-  const filteredIncidents = incidents || [];
-
-  const displayedIncidents = searchQuery
-    ? filteredIncidents.filter(
-        (incident: Incident) =>
-          incident.incidentType
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()) ||
-          incident.description
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase()),
-      )
-    : filteredIncidents;
-
   return (
     <ResponsiveScreenWrapper scrollable={false}>
       <View className="px-4 p-2 bg-white">
@@ -51,14 +36,16 @@ const IncidentsScreen = () => {
           onStatusFilterChange={setStatusFilter}
         />
       </View>
-      <IncidentMetrics incidents={displayedIncidents} />
+      {incidents && !isLoading && <IncidentMetrics incidents={incidents} />}
       <View className="flex-1">
-        <IncidentList
-          incidents={displayedIncidents}
-          isLoading={isLoading}
-          error={error}
-          onRefresh={refetch}
-        />
+        {incidents && !isLoading && (
+          <IncidentList
+            incidents={incidents}
+            isLoading={isLoading}
+            error={error}
+            onRefresh={refetch}
+          />
+        )}
       </View>
     </ResponsiveScreenWrapper>
   );

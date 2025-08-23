@@ -15,12 +15,9 @@ export interface PropertyListProps {
 }
 
 const PropertyList: React.FC<PropertyListProps> = ({
-  properties = [],
+  properties,
   onSelectProperty,
 }) => {
-  // Make sure properties is an array before logging length
-  const safeProperties = Array.isArray(properties) ? properties : [];
-
   const handlePropertyPress = (property: Property) => {
     if (onSelectProperty) {
       onSelectProperty(property);
@@ -90,7 +87,7 @@ const PropertyList: React.FC<PropertyListProps> = ({
   return (
     <Box className="flex-1 relative">
       <FlatList
-        data={safeProperties}
+        data={properties}
         renderItem={renderProperty}
         keyExtractor={(item) => item?.id.toString()}
         contentContainerStyle={{
@@ -105,7 +102,7 @@ const PropertyList: React.FC<PropertyListProps> = ({
       />
 
       {/* Fab button in bottom right corner */}
-      <Box className="absolute bottom-6 lg:bottom-12 right-6">
+      <Box className="absolute bottom-0 lg:bottom-10 right-6">
         <Fab size="lg" placement="bottom right" onPress={handleAddProperty}>
           <FabIcon size="xl" as={AddIcon} />
         </Fab>
