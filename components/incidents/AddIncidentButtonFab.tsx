@@ -184,7 +184,10 @@ export default function AddIncidentButtonFab() {
 
   const handleViewAllProperties = () => {
     setShowModal(false);
-    router.push("/(tabs)/(properties)");
+    router.push({
+      pathname: "/(tabs)/(properties)",
+      params: { mode: "incident-selection" },
+    });
   };
 
   const renderPropertyImage = () => {

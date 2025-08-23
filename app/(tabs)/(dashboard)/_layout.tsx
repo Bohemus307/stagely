@@ -18,7 +18,7 @@ export default function AddPropertyLayout() {
         name="addIncident"
         options={{
           headerShown: false,
-          presentation: "modal",
+          presentation: "card",
         }}
       />
       <Stack.Screen
