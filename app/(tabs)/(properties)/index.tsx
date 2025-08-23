@@ -21,7 +21,6 @@ const PropertiesScreen = () => {
     1,
     10,
   );
-
   // State to hold search results when searching
   const [searchResults, setSearchResults] = useState<Property[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);

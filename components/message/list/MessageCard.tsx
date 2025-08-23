@@ -1,5 +1,4 @@
 import React from "react";
-import { Message, MessageUser } from "../data/messages";
 import { TouchableOpacity } from "react-native";
 import { HStack } from "@/components/ui/hstack";
 import {
@@ -12,6 +11,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { Badge } from "@/components/ui/badge";
 import { Box } from "@/components/ui/box";
 import { formatDate } from "../lib/utils/timeHelpers";
+import { Message, MessageUser } from "@/lib/@types/messages";
 
 interface MessageCardProps {
   message: Message;

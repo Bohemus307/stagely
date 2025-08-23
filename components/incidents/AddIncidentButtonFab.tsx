@@ -267,7 +267,7 @@ export default function AddIncidentButtonFab() {
                       {nearestProperty.zipCode}
                     </Text>
 
-                    <HStack className="mt-2 space-x-2">
+                    <HStack className="mt-2 space-x-2 gap-2">
                       {nearestProperty.status && (
                         <Badge
                           className={
@@ -285,7 +285,7 @@ export default function AddIncidentButtonFab() {
                       )}
 
                       {getActiveIncidents(nearestProperty) > 0 && (
-                        <Badge className="bg-red-500">
+                        <Badge className="bg-red-500 rounded-xl">
                           <Text className="text-white text-xs">
                             {getActiveIncidents(nearestProperty)} Issue
                             {getActiveIncidents(nearestProperty) > 1 ? "s" : ""}

@@ -29,16 +29,14 @@ const AddIncidentScreen = () => {
   const handleTakePhoto = (): void => {
     // Navigate to camera screen for incident
     router.push({
-      pathname: "/(tabs)/(incidents)/camera",
+      pathname: "/(tabs)/(dashboard)/camera",
       params: { propertyId },
     });
   };
 
   const handleSelectFromGallery = (): void => {
-    // Navigate to gallery selection screen
-    // Only pass propertyId (no incidentId) to trigger new incident flow
     router.push({
-      pathname: "/(tabs)/(incidents)/(photos)/select",
+      pathname: "/(tabs)/(dashboard)/(photos)/select",
       params: { propertyId },
     });
   };

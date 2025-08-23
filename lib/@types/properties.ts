@@ -1,3 +1,5 @@
+import { ObjectLabel } from "@/hooks/spaces/useUpdatePropertySpace";
+
 // Enums
 export enum PropertyStatus {
   Active = "Active",
@@ -24,9 +26,30 @@ export enum SpaceType {
   LivingRoom = "LivingRoom",
   Bedroom = "Bedroom",
   Bathroom = "Bathroom",
+  DiningRoom = "DiningRoom",
+  Office = "Office",
+  Garage = "Garage",
+  Basement = "Basement",
   Hallway = "Hallway",
   Exterior = "Exterior",
-  Garage = "Garage",
+  Attic = "Attic",
+  Laundry = "Laundry",
+  Closet = "Closet",
+  Pantry = "Pantry",
+  Mudroom = "Mudroom",
+  Foyer = "Foyer",
+  Library = "Library",
+  GameRoom = "GameRoom",
+  HomeTheater = "HomeTheater",
+  Gym = "Gym",
+  Studio = "Studio",
+  GuestRoom = "GuestRoom",
+  MasterBedroom = "MasterBedroom",
+  Balcony = "Balcony",
+  Patio = "Patio",
+  Deck = "Deck",
+  Yard = "Yard",
+  Driveway = "Driveway",
   Other = "Other",
   Unknown = "Unknown",
 }
@@ -94,7 +117,7 @@ export interface PropertySpace {
   confidenceScore?: number;
   createdAt: string;
   updatedAt: string;
-
+  objectLabels: ObjectLabel[];
   // Relations
   property?: Property;
   images?: PropertyImage[];

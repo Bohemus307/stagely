@@ -9,14 +9,27 @@ import BackButton from "@/components/BackButton";
 import { ThemedText } from "@/components/ThemedText";
 import { Card } from "@/components/ui/card";
 import { Divider } from "@/components/ui/divider";
-import { PropertyImage, SpaceType } from "@/lib/@types/properties";
+import {
+  PropertyImage,
+  PropertySpace,
+  SpaceType,
+} from "@/lib/@types/properties";
 import { useGetPropertySpaces } from "@/hooks/spaces/useGetPropertySpaces";
+import { useDeletePropertySpace } from "@/hooks/spaces/useDeleteProperySpace";
+import { ObjectLabel } from "@/hooks/spaces/useUpdatePropertySpace";
 
 // Helper function for formatting dates
 const formatDate = (dateString: string): string => {
   if (!dateString) return "-";
   const date = new Date(dateString);
   return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+};
+
+// Helper function to get confidence color based on score
+const getConfidenceColor = (confidence: number): string => {
+  if (confidence >= 0.8) return "text-green-600";
+  if (confidence >= 0.6) return "text-yellow-600";
+  return "text-red-600";
 };
 
 // Function to convert S3 URL to CloudFront URL
@@ -39,10 +52,9 @@ const PhotoDetailScreen: React.FC = () => {
   const spaceId = params.spaceId as string;
   const spaceType = params.spaceType as string;
 
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [photo, setPhoto] = useState<PropertyImage | null>(null);
-  const [space, setSpace] = useState<any | null>(null);
+  const [space, setSpace] = useState<PropertySpace | undefined | null>(null);
 
   // Using the existing hook from the original component
   const {
@@ -51,51 +63,122 @@ const PhotoDetailScreen: React.FC = () => {
     error: spacesError,
   } = useGetPropertySpaces(propertyId, {});
 
+  // Use the delete hook
+  const {
+    deletePropertySpace,
+    isDeleting,
+    deleteError,
+    deleteSuccess,
+    reset: resetDeleteState,
+  } = useDeletePropertySpace();
+
   // Find the photo and space from propertySpaces
   useEffect(() => {
-    if (!spacesLoading && propertySpaces) {
-      let foundPhoto = null;
-      let foundSpace = null;
+    // Don't process while loading
+    if (spacesLoading) {
+      setError(null); // Clear error while loading
+      return;
+    }
 
-      // Find the space and photo
-      for (const space of propertySpaces) {
-        if (space.id.toString() === spaceId) {
-          foundSpace = space;
-        }
+    // Handle API error
+    if (spacesError) {
+      setError(spacesError);
+      return;
+    }
 
-        if (space.images && Array.isArray(space.images)) {
-          // Handle nested arrays or direct objects
-          const images = space.images.flatMap((item: any) => {
-            if (Array.isArray(item)) {
-              return item;
-            }
-            return [item];
-          });
+    if (isDeleting || deleteSuccess) {
+      return;
+    }
 
-          const matchingPhoto = images.find(
-            (img: PropertyImage) =>
-              img && img.id && img.id.toString() === photoId,
-          );
+    // No data
+    if (!propertySpaces || propertySpaces.length === 0) {
+      setError(new Error("No spaces found for this property"));
+      return;
+    }
 
-          if (matchingPhoto) {
-            foundPhoto = matchingPhoto;
-            if (!foundSpace) {
-              foundSpace = space;
-            }
-            break;
+    // Search for the photo and space
+    let foundPhoto = null;
+    let foundSpace = null;
+
+    // First, find the space by ID
+    foundSpace = propertySpaces.find(
+      (space) => space.id.toString() === spaceId,
+    );
+
+    // Then search for the photo across all spaces
+    for (const space of propertySpaces) {
+      if (space.images && Array.isArray(space.images)) {
+        // Flatten the images array (handle nested arrays)
+        const images = space.images.flatMap((item: PropertyImage) =>
+          Array.isArray(item) ? item : [item],
+        );
+
+        const matchingPhoto = images.find(
+          (img: PropertyImage) =>
+            img && img.id && img.id.toString() === photoId,
+        );
+
+        if (matchingPhoto) {
+          foundPhoto = matchingPhoto;
+          // If we haven't found the space by ID, use the space that contains the photo
+          if (!foundSpace) {
+            foundSpace = space;
           }
+          break;
         }
-      }
-
-      setPhoto(foundPhoto);
-      setSpace(foundSpace);
-      setIsLoading(false);
-
-      if (!foundPhoto) {
-        setError(new Error("Photo not found"));
       }
     }
-  }, [propertySpaces, spacesLoading, photoId, spaceId]);
+
+    // Set results
+    setPhoto(foundPhoto);
+    setSpace(foundSpace);
+
+    // Set error only if not found and not during deletion
+    if (!foundPhoto) {
+      setError(new Error("Photo not found"));
+    } else {
+      setError(null);
+    }
+  }, [
+    propertySpaces,
+    spacesLoading,
+    spacesError,
+    photoId,
+    spaceId,
+    isDeleting,
+    deleteSuccess,
+  ]);
+
+  // Handle successful deletion
+  useEffect(() => {
+    if (deleteSuccess) {
+      Alert.alert("Success", "Space deleted successfully!", [
+        {
+          text: "OK",
+          onPress: () => {
+            resetDeleteState();
+            router.back();
+          },
+        },
+      ]);
+    }
+  }, [deleteSuccess, resetDeleteState]);
+
+  // Handle deletion errors
+  useEffect(() => {
+    if (deleteError) {
+      Alert.alert(
+        "Delete Failed",
+        deleteError.message || "Failed to delete space. Please try again.",
+        [
+          {
+            text: "OK",
+            onPress: () => resetDeleteState(),
+          },
+        ],
+      );
+    }
+  }, [deleteError, resetDeleteState]);
 
   const handleEdit = () => {
     // router.push({
@@ -106,36 +189,46 @@ const PhotoDetailScreen: React.FC = () => {
   };
 
   const handleDelete = () => {
+    if (!space) {
+      Alert.alert("Error", "Space information not available");
+      return;
+    }
+
+    const spaceName = space.name || "Unnamed Space";
+    const photoCount = space.images?.length || 0;
+
     Alert.alert(
-      "Delete Photo",
-      "Are you sure you want to delete this photo? This action cannot be undone.",
+      "Delete Space",
+      `Are you sure you want to delete "${spaceName}"? This will permanently delete the space and all ${photoCount} photo(s) in it. This action cannot be undone.`,
       [
         { text: "Cancel", style: "cancel" },
         {
           text: "Delete",
           style: "destructive",
           onPress: () => {
-            // Call delete API here
-            // Then navigate back
-            router.back();
+            deletePropertySpace(spaceId);
           },
         },
       ],
     );
   };
 
-  if (isLoading || spacesLoading) {
+  // Show loading spinner during initial load or deletion
+  if (spacesLoading) {
     return (
-      <View className="flex-1 justify-center items-center">
+      <View className="flex-1 justify-center items-center bg-background">
         <Spinner size="large" />
+        <ThemedText className="mt-4">Loading photo details...</ThemedText>
       </View>
     );
   }
 
   if (error || spacesError) {
     return (
-      <View className="flex-1 justify-center items-center">
-        <ThemedText>Error: {(error || spacesError)?.message}</ThemedText>
+      <View className="flex-1 justify-center items-center bg-background px-4">
+        <ThemedText className="text-red-500 text-center mb-4">
+          Error: {(error || spacesError)?.message}
+        </ThemedText>
         <Button
           className="mt-4 px-4 py-2 bg-primary-500 rounded-md"
           onPress={() => router.back()}
@@ -150,19 +243,47 @@ const PhotoDetailScreen: React.FC = () => {
 
   return (
     <SafeAreaView className="flex-1 bg-background">
-      <View className="flex-row justify-between items-center p-2">
-        <BackButton />
-        <View className="flex-row  gap-2">
-          <Button onPress={handleEdit}>
-            <Text className="text-white">Edit</Text>
-          </Button>
-          <Button onPress={handleDelete} variant="outline">
-            <ThemedText>Delete</ThemedText>
-          </Button>
+      {/* Header with loading overlay during deletion */}
+      <View className="relative">
+        <View className="flex-row justify-between items-center p-2">
+          <BackButton />
+          <View className="flex-row gap-2">
+            <Button onPress={handleEdit} disabled={isDeleting}>
+              <Text className="text-white">Edit</Text>
+            </Button>
+            <Button
+              onPress={handleDelete}
+              variant="outline"
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <View className="flex-row items-center">
+                  <Spinner size="small" className="mr-2" />
+                  <ThemedText>Deleting...</ThemedText>
+                </View>
+              ) : (
+                <ThemedText>Delete</ThemedText>
+              )}
+            </Button>
+          </View>
         </View>
+
+        {/* Loading overlay during deletion */}
+        {isDeleting && (
+          <View className="absolute inset-0 bg-black/20 flex justify-center items-center">
+            <View className="bg-white p-4 rounded-lg flex-row items-center">
+              <Spinner size="small" className="mr-3" />
+              <ThemedText>Deleting space...</ThemedText>
+            </View>
+          </View>
+        )}
       </View>
 
-      <ScrollView className="flex-1">
+      <ScrollView
+        className="flex-1"
+        scrollEnabled={!isDeleting}
+        pointerEvents={isDeleting ? "none" : "auto"}
+      >
         {/* Photo display */}
         <Box className="w-full aspect-square">
           {imageUrl ? (
@@ -172,6 +293,7 @@ const PhotoDetailScreen: React.FC = () => {
                 width: "100%",
                 height: "100%",
                 backgroundColor: "#e0e0e0",
+                opacity: isDeleting ? 0.5 : 1,
               }}
               contentFit="contain"
             />
@@ -183,7 +305,10 @@ const PhotoDetailScreen: React.FC = () => {
         </Box>
 
         {/* Photo details */}
-        <Card className="m-4 p-4 rounded-lg">
+        <Card
+          className="m-4 p-4 rounded-lg"
+          style={{ opacity: isDeleting ? 0.5 : 1 }}
+        >
           <ThemedText className="text-xl font-bold mb-2">
             Photo Details
           </ThemedText>
@@ -204,7 +329,9 @@ const PhotoDetailScreen: React.FC = () => {
           {photo?.caption && (
             <View className="flex-row justify-between mb-2">
               <ThemedText className="font-semibold">Caption:</ThemedText>
-              <ThemedText>{photo.caption}</ThemedText>
+              <ThemedText className="flex-1 text-right ml-2">
+                {photo.caption}
+              </ThemedText>
             </View>
           )}
 
@@ -226,22 +353,42 @@ const PhotoDetailScreen: React.FC = () => {
           </View>
         </Card>
 
-        {/* Metadata */}
-        {photo?.metadata && (
-          <Card className="m-4 p-4 rounded-lg">
+        {/* Object Labels - Space Level */}
+        {space?.objectLabels && space.objectLabels.length > 0 && (
+          <Card
+            className="m-4 p-4 rounded-lg"
+            style={{ opacity: isDeleting ? 0.5 : 1 }}
+          >
             <ThemedText className="text-xl font-bold mb-2">
-              Image Metadata
+              Detected Objects in Space ({space.objectLabels.length})
             </ThemedText>
             <Divider className="mb-4" />
 
-            {Object.entries(photo.metadata).map(([key, value]) => (
-              <View key={key} className="flex-row justify-between mb-2">
-                <ThemedText className="font-semibold">{key}:</ThemedText>
-                <ThemedText>
-                  {typeof value === "object"
-                    ? JSON.stringify(value)
-                    : String(value)}
-                </ThemedText>
+            {space.objectLabels.map((label: ObjectLabel) => (
+              <View
+                key={label.name}
+                className="flex-row justify-between items-center py-2 border-b border-gray-100 last:border-b-0"
+              >
+                <View className="flex-1">
+                  <ThemedText className="font-semibold text-base">
+                    {label.name}
+                  </ThemedText>
+                  {label.category && (
+                    <ThemedText className="text-sm text-gray-600">
+                      Category: {label.category}
+                    </ThemedText>
+                  )}
+                </View>
+                <View className="items-end">
+                  <ThemedText
+                    className={`font-bold ${getConfidenceColor(label.confidence)}`}
+                  >
+                    {Math.round(label.confidence * 100)}%
+                  </ThemedText>
+                  <ThemedText className="text-xs text-gray-500">
+                    confidence
+                  </ThemedText>
+                </View>
               </View>
             ))}
           </Card>

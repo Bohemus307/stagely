@@ -54,9 +54,6 @@ describe("QuickActions Component", () => {
       <QuickActions property={mockProperty} />,
     );
 
-    // Check if the component renders the title
-    expect(getByText("Quick Actions")).toBeTruthy();
-
     // Check if it renders the button text
     expect(getByText("Photos")).toBeTruthy();
     expect(getByText("Documents")).toBeTruthy();

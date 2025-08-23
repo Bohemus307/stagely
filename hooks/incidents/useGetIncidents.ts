@@ -129,7 +129,7 @@ export const useGetIncidents = ({
   });
 
   return {
-    incidents: data?.data || [],
+    incidents: data?.data,
     meta: data?.meta,
     isLoading: authLoading || incidentsLoading,
     error: authError || incidentsError,

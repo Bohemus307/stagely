@@ -419,7 +419,7 @@ const IncidentGallerySelectScreen = () => {
         console.log(
           `[handleNext] Uploading ${imagesToUpload.length} images to incident ${incidentId}`,
         );
-        await addImages(imagesToUpload);
+        addImages(imagesToUpload);
       }
       console.log("[handleNext] All uploads attempted, final status:", {
         isError,

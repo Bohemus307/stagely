@@ -140,7 +140,6 @@ export const useCreateSpace = () => {
         },
         body: file,
       });
-      console.log("RESPY", response);
       if (!response.ok) {
         throw new Error(`Upload error: ${response.status}`);
       }
@@ -181,8 +180,10 @@ export const useCreateSpace = () => {
 
       return response.json();
     },
-    onSuccess: () => {
-      // Invalidate the spaces queries to refetch the updated list
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["propertySpaces", data.propertyId.toString()],
+      });
       queryClient.invalidateQueries({ queryKey: ["spaces"] });
       queryClient.invalidateQueries({ queryKey: ["properties"] });
     },

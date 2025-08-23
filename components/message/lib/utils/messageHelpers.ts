@@ -1,4 +1,4 @@
-import { Message } from "@/components/message/data/messages";
+import { Message } from "@/lib/@types/messages";
 
 /**
  * Filters messages based on search query and status filter

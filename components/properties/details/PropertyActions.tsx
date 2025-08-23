@@ -5,6 +5,7 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { router } from "expo-router";
 import { Button } from "@/components/ui/button";
 import { Incident, Property } from "@/lib/@types/properties";
+import { Colors } from "@/constants/Colors";
 
 type Props = {
   property: Property;
@@ -26,7 +27,7 @@ const PropertyActions = ({ property }: Props) => {
     ).length || 0;
 
   return (
-    <HStack className="mb-6 gap-2 rounded-2xl">
+    <HStack className="mb-3 gap-2 rounded-2xl">
       <Button
         className="flex-1 bg-primary-500 py-2 rounded-md"
         onPress={openMaps}
@@ -38,7 +39,7 @@ const PropertyActions = ({ property }: Props) => {
       </Button>
 
       <Button
-        className="flex-1 bg-secondary-500 py-2 rounded-md"
+        className="flex-1 bg-white py-2 rounded-md border-primary-300 border"
         onPress={() =>
           router.push({
             pathname: "/(tabs)/(incidents)",
@@ -50,12 +51,12 @@ const PropertyActions = ({ property }: Props) => {
           <IconSymbol
             name="exclamationmark.triangle.fill"
             size={16}
-            color="white"
+            color={Colors.light.tabIconDefault}
           />
-          <Text className="text-white ml-2">
+          <Text className="text-primary-700 ml-2">
             {activeIncidents > 0
               ? `Issues (${activeIncidents})`
-              : "Report Issue"}
+              : "Report Incident"}
           </Text>
         </HStack>
       </Button>

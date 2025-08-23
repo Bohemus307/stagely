@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { Badge } from "@/components/ui/badge";
 import { Box } from "@/components/ui/box";
@@ -11,6 +11,7 @@ import { Spinner } from "@/components/ui/spinner";
 import PropertyInformation from "@/components/properties/details/PropertyInformation";
 import BackButton from "@/components/BackButton";
 import { useGetProperty } from "@/hooks/properties/useGetPropertyById";
+import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
 
 const PropertyDetailsScreen = () => {
   const params = useLocalSearchParams();
@@ -19,7 +20,7 @@ const PropertyDetailsScreen = () => {
 
   // Use the new hook to fetch property data
   const { property, isLoading, error } = useGetProperty(propertyId || "");
-  console.log("PROPERTY", property, "ID", propertyId);
+
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center">
@@ -47,7 +48,7 @@ const PropertyDetailsScreen = () => {
   }
 
   return (
-    <ScrollView className="flex-1">
+    <ResponsiveScreenWrapper scrollable={false}>
       <View className="py-2">
         <BackButton />
       </View>
@@ -76,7 +77,7 @@ const PropertyDetailsScreen = () => {
 
       {/* Property Information */}
       <PropertyInformation property={property} />
-    </ScrollView>
+    </ResponsiveScreenWrapper>
   );
 };
 

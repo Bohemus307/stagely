@@ -57,23 +57,15 @@ const IncidentGallerySelectScreen = () => {
   }>({ completed: 0, total: 0 });
 
   // Initialize hooks
-  const {
-    addImages,
-    isPending: isAddingImages,
-    isSuccess,
-    data,
-  } = useAddIncidentImages(incidentId || "");
+  const { addImages, isPending: isAddingImages } = useAddIncidentImages(
+    incidentId || "",
+  );
 
   // Initialize S3 upload hook for new incidents
   const { uploadToS3 } = useS3Upload();
 
   // Initialize create incident hook
-  const {
-    createIncident,
-    isPending: isCreatingIncident,
-    isSuccess: isCreateSuccess,
-    data: createdIncident,
-  } = useCreateIncident();
+  const { createIncident, isPending: isCreatingIncident } = useCreateIncident();
 
   const windowWidth = Dimensions.get("window").width;
   const imageSize = (windowWidth - 24) / 3;
@@ -90,39 +82,6 @@ const IncidentGallerySelectScreen = () => {
       }
     })();
   }, []);
-
-  // Effect to handle successful incident creation for new incidents
-  useEffect(() => {
-    if (isCreateSuccess && createdIncident && isNewIncident) {
-      console.log(
-        "[Effect] New incident created successfully, navigating to details",
-      );
-      console.log("[Effect] Created incident data:", createdIncident);
-
-      // Add a small delay to ensure the API has processed everything
-      setTimeout(() => {
-        router.push({
-          pathname: "/(tabs)/(incidents)/details",
-          params: { incidentId: createdIncident.id.toString() },
-        });
-      }, 500);
-    }
-  }, [isCreateSuccess, createdIncident, isNewIncident]);
-
-  // Effect to handle successful uploads for existing incidents
-  useEffect(() => {
-    if (isSuccess && data && !isNewIncident) {
-      if (
-        uploadProgress.completed === uploadProgress.total &&
-        uploadProgress.total > 0
-      ) {
-        router.push({
-          pathname: "/(tabs)/(incidents)/edit",
-          params: { incidentId },
-        });
-      }
-    }
-  }, [isSuccess, uploadProgress, data, incidentId, isNewIncident]);
 
   const loadMediaAssets = async () => {
     try {
@@ -309,146 +268,110 @@ const IncidentGallerySelectScreen = () => {
       setUploading(true);
       setUploadProgress({ completed: 0, total: selectedImageArray.length });
 
-      if (isNewIncident) {
-        // NEW INCIDENT FLOW: Upload to S3 first, then create incident automatically
-        console.log("[handleNext] New incident flow - uploading to S3 first");
+      // Step 1: Upload all images to S3 first
+      console.log("[handleNext] Uploading images to S3");
+      const uploadedUrls: string[] = [];
 
-        const uploadedUrls: string[] = [];
+      for (const [index, image] of selectedImageArray.entries()) {
+        try {
+          console.log(
+            `[handleNext] Processing image ${index + 1}/${selectedImageArray.length}`,
+          );
 
-        for (const [index, image] of selectedImageArray.entries()) {
-          try {
+          const blob = await getImageBlob(image.uri);
+          const fileName = getImageFileName(image.uri);
+
+          console.log(`[handleNext] Uploading to S3: ${fileName}`);
+          const publicUrl = await uploadToS3(blob, fileName);
+
+          if (publicUrl) {
+            uploadedUrls.push(publicUrl);
             console.log(
-              `[handleNext] Processing image ${index + 1}/${selectedImageArray.length}`,
-            );
-
-            // Get blob using the existing function that handles special URIs
-            const blob = await getImageBlob(image.uri);
-            const fileName = getImageFileName(image.uri);
-
-            // Upload to S3 using the new hook
-            console.log(`[handleNext] Uploading to S3: ${fileName}`);
-            const publicUrl = await uploadToS3(blob, fileName);
-
-            if (publicUrl) {
-              uploadedUrls.push(publicUrl);
-              console.log(
-                `[handleNext] Successfully uploaded image ${index + 1}, URL:`,
-                publicUrl,
-              );
-            }
-
-            // Update progress
-            setUploadProgress((prev) => ({
-              ...prev,
-              completed: index + 1,
-            }));
-          } catch (error) {
-            console.error(
-              `[handleNext] Error uploading image ${index + 1}:`,
-              error,
+              `[handleNext] Successfully uploaded image ${index + 1}, URL:`,
+              publicUrl,
             );
           }
-        }
 
-        if (uploadedUrls.length > 0) {
-          console.log(
-            "[handleNext] All uploads complete, creating incident automatically",
-          );
-
-          // Automatically create incident with uploaded images
-          // Let AI handle the classification
-          const incidentData = {
-            propertyId: parseInt(propertyId),
-            incidentType: "Pending Classification", // AI will classify
-            description:
-              "Incident reported with photos - awaiting AI classification",
-            severity: "Medium" as const, // Default, AI may adjust
-            status: "Open" as const,
-            reportedAt: new Date().toISOString(),
-            aiClassified: false, // Will be true after AI processes
-            images: uploadedUrls.map((url, index) => ({
-              imageUrl: url,
-              caption: `Photo ${index + 1}`,
-              takenAt: new Date().toISOString(),
-              metadata: {
-                source: "gallery_upload",
-              },
-            })),
-          };
-
-          console.log(
-            "[handleNext] Creating incident with data:",
-            incidentData,
-          );
-          createIncident(incidentData);
-        } else {
-          Alert.alert(
-            "Upload Failed",
-            "No images were uploaded successfully. Please try again.",
-            [{ text: "OK" }],
+          setUploadProgress((prev) => ({
+            ...prev,
+            completed: index + 1,
+          }));
+        } catch (error) {
+          console.error(
+            `[handleNext] Error uploading image ${index + 1}:`,
+            error,
           );
         }
+      }
+
+      if (uploadedUrls.length === 0) {
+        Alert.alert(
+          "Upload Failed",
+          "No images were uploaded successfully. Please try again.",
+          [{ text: "OK" }],
+        );
+        setUploading(false);
+        return;
+      }
+
+      // Step 2: Handle the specific flow based on incident type
+      if (isNewIncident) {
+        // NEW INCIDENT: Create incident with images
+        const incidentData = {
+          propertyId: parseInt(propertyId),
+          incidentType: "Pending Classification",
+          description:
+            "Incident reported with photos - awaiting AI classification",
+          severity: "Medium" as const,
+          status: "Open" as const,
+          reportedAt: new Date().toISOString(),
+          aiClassified: false,
+          images: uploadedUrls.map((url, index) => ({
+            imageUrl: url,
+            caption: `Photo ${index + 1}`,
+            takenAt: new Date().toISOString(),
+            metadata: {
+              source: "gallery_upload",
+            },
+          })),
+        };
+
+        console.log("[handleNext] Creating incident with data:", incidentData);
+        createIncident(incidentData);
+
+        // Show success and navigate properly
+        setUploading(false);
+        router.dismissAll();
       } else {
-        // EXISTING INCIDENT FLOW: Add images to existing incident
-        console.log(
-          "[handleNext] Existing incident flow - adding images to incident",
+        // EXISTING INCIDENT: Add images to existing incident
+        const imagesToAdd: IncidentImageData[] = uploadedUrls.map(
+          (url, index) => ({
+            imageUrl: url,
+            caption: `Image ${index + 1}`,
+            takenAt: new Date().toISOString(),
+            metadata: {
+              source: "device_gallery",
+            },
+          }),
         );
 
-        const imagesToAdd: IncidentImageData[] = [];
+        console.log(
+          `[handleNext] Adding ${imagesToAdd.length} images to incident ${incidentId}`,
+        );
+        addImages(imagesToAdd);
 
-        for (const [index, image] of selectedImageArray.entries()) {
-          try {
-            console.log(
-              `[handleNext] Processing image ${index + 1}/${selectedImageArray.length}`,
-            );
-
-            // Get blob and upload to S3
-            const blob = await getImageBlob(image.uri);
-            const fileName = getImageFileName(image.uri);
-
-            console.log(`[handleNext] Uploading to S3: ${fileName}`);
-            const publicUrl = await uploadToS3(blob, fileName);
-
-            if (publicUrl) {
-              imagesToAdd.push({
-                imageUrl: publicUrl,
-                caption: `Image ${index + 1}`,
-                takenAt: new Date().toISOString(),
-                metadata: {
-                  source: "device_gallery",
-                  originalFileName: fileName,
-                },
-              });
-            }
-
-            setUploadProgress((prev) => ({
-              ...prev,
-              completed: index + 1,
-            }));
-          } catch (err) {
-            console.error(
-              `[handleNext] Error processing image ${index + 1}:`,
-              err,
-            );
-          }
-        }
-
-        if (imagesToAdd.length > 0) {
-          console.log(
-            `[handleNext] Adding ${imagesToAdd.length} images to incident ${incidentId}`,
-          );
-          addImages(imagesToAdd);
-        }
+        // Show success and navigate properly
+        setUploading(false);
+        router.dismissAll();
       }
     } catch (error) {
       console.error("[handleNext] Fatal error:", error);
+      setUploading(false);
       Alert.alert(
         "Upload Failed",
-        "There was a problem uploading your images. Please try again.",
+        "There was a problem processing your request. Please try again.",
         [{ text: "OK" }],
       );
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -553,12 +476,12 @@ const IncidentGallerySelectScreen = () => {
                 ? `Uploading ${uploadProgress.completed} of ${uploadProgress.total} images...`
                 : `Processing ${uploadProgress.completed} of ${uploadProgress.total} images...`}
           </ThemedText>
-          {!isCreatingIncident && (
+          {!isCreatingIncident && uploadProgress.total > 0 && (
             <Box className="h-2 bg-gray-300 rounded-full mt-2">
               <Box
                 className="h-2 bg-primary-500 rounded-full"
                 style={{
-                  width: `${(uploadProgress.completed / uploadProgress.total) * 100}%`,
+                  width: `${Math.round((uploadProgress.completed / uploadProgress.total) * 100)}%`,
                 }}
               />
             </Box>
