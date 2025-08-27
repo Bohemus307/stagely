@@ -196,7 +196,7 @@ const PropertyPhotosScreen: React.FC = () => {
       )}
 
       {/* Floating Action Button */}
-      <Box className="absolute bottom-6 right-6">
+      <Box className="absolute bottom-24 right-6">
         <Fab size="lg" placement="bottom right" onPress={handleAddPhotos}>
           <FabIcon size="xl" as={AddIcon} />
         </Fab>

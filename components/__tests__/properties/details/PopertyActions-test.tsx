@@ -133,7 +133,7 @@ describe("PropertyActions", () => {
       <PropertyActions property={propertyWithNoActiveIncidents} />,
     );
 
-    expect(getByText("Report Issue")).toBeTruthy();
+    expect(getByText("Report Incident")).toBeTruthy();
   });
 
   test("handles null or undefined incidents gracefully", () => {
@@ -146,7 +146,7 @@ describe("PropertyActions", () => {
       <PropertyActions property={propertyWithNoIncidents as Property} />,
     );
 
-    expect(getByText("Report Issue")).toBeTruthy();
+    expect(getByText("Report Incident")).toBeTruthy();
   });
 
   test('opens map URL when "Open in Maps" button is pressed', () => {

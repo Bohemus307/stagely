@@ -78,7 +78,6 @@ const useAutoAcceptInvitation = () => {
     },
     onSuccess: (data) => {
       console.log("Invitation accepted successfully");
-      // Invalidate user queries to refetch updated user data
       queryClient.invalidateQueries({ queryKey: ["user"] });
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
     },

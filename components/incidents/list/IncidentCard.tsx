@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Pressable } from "@/components/ui/pressable";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Box } from "@/components/ui/box";
-import { properties } from "@/components/properties/data/properties";
 import { Text } from "react-native";
 import { Image } from "@/components/ui/image";
 import Constants from "expo-constants";
@@ -15,6 +14,7 @@ import {
 } from "../lib/utils/incidentHelpers";
 import { Heading } from "@/components/ui/heading";
 import { Incident } from "@/lib/@types/properties";
+import { useGetProperty } from "@/hooks/properties/useGetPropertyById";
 
 // Street View Image Component
 interface StreetViewImageProps {
@@ -61,17 +61,12 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
   onPress,
   onDetailsPress,
 }) => {
-  console.log(incident);
-  // Find the associated property
-  const property = properties.find(
-    (p) => p.property_id === incident.propertyId,
-  );
+  const { property } = useGetProperty(incident.propertyId.toString());
 
-  // Initialize street view error state
   const [streetViewError, setStreetViewError] = useState(
-    !property?.location ||
-      typeof property?.location.latitude !== "number" ||
-      typeof property?.location.longitude !== "number",
+    !incident.property ||
+      !incident?.property.latitude ||
+      !incident?.property.longitude,
   );
 
   // Helper function to get property name from property ID
@@ -90,12 +85,12 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
   // Function to render the street view image or unavailable placeholder
   const renderPropertyImage = () => {
     // If we have location and street view hasn't errored
-    if (property?.location && !streetViewError) {
+    if (!streetViewError && incident.property) {
       return (
         <Box className="relative h-full w-full">
           <StreetViewImage
-            latitude={property.location.latitude}
-            longitude={property.location.longitude}
+            latitude={incident.property.latitude}
+            longitude={incident.property.longitude}
             size={{ width: 200, height: 200 }}
             onError={() => {
               setStreetViewError(true);

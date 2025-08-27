@@ -13,10 +13,10 @@ import { Colors } from "@/constants/Colors";
 import { Fab, FabIcon } from "@/components/ui/fab";
 import { AddIcon } from "@/components/ui/icon";
 import MessageCard from "./MessageCard";
-import { Message, Conversation } from "@/components/message/data/messages";
 import { filterMessages } from "../lib/utils/messageHelpers";
 import { useGetConversations } from "@/hooks/messaging/useConversations";
 import { useAuthUser } from "@/hooks/useAuthUser";
+import { Conversation, Message } from "@/lib/@types/messages";
 
 export interface MessageListProps {
   searchQuery?: string;
@@ -38,7 +38,9 @@ const MessagesList: React.FC<MessageListProps> = ({
     return conversations.map((conv: Conversation) => {
       const participants = conv.participants || [];
 
-      const otherParticipantId = participants.find((p) => p !== backendUser.id);
+      const otherParticipantId = participants.find(
+        (p: any) => p !== backendUser.id,
+      );
 
       const getUserInfo = () => {
         let firstName = "";

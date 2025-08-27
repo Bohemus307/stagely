@@ -147,13 +147,6 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           <Box className="h-24 w-24 rounded-md overflow-hidden mr-4 flex-shrink-0">
             {renderPropertyImage()}
 
-            {/* Show Street View indicator if using street view */}
-            {!streetViewError && property.latitude && (
-              <Badge className="absolute bottom-0 left-0 bg-primary-400/70 text-white text-xs py-0.5 px-1 rounded-tr">
-                <Text className="text-white text-xs">Street View</Text>
-              </Badge>
-            )}
-
             {/* Show Preview Unavailable badge when street view errors */}
             {streetViewError && (
               <Badge className="absolute bottom-0 left-0 bg-amber-400/70 text-white text-xs py-0.5 px-1 rounded-tr">
@@ -167,11 +160,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
             <Heading className="text-lg font-semibold">
               {property.address}
             </Heading>
-            <HStack className="items-center text-sm text-primary-500 mt-1">
-              <Text className="ml-1">
-                {property.city}, {property.state} {property.zipCode}
-              </Text>
-            </HStack>
+            <Text>{`${property.city}, ${property.state} ${property.zipCode}`}</Text>
             <HStack className="items-center mt-2 space-x-2">
               {activeIncidents > 0 && (
                 <Badge className="bg-red-100/80 py-0.5 px-2 rounded">
@@ -183,7 +172,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
             </HStack>
           </VStack>
 
-          {/* Right: Status Badge - Moved higher in the same column */}
+          {/* Right: Status Badge */}
           <VStack className="flex-shrink-0 h-full justify-start">
             <Badge
               className={`${statusBadge.color} text-white py-1 px-3 rounded-full flex-shrink-0 mt-0`}
@@ -193,7 +182,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           </VStack>
         </HStack>
 
-        {/* Bottom Buttons - White background with divider above */}
+        {/* Bottom Buttons - Only show if not in selection mode */}
         {!selectionMode && (
           <Box className="border-t-2 border-primary-100">
             <HStack className="bg-white">

@@ -29,8 +29,9 @@ import {
   useSendMessage,
   useMarkAsRead,
 } from "@/hooks/messaging/useMessages";
-import { ChatMessage } from "@/components/message/data/messages";
+
 import { useAuthUser } from "@/hooks/useAuthUser";
+import { ChatMessage } from "@/lib/@types/messages";
 
 const getDisplayName = (participant: any): string => {
   if (
@@ -167,6 +168,7 @@ const ConversationScreen = () => {
       const formattedMinutes = minutes < 10 ? "0" + minutes : minutes;
 
       return `${hours}:${formattedMinutes} ${ampm}`;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       return "";
     }

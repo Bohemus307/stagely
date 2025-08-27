@@ -157,20 +157,6 @@ describe("PropertyCard Component", () => {
     expect(getByText("1 Issue")).toBeTruthy();
   });
 
-  test("renders Street View badge when location is valid", () => {
-    const { getByText } = render(
-      <PropertyCard
-        property={mockProperty}
-        onPress={mockOnPress}
-        onDetailsPress={mockOnDetailsPress}
-        onPhotosPress={mockOnPhotosPress}
-        onDocumentsPress={mockOnDocumentsPress}
-      />,
-    );
-
-    expect(getByText("Street View")).toBeTruthy();
-  });
-
   test("calls onDetailsPress when Details button is pressed", () => {
     const { getByText } = render(
       <PropertyCard
