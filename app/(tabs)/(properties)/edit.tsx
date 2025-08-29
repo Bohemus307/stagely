@@ -1,28 +1,32 @@
 import React, { useEffect, useState } from "react";
-import { Alert, ScrollView, Text, View } from "react-native";
+import { Alert, SafeAreaView, ScrollView, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { Spinner } from "@/components/ui/spinner";
 import BackButton from "@/components/BackButton";
-import { PropertyStatus } from "@/lib/@types/properties";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Box } from "@/components/ui/box";
 import { Heading } from "@/components/ui/heading";
-import { Input, InputField } from "@/components/ui/input";
 import { HStack } from "@/components/ui/hstack";
-import {
-  Select,
-  SelectBackdrop,
-  SelectContent,
-  SelectDragIndicator,
-  SelectDragIndicatorWrapper,
-  SelectInput,
-  SelectItem,
-  SelectPortal,
-  SelectTrigger,
-} from "@/components/ui/select";
 import { useGetProperty } from "@/hooks/properties/useGetPropertyById";
 import { useUpdateProperty } from "@/hooks/properties/useUpdateProperty";
 import { useDeleteProperty } from "@/hooks/properties/useDeleteProperty";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { Pressable } from "@/components/ui/pressable";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { VStack } from "@/components/ui/vstack";
+import { Colors } from "@/constants/Colors";
+import {
+  Modal,
+  ModalBackdrop,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+} from "@/components/ui/modal";
+import LocationSearchMap from "@/components/LocationSearchMap";
+import { Location } from "@/lib/@types/properties";
 
 const PropertyEditScreen = () => {
   const { propertyId } = useLocalSearchParams();
@@ -40,7 +44,6 @@ const PropertyEditScreen = () => {
     isSuccess,
     isError,
     error: updateError,
-    data: updatedProperty,
   } = useUpdateProperty(id);
 
   const {
@@ -50,26 +53,12 @@ const PropertyEditScreen = () => {
     error: deleteError,
   } = useDeleteProperty();
 
-  const [address, setAddress] = useState("");
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
-  const [zipCode, setZipCode] = useState("");
-  const [country, setCountry] = useState("");
-  const [status, setStatus] = useState<PropertyStatus>(PropertyStatus.Active);
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
-    if (property) {
-      setAddress(property.address || "");
-      setCity(property.city || "");
-      setState(property.state || "");
-      setZipCode(property.zipCode || "");
-      setCountry(property.country || "");
-      setStatus(property.status || PropertyStatus.Active);
-    }
-  }, [property]);
-
-  useEffect(() => {
-    if (isSuccess && updatedProperty) {
+    if (isSuccess) {
       Alert.alert(
         "Property Updated",
         "The property has been successfully updated.",
@@ -81,7 +70,22 @@ const PropertyEditScreen = () => {
         ],
       );
     }
-  }, [isSuccess, updatedProperty]);
+  }, [isSuccess]);
+
+  useEffect(() => {
+    if (isSuccess) {
+      Alert.alert(
+        "Property Updated",
+        "The property has been successfully updated.",
+        [
+          {
+            text: "OK",
+            onPress: () => router.push("/(tabs)/(properties)/"),
+          },
+        ],
+      );
+    }
+  }, [isSuccess]);
 
   useEffect(() => {
     if (deleteSuccess) {
@@ -98,213 +102,308 @@ const PropertyEditScreen = () => {
     }
   }, [deleteSuccess]);
 
-  const handleSubmit = () => {
-    if (!address.trim()) {
-      Alert.alert("Error", "Please enter a street address");
-      return;
-    }
+  const parseAddress = (address: string) => {
+    const parts = address.split(",").map((part) => part.trim());
 
-    if (!city.trim()) {
-      Alert.alert("Error", "Please enter a city");
-      return;
-    }
+    return {
+      address: parts[0] || "",
+      city: parts.length > 1 ? parts[1] : "",
+      state: parts.length > 2 ? parts[2].split(" ")[0] : "",
+      zipCode: parts.length > 2 ? parts[2].split(" ")[1] || "" : "",
+      country: parts.length > 3 ? parts[3] : "",
+    };
+  };
 
-    if (!country.trim()) {
-      Alert.alert("Error", "Please enter a country");
-      return;
-    }
+  const handleLocationSave = async (location: Location, address: string) => {
+    try {
+      const addressComponents = parseAddress(address);
 
-    updateProperty({
-      address,
-      city,
-      state: state || undefined,
-      zipCode: zipCode || undefined,
-      country,
-      status,
+      updateProperty({
+        address: address,
+        city: addressComponents.city,
+        state: addressComponents.state,
+        zipCode: addressComponents.zipCode,
+        country: addressComponents.country,
+        latitude: location.latitude,
+        longitude: location.longitude,
+      });
+
+      console.log("Location updated:", location);
+      console.log("Address:", address);
+
+      setShowAddressModal(false);
+    } catch (error) {
+      console.error("Error updating location:", error);
+      Alert.alert("Error", "Failed to update property location");
+    }
+  };
+
+  const handlePhotoFromCamera = async () => {
+    setShowPhotoModal(false);
+    console.log("Taking a photo for property:", id);
+    // Navigate to camera screen - uncomment when camera route is ready
+    // router.push({
+    //   pathname: "/properties/[propertyId]/photos/camera",
+    //   params: { propertyId: id },
+    // });
+  };
+
+  const handlePhotoFromGallery = async () => {
+    setShowPhotoModal(false);
+    router.push({
+      pathname: "/(tabs)/(properties)/select",
+      params: { propertyId: id },
     });
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      "Delete Property",
-      "Are you sure you want to delete this property? This action cannot be undone and will remove all associated data including incidents, inspections, and images.",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => deleteProperty(id),
-        },
-      ],
-    );
+    setShowDeleteModal(false);
+    deleteProperty(id);
   };
 
   if (propertyLoading) {
     return (
-      <View className="flex-1 justify-center items-center">
+      <ThemedView className="flex-1 justify-center items-center">
         <Spinner size={"large"} />
-      </View>
+        <ThemedText className="mt-4">Loading property...</ThemedText>
+      </ThemedView>
     );
   }
 
   if (propertyError || !property) {
     return (
-      <View className="flex-1 justify-center items-center">
+      <ThemedView className="flex-1 justify-center items-center p-4">
         <BackButton />
-        <Text>
+        <ThemedText>
           {propertyError
-            ? `Error loading property: ${propertyError.message}`
+            ? `Error: ${propertyError.message}`
             : "Property not found"}
-        </Text>
-        <Button className="mt-4" onPress={() => router.back()}>
-          <ButtonText>Go Back</ButtonText>
-        </Button>
-      </View>
+        </ThemedText>
+      </ThemedView>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-primary-50">
-      <Box className="p-4">
-        <BackButton />
+    <SafeAreaView className="flex-1">
+      {!showAddressModal && (
+        <Box className="flex-row justify-between items-center py-2">
+          <BackButton />
+        </Box>
+      )}
 
-        <Heading className="text-xl my-4">Edit Property</Heading>
-
-        {/* Property Form */}
-        <Box className="bg-white p-4 rounded-lg shadow-sm mb-6">
-          {/* Address */}
-          <Box className="mb-4">
-            <Text className="font-semibold mb-1">Street Address*</Text>
-            <Input className="border border-gray-300">
-              <InputField
-                placeholder="Enter street address"
-                value={address}
-                onChangeText={setAddress}
-              />
-            </Input>
-          </Box>
-
-          {/* City */}
-          <Box className="mb-4">
-            <Text className="font-semibold mb-1">City*</Text>
-            <Input className="border border-gray-300">
-              <InputField
-                placeholder="Enter city"
-                value={city}
-                onChangeText={setCity}
-              />
-            </Input>
-          </Box>
-
-          {/* State and ZIP Code Row */}
-          <HStack className="space-x-2 mb-4">
-            <Box className="flex-1">
-              <Text className="font-semibold mb-1">State/Province</Text>
-              <Input className="border border-gray-300">
-                <InputField
-                  placeholder="Optional"
-                  value={state}
-                  onChangeText={setState}
-                />
-              </Input>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        <Box className="p-5">
+          {/* Error Display */}
+          {(isError || deleteError) && (
+            <Box className="bg-red-100 p-4 rounded-lg mb-6">
+              <ThemedText className="text-red-800">
+                {updateError?.message ||
+                  deleteError?.message ||
+                  "An error occurred"}
+              </ThemedText>
             </Box>
+          )}
 
-            <Box className="flex-1">
-              <Text className="font-semibold mb-1">ZIP/Postal Code</Text>
-              <Input className="border border-gray-300">
-                <InputField
-                  placeholder="Optional"
-                  value={zipCode}
-                  onChangeText={setZipCode}
+          {/* Address Update Card */}
+          <Pressable
+            onPress={() => setShowAddressModal(true)}
+            className="bg-primary-100 rounded-2xl p-5 mb-5"
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+            disabled={isUpdating || isDeleting}
+          >
+            <HStack className="items-center mb-3">
+              <Box className="w-10 h-10 bg-primary-700 rounded-xl items-center justify-center mr-4">
+                {isUpdating ? (
+                  <Spinner size="small" color="white" />
+                ) : (
+                  <IconSymbol name="location" size={20} color="white" />
+                )}
+              </Box>
+              <VStack className="flex-1">
+                <ThemedText type="defaultSemiBold">
+                  {isUpdating ? "Updating Address..." : "Update Address"}
+                </ThemedText>
+              </VStack>
+              {!isUpdating && (
+                <IconSymbol
+                  name="chevron.right"
+                  size={16}
+                  color={Colors.light.icon}
                 />
-              </Input>
-            </Box>
-          </HStack>
+              )}
+            </HStack>
+          </Pressable>
 
-          {/* Status */}
-          <Box className="mb-4">
-            <Text className="font-semibold mb-1">Property Status*</Text>
-            <Select
-              selectedValue={status}
-              onValueChange={(value) => setStatus(value as PropertyStatus)}
+          {/* Photo Update Card */}
+          <Pressable
+            onPress={() => setShowPhotoModal(true)}
+            className="bg-primary-100 rounded-2xl p-5 mb-8"
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+          >
+            <HStack className="items-center mb-3">
+              <Box className="w-10 h-10 bg-primary-700 rounded-xl items-center justify-center mr-4">
+                <IconSymbol name="photo" size={20} color="white" />
+              </Box>
+              <VStack className="flex-1">
+                <ThemedText type="defaultSemiBold">
+                  Update property image
+                </ThemedText>
+              </VStack>
+              <IconSymbol
+                name="chevron.right"
+                size={16}
+                color={Colors.light.icon}
+              />
+            </HStack>
+          </Pressable>
+
+          <Pressable
+            onPress={() => setShowDeleteModal(true)}
+            className="bg-primary-100 rounded-2xl p-5 mb-8"
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+            disabled={isUpdating || isDeleting}
+          >
+            <HStack className="items-center mb-3">
+              <Box className="w-10 h-10 bg-red-600 rounded-xl items-center justify-center mr-4">
+                <IconSymbol name="trash" size={20} color="white" />
+              </Box>
+              <VStack className="flex-1">
+                <ThemedText type="defaultSemiBold" className="text-red-600">
+                  Delete Property
+                </ThemedText>
+              </VStack>
+              <IconSymbol
+                name="chevron.right"
+                size={16}
+                color={Colors.light.icon}
+              />
+            </HStack>
+          </Pressable>
+        </Box>
+      </ScrollView>
+
+      {/* Address Modal */}
+      <Modal
+        isOpen={showAddressModal}
+        onClose={() => setShowAddressModal(false)}
+        size="full"
+      >
+        <View className="flex-1 absolute inset-0 bg-white">
+          <View className="px-5 w-full z-10 shadow-sm bg-white pt-10">
+            <BackButton />
+          </View>
+          <View className="flex-1 w-full">
+            <LocationSearchMap onSaveLocation={handleLocationSave} />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Photo Modal */}
+      <Modal isOpen={showPhotoModal} onClose={() => setShowPhotoModal(false)}>
+        <ModalBackdrop />
+        <ModalContent className="m-4">
+          <ModalHeader>
+            <Heading size="lg">Change Property Photo</Heading>
+            <ModalCloseButton>
+              <IconSymbol name="xmark" size={16} color={Colors.light.icon} />
+            </ModalCloseButton>
+          </ModalHeader>
+          <ModalBody>
+            <VStack space="md">
+              <Pressable
+                onPress={handlePhotoFromCamera}
+                className="bg-gray-200 rounded-xl overflow-hidden"
+                style={({ pressed }) => ({
+                  backgroundColor: pressed ? "#f8fafc" : "white",
+                })}
+              >
+                <HStack className="flex-row items-center py-5 px-4">
+                  <Box className="w-12 h-12 bg-primary-500 rounded-full justify-center items-center mr-4">
+                    <IconSymbol name="camera.fill" size={24} color="white" />
+                  </Box>
+                  <VStack>
+                    <ThemedText type="defaultSemiBold">Take Photo</ThemedText>
+                  </VStack>
+                </HStack>
+              </Pressable>
+
+              <Pressable
+                onPress={handlePhotoFromGallery}
+                className="bg-gray-200 rounded-xl overflow-hidden"
+                style={({ pressed }) => ({
+                  backgroundColor: pressed ? "#f8fafc" : "white",
+                })}
+              >
+                <HStack className="flex-row items-center py-5 px-4">
+                  <Box className="w-12 h-12 bg-primary-500 rounded-full justify-center items-center mr-4">
+                    <IconSymbol
+                      name="photo.on.rectangle"
+                      size={24}
+                      color="white"
+                    />
+                  </Box>
+                  <VStack>
+                    <ThemedText type="defaultSemiBold">
+                      Upload from Gallery
+                    </ThemedText>
+                  </VStack>
+                </HStack>
+              </Pressable>
+            </VStack>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              variant="outline"
+              onPress={() => setShowPhotoModal(false)}
+              className="flex-1"
             >
-              <SelectTrigger>
-                <SelectInput placeholder="Select property status" />
-              </SelectTrigger>
-              <SelectPortal>
-                <SelectBackdrop />
-                <SelectContent>
-                  <SelectDragIndicatorWrapper>
-                    <SelectDragIndicator />
-                  </SelectDragIndicatorWrapper>
-                  <SelectItem label="Active" value={PropertyStatus.Active} />
-                  <SelectItem
-                    label="Maintenance"
-                    value={PropertyStatus.Maintenance}
-                  />
-                  <SelectItem
-                    label="Archived"
-                    value={PropertyStatus.Archived}
-                  />
-                </SelectContent>
-              </SelectPortal>
-            </Select>
-          </Box>
-        </Box>
+              <ButtonText>Cancel</ButtonText>
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
-        {(isError || deleteError) && (
-          <Box className="bg-red-100 p-4 rounded-lg mb-6">
-            <Text className="text-red-800">
-              {updateError?.message ||
-                deleteError?.message ||
-                "An error occurred while processing your request"}
-            </Text>
-          </Box>
-        )}
-
-        <HStack className="space-x-2 mb-4">
-          <Button
-            onPress={handleSubmit}
-            isDisabled={isUpdating || isDeleting}
-            className="flex-1"
-          >
-            {isUpdating ? (
-              <HStack className="items-center">
-                <Spinner color="white" size="small" />
-                <ButtonText className="ml-2">Saving...</ButtonText>
-              </HStack>
-            ) : (
-              <ButtonText>Save Changes</ButtonText>
-            )}
-          </Button>
-        </HStack>
-
-        {/* Delete Section */}
-        <Box className="bg-white p-4 rounded-lg shadow-sm">
-          <Button
-            variant="outline"
-            action="negative"
-            onPress={handleDelete}
-            isDisabled={isUpdating || isDeleting}
-            className="border-red-300"
-          >
-            {isDeleting ? (
-              <HStack className="items-center">
-                <Spinner color="red" size="small" />
-                <ButtonText className="ml-2 text-red-600">
-                  Deleting...
-                </ButtonText>
-              </HStack>
-            ) : (
-              <ButtonText className="text-red-600">Delete Property</ButtonText>
-            )}
-          </Button>
-        </Box>
-      </Box>
-    </ScrollView>
+      {/* Delete Modal */}
+      <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
+        <ModalBackdrop />
+        <ModalContent className="m-4">
+          <ModalHeader>
+            <Heading size="lg" className="text-red-600">
+              Delete Property
+            </Heading>
+            <ModalCloseButton>
+              <IconSymbol name="xmark" size={16} color={Colors.light.icon} />
+            </ModalCloseButton>
+          </ModalHeader>
+          <ModalBody>
+            <ThemedText>
+              Are you sure you want to delete this property? This will
+              permanently remove all associated data including incidents,
+              inspections, and images. This action cannot be undone.
+            </ThemedText>
+          </ModalBody>
+          <ModalFooter>
+            <HStack space="md" className="flex-1">
+              <Button
+                variant="outline"
+                onPress={() => setShowDeleteModal(false)}
+                className="flex-1"
+              >
+                <ButtonText>Cancel</ButtonText>
+              </Button>
+              <Button
+                action="negative"
+                onPress={handleDelete}
+                isDisabled={isDeleting}
+                className="flex-1"
+              >
+                <ButtonText>Delete</ButtonText>
+              </Button>
+            </HStack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </SafeAreaView>
   );
 };
 

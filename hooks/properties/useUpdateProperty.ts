@@ -1,20 +1,20 @@
-import { PropertyStatus } from "@/lib/@types/properties";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Constants from "expo-constants";
 import { useAuth0 } from "react-native-auth0";
 
-// Type for property update data
 interface UpdatePropertyData {
   address?: string;
   city?: string;
   state?: string;
   zipCode?: string;
   country?: string;
-  status?: PropertyStatus;
+  latitude?: number;
+  longitude?: number;
+  imageUrl?: string;
 }
 
 /**
- * Custom hook to update a property
+ *  hook to update a property
  */
 export const useUpdateProperty = (propertyId: string) => {
   const { getCredentials } = useAuth0();
@@ -29,14 +29,12 @@ export const useUpdateProperty = (propertyId: string) => {
         throw new Error("API URL not available");
       }
 
-      // Get the access token
       const credentials = await getCredentials();
 
       if (!credentials?.accessToken) {
         throw new Error("Access token not available");
       }
 
-      // Update property via API
       const response = await fetch(
         `https://${apiUrl}/properties/${propertyId}`,
         {
@@ -57,7 +55,6 @@ export const useUpdateProperty = (propertyId: string) => {
       return response.json();
     },
     onSuccess: (data) => {
-      // Invalidate and refetch property queries
       queryClient.invalidateQueries({ queryKey: ["property", propertyId] });
       queryClient.invalidateQueries({ queryKey: ["properties"] });
     },
