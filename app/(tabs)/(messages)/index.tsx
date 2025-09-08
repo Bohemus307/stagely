@@ -17,8 +17,6 @@ const MessagesScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
-      console.log("📱 Messages screen focused - resetting search");
-
       setSubmittedQuery("");
       setStatusFilter(null);
       setResetKey((prev) => prev + 1);
