@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Alert, SafeAreaView, ScrollView, View } from "react-native";
+import { Alert, ScrollView, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Spinner } from "@/components/ui/spinner";
 import BackButton from "@/components/BackButton";
 import { Button, ButtonText } from "@/components/ui/button";
@@ -73,21 +74,6 @@ const PropertyEditScreen = () => {
   }, [isSuccess]);
 
   useEffect(() => {
-    if (isSuccess) {
-      Alert.alert(
-        "Property Updated",
-        "The property has been successfully updated.",
-        [
-          {
-            text: "OK",
-            onPress: () => router.push("/(tabs)/(properties)/"),
-          },
-        ],
-      );
-    }
-  }, [isSuccess]);
-
-  useEffect(() => {
     if (deleteSuccess) {
       Alert.alert(
         "Property Deleted",
@@ -127,9 +113,6 @@ const PropertyEditScreen = () => {
         latitude: location.latitude,
         longitude: location.longitude,
       });
-
-      console.log("Location updated:", location);
-      console.log("Address:", address);
 
       setShowAddressModal(false);
     } catch (error) {
@@ -184,12 +167,14 @@ const PropertyEditScreen = () => {
   }
 
   return (
-    <SafeAreaView className="flex-1">
-      {!showAddressModal && (
-        <Box className="flex-row justify-between items-center py-2">
-          <BackButton />
+    <ThemedView className="flex-1">
+      <SafeAreaView edges={["top"]}>
+        <Box className="px-4 py-2 border-b border-gray-200">
+          <HStack className="items-center justify-between">
+            <BackButton />
+          </HStack>
         </Box>
-      )}
+      </SafeAreaView>
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <Box className="p-5">
@@ -288,8 +273,8 @@ const PropertyEditScreen = () => {
         onClose={() => setShowAddressModal(false)}
         size="full"
       >
-        <View className="flex-1 absolute inset-0 bg-white">
-          <View className="px-5 w-full z-10 shadow-sm bg-white pt-10">
+        <View className="flex-1 bg-white mt-6">
+          <View className="px-5 w-full z-10 shadow-sm">
             <BackButton />
           </View>
           <View className="flex-1 w-full">
@@ -403,7 +388,7 @@ const PropertyEditScreen = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-    </SafeAreaView>
+    </ThemedView>
   );
 };
 
