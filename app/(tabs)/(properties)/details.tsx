@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Box } from "@/components/ui/box";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Button } from "@/components/ui/button";
-
 import StreetViewImage from "@/components/properties/details/StreetView";
 import { Spinner } from "@/components/ui/spinner";
 import PropertyInformation from "@/components/properties/details/PropertyInformation";
@@ -48,7 +47,7 @@ const PropertyDetailsScreen = () => {
   }
 
   return (
-    <ResponsiveScreenWrapper scrollable={false}>
+    <ResponsiveScreenWrapper scrollable={true}>
       <View className="py-2">
         <BackButton />
       </View>
