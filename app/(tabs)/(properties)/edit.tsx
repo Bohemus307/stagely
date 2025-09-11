@@ -54,24 +54,19 @@ const PropertyEditScreen = () => {
     error: deleteError,
   } = useDeleteProperty();
 
-  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [showAddressView, setShowAddressView] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     if (isSuccess) {
-      Alert.alert(
-        "Property Updated",
-        "The property has been successfully updated.",
-        [
-          {
-            text: "OK",
-            onPress: () => router.push("/(tabs)/(properties)/"),
-          },
-        ],
-      );
+      // Navigate to property details page after successful update
+      router.push({
+        pathname: "/(tabs)/(properties)",
+        params: { propertyId: id },
+      });
     }
-  }, [isSuccess]);
+  }, [isSuccess, id]);
 
   useEffect(() => {
     if (deleteSuccess) {
@@ -113,8 +108,6 @@ const PropertyEditScreen = () => {
         latitude: location.latitude,
         longitude: location.longitude,
       });
-
-      setShowAddressModal(false);
     } catch (error) {
       console.error("Error updating location:", error);
       Alert.alert("Error", "Failed to update property location");
@@ -166,6 +159,18 @@ const PropertyEditScreen = () => {
     );
   }
 
+  if (showAddressView) {
+    return (
+      <View className="flex-1 mt-4">
+        <View className="px-5 w-full z-10 shadow-sm">
+          <BackButton />
+        </View>
+        <View className="flex-1 w-full">
+          <LocationSearchMap onSaveLocation={handleLocationSave} />
+        </View>
+      </View>
+    );
+  }
   return (
     <ThemedView className="flex-1">
       <SafeAreaView edges={["top"]}>
@@ -191,7 +196,7 @@ const PropertyEditScreen = () => {
 
           {/* Address Update Card */}
           <Pressable
-            onPress={() => setShowAddressModal(true)}
+            onPress={() => setShowAddressView(true)}
             className="bg-primary-100 rounded-2xl p-5 mb-5"
             style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
             disabled={isUpdating || isDeleting}
@@ -266,22 +271,6 @@ const PropertyEditScreen = () => {
           </Pressable>
         </Box>
       </ScrollView>
-
-      {/* Address Modal */}
-      <Modal
-        isOpen={showAddressModal}
-        onClose={() => setShowAddressModal(false)}
-        size="full"
-      >
-        <View className="flex-1 bg-white mt-6">
-          <View className="px-5 w-full z-10 shadow-sm">
-            <BackButton />
-          </View>
-          <View className="flex-1 w-full">
-            <LocationSearchMap onSaveLocation={handleLocationSave} />
-          </View>
-        </View>
-      </Modal>
 
       {/* Photo Modal */}
       <Modal isOpen={showPhotoModal} onClose={() => setShowPhotoModal(false)}>
