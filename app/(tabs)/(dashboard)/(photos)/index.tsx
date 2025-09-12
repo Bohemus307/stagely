@@ -85,12 +85,10 @@ const PropertyPhotosScreen: React.FC = () => {
     if (!s3Url) return null;
 
     // Extract the S3 key from the URL
-    // Typical S3 URL format: https://stagely-secure-storage.s3.us-east-1.amazonaws.com/uploads/path/to/image.jpg
     const s3Key = s3Url.split("amazonaws.com/")[1];
 
-    if (!s3Key) return s3Url; // Return original if we can't extract the key
+    if (!s3Key) return s3Url;
 
-    // Construct CloudFront URL
     return `https://d24y6hzot6c372.cloudfront.net/${s3Key}`;
   };
 

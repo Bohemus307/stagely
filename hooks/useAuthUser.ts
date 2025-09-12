@@ -1,6 +1,7 @@
-import { useAuth0, User } from "react-native-auth0";
+import { useAuth0 } from "react-native-auth0";
 import { useQuery } from "@tanstack/react-query";
 import Constants from "expo-constants";
+import { User } from "@/lib/@types/properties";
 
 /**
  * Custom hook to fetch authenticated user data from Auth0 and then get
@@ -50,7 +51,7 @@ export const useAuthUser = () => {
   });
 
   // Helper function to check if user is placeholder
-  const isPlaceholderUser = backendUser?.isPlaceholder === true;
+  const isPlaceholderUser = (backendUser as any)?.isPlaceholder === true;
 
   return {
     auth0User: user,

@@ -147,11 +147,11 @@ const IncidentsDetailsScreen = () => {
         <BackButton />
         <ScrollView className="flex-1">
           {/* Street View image */}
-          {property?.location && !streetViewError ? (
+          {property?.latitude && !streetViewError ? (
             <Box className="h-48 w-full px-4">
               <StreetViewImage
-                latitude={property.location.latitude}
-                longitude={property.location.longitude}
+                latitude={property.latitude}
+                longitude={property.longitude}
                 size={{ width: 600, height: 300 }}
                 onError={() => setStreetViewError(true)}
               />

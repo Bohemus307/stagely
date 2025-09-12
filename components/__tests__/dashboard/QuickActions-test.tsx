@@ -2,15 +2,7 @@
 import React from "react";
 import { render, fireEvent } from "@testing-library/react-native";
 
-// Import the component under test
 import QuickActions from "@/components/dashboard/QuickActions";
-
-// First, mock the most problematic dependencies
-jest.mock("@/components/incidents/AddIncidentButton", () => {
-  return function MockAddIncidentButton() {
-    return <div data-testid="mock-add-incident">New Incident</div>;
-  };
-});
 
 jest.mock("expo-router", () => ({
   useRouter: jest.fn().mockReturnValue({

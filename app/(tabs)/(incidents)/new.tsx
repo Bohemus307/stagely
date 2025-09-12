@@ -85,6 +85,7 @@ const NewIncidentScreen = () => {
       reportedAt: new Date().toISOString(),
       status: "Open",
       aiClassified: false,
+      userId: 0,
     });
   };
 

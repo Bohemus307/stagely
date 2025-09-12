@@ -372,6 +372,7 @@ export default function IncidentCameraScreen(): React.ReactElement {
                 matchScore: capturedPhotos[index]?.matchScore || 0,
               },
             })),
+            userId: 0,
           });
         } else {
           Alert.alert(

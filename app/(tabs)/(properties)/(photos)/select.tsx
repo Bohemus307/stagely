@@ -391,7 +391,7 @@ const GallerySelectScreen = () => {
       );
     }
   };
-
+  // needs to use the hook to update the space @TODO:
   const handleRoomConfirmation = async (updatedSpace?: any) => {
     console.log(
       "Room confirmed with updated space:",
