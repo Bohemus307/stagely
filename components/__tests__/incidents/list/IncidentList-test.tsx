@@ -31,16 +31,6 @@ jest.mock("expo-router", () => ({
   usePathname: jest.fn(() => "/(tabs)/(incidents)"),
 }));
 
-// Mock AddIncidentButton to avoid dependency on expo-location
-jest.mock("@/components/incidents/AddIncidentButton", () => ({
-  __esModule: true,
-  default: ({ className }: { className?: string }) => (
-    <TouchableOpacity testID="add-incident-button">
-      <Text>Add Incident</Text>
-    </TouchableOpacity>
-  ),
-}));
-
 // Mock AddIncidentButtonFab component - THIS IS THE KEY ADDITION
 jest.mock("@/components/incidents/AddIncidentButtonFab", () => ({
   __esModule: true,

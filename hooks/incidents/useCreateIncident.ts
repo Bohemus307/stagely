@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Constants from "expo-constants";
 
 export interface CreateIncidentData {
+  userId?: number;
   propertyId: number;
   incidentType: string;
   description: string;
@@ -10,7 +11,10 @@ export interface CreateIncidentData {
   severity: "Low" | "Medium" | "High" | "Critical";
   status?: "Open" | "In_Progress" | "Resolved" | "Closed";
   spaceType?: string;
+  spaceId?: number;
   aiClassified?: boolean;
+  imageUrl?: string;
+  metadata?: any;
   images?: {
     imageUrl: string;
     caption?: string;
@@ -28,6 +32,10 @@ export const useCreateIncident = () => {
 
   const mutation = useMutation({
     mutationFn: async (incidentData: CreateIncidentData) => {
+      console.log(
+        "Creating incident with data:",
+        JSON.stringify(incidentData, null, 2),
+      );
       if (!apiUrl) {
         throw new Error("API URL not available");
       }
@@ -38,7 +46,8 @@ export const useCreateIncident = () => {
         throw new Error("Access Token not available");
       }
 
-      const response = await fetch(`https://${apiUrl}/properties/incidents`, {
+      const baseUrl = `https://${apiUrl}`;
+      const response = await fetch(`${baseUrl}/properties/incidents`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -48,7 +57,17 @@ export const useCreateIncident = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        let errorMessage = `API error: ${response.status}`;
+        try {
+          const errorText = await response.text();
+          console.error("API error response:", errorText);
+          const errorJson = JSON.parse(errorText);
+          errorMessage = errorJson.message || errorJson.error || errorText;
+        } catch (e) {
+          // If error response is not JSON, use the text
+          console.error("Error parsing API response:", e);
+        }
+        throw new Error(errorMessage);
       }
 
       return response.json();

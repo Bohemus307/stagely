@@ -82,15 +82,14 @@ const IncidentPhotosScreen = () => {
         <BackButton />
       </View>
 
-      {!isLoading &&
-        incident &&
-        {
-          /* <PhotoSearch
+      {!isLoading && incident && (
+        /* <PhotoSearch
           incident={incident}
           activeFilter={activeFilter}
           setActiveFilter={setActiveFilter}
         /> */
-        }}
+        <View></View>
+      )}
 
       {/* Photo Grid */}
       {allImages.length > 0 ? (
@@ -103,9 +102,16 @@ const IncidentPhotosScreen = () => {
           showsVerticalScrollIndicator={false}
         />
       ) : (
-        {
-          /*<EmptyPhotosState onAddPhotos={handleAddPhotos} /> */
-        }
+        /* <EmptyPhotosState onAddPhotos={handleAddPhotos} /> */
+        <View className="flex-1 justify-center items-center">
+          <ThemedText className="text-lg mb-2">No photos yet</ThemedText>
+          <ThemedText className="text-gray-500 mb-4 text-center px-8">
+            Add photos to document this incident
+          </ThemedText>
+          <Button onPress={handleAddPhotos}>
+            <ThemedText className="text-white">Add Photos</ThemedText>
+          </Button>
+        </View>
       )}
 
       {/* Floating Action Button */}

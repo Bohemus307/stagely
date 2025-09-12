@@ -95,6 +95,9 @@ export default {
       googleMapsKey: process.env.GOOGLE_MAPS_API_KEY,
       stagelyApiUrl: process.env.STAGELY_API_URL,
       stagelyAudience: process.env.STAGELY_AUDIENCE,
+      eas: {
+        projectId: "c2961139-ef6a-464b-8b6a-a590752c0b49",
+      },
     },
     experiments: {
       typedRoutes: true,

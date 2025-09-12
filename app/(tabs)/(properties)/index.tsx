@@ -71,11 +71,13 @@ const PropertiesScreen = () => {
         <PropertyMetrics properties={initialProperties.data} />
       )}
       <View className="flex-1">
-        <PropertyList
-          properties={displayProperties?.data || []}
-          selectionMode={isIncidentSelectionMode}
-          onPropertySelect={handlePropertySelect}
-        />
+        {displayProperties?.data && (
+          <PropertyList
+            properties={displayProperties?.data}
+            selectionMode={isIncidentSelectionMode}
+            onPropertySelect={handlePropertySelect}
+          />
+        )}
       </View>
     </ResponsiveScreenWrapper>
   );

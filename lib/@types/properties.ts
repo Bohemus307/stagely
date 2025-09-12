@@ -118,7 +118,6 @@ export interface PropertySpace {
   createdAt: string;
   updatedAt: string;
   objectLabels: ObjectLabel[];
-  // Relations
   property?: Property;
   images?: PropertyImage[];
 }

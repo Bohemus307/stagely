@@ -18,7 +18,7 @@ export default function IncidentsLayout() {
         name="addIncident"
         options={{
           headerShown: false,
-          presentation: "modal",
+          presentation: "card",
         }}
       />
     </Stack>
