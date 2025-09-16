@@ -9,6 +9,9 @@ export interface MessageUser {
 }
 
 export interface User {
+  lastMessageTime: string;
+  lastMessage: string;
+  conversationId: string;
   id: number;
   firstName: string;
   lastName: string;

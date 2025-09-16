@@ -1,383 +1,164 @@
 import { ThemedText } from "@/components/ThemedText";
-import {
-  Avatar,
-  AvatarFallbackText,
-  AvatarImage,
-} from "@/components/ui/avatar";
-import { HStack } from "@/components/ui/hstack";
-import { Pressable } from "@/components/ui/pressable";
 import { router } from "expo-router";
-import React, { useEffect, useState, useCallback } from "react";
 import { ThemedView } from "@/components/ThemedView";
 import { SafeAreaView } from "react-native-safe-area-context";
 import BackButton from "@/components/BackButton";
-import { ActivityIndicator, FlatList, View, Alert } from "react-native";
-import { Input, InputField, InputIcon, InputSlot } from "@/components/ui/input";
-import { SearchIcon } from "@/components/ui/icon";
-import { useCreateConversation } from "@/hooks/messaging/useCreateConversation";
-import { useInviteConversation } from "@/hooks/messaging/useInviteConversation";
+import {
+  ActivityIndicator,
+  FlatList,
+  View,
+  TouchableOpacity,
+} from "react-native";
+import { AddIcon } from "@/components/ui/icon";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import { usePreviouslyMessagedUsers } from "@/hooks/messaging/usePreviouslyMessagedUsers";
 import { User } from "@/lib/@types/messages";
+import MessageCard from "@/components/message/list/MessageCard";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Colors } from "@/constants/Colors";
+import { Fab, FabIcon } from "@/components/ui/fab";
 
 const NewMessageScreen = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [initialMessage, setInitialMessage] = useState("");
-  const [selectedMode, setSelectedMode] = useState<"search" | "invite">(
-    "search",
-  );
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-
   const { backendUser, isLoading: isLoadingUser } = useAuthUser();
 
   const {
     data: previousUsersData,
-    isLoading: isLoadingPreviousUsers,
-    error: previousUsersError,
-  } = usePreviouslyMessagedUsers(
-    debouncedSearch,
-    selectedMode === "search" && debouncedSearch.length >= 2,
-  );
+    isLoading: isLoadingContacts,
+    error: contactsError,
+    refetch,
+  } = usePreviouslyMessagedUsers("", true);
 
-  const { mutate: createConversation, isPending: isCreatingConversation } =
-    useCreateConversation();
-
-  const { mutate: inviteConversation, isPending: isInviting } =
-    useInviteConversation();
-
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      if (searchQuery.trim().length >= 2 && selectedMode === "search") {
-        setDebouncedSearch(searchQuery.trim());
-      } else {
-        setDebouncedSearch("");
-      }
-    }, 500);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, selectedMode]);
-
-  const isEmailLike = useCallback((query: string) => {
-    return query.includes("@") && query.includes(".");
-  }, []);
-
-  const handleUserSelect = useCallback(
-    (user: User) => {
-      if (!backendUser?.id) {
-        Alert.alert(
-          "Error",
-          "User information not available. Please login again.",
-        );
-        return;
-      }
-
-      const requestParams = {
-        userId: backendUser.id,
-        participants: [user.id],
-        initialMessage: initialMessage.trim() || undefined,
-      };
-
-      createConversation(requestParams, {
-        onSuccess: (data: any) => {
-          if (data?.success === false) {
-            Alert.alert("Error", data.error || "Failed to create conversation");
-            return;
-          }
-
-          const conversationId =
-            data?.conversation?.conversationId ||
-            data?.conversationId ||
-            (data?.conversation && typeof data.conversation === "string"
-              ? data.conversation
-              : null);
-
-          if (conversationId) {
-            router.push({
-              pathname: "/(tabs)/(messages)/[conversation]",
-              params: {
-                conversation: conversationId,
-                userId: user.id.toString(),
-              },
-            });
-          } else {
-            console.error("No conversation ID in response:", data);
-            Alert.alert(
-              "Error",
-              "Could not create conversation. Missing conversation ID. Please try again.",
-            );
-          }
-        },
-        onError: (error: Error) => {
-          console.error("Failed to create conversation:", error);
-          Alert.alert(
-            "Error",
-            `Failed to create conversation: ${error.message}`,
-          );
-        },
-      });
-    },
-    [backendUser?.id, initialMessage, createConversation],
-  );
-
-  const handleEmailInvite = useCallback(() => {
-    if (!isEmailLike(searchQuery.trim())) {
-      Alert.alert(
-        "Invalid Email",
-        "Please enter a valid email address to send an invitation.",
-      );
-      return;
-    }
-
-    const email = searchQuery.trim();
-
-    inviteConversation(
-      {
-        email: email,
-        initialMessage: initialMessage.trim() || undefined,
+  const handleContactPress = (user: User) => {
+    router.push({
+      pathname: "/(tabs)/(messages)/[conversation]",
+      params: {
+        conversation: user.conversationId || `${backendUser?.id}-${user.id}`,
+        userId: user.id.toString(),
       },
-      {
-        onSuccess: (data: any) => {
-          Alert.alert(
-            "Invitation Sent",
-            `An invitation has been sent to ${email}. They will receive your message once they accept the invitation.`,
-            [
-              {
-                text: "OK",
-                onPress: () => {
-                  router.back();
-                },
-              },
-            ],
-          );
-        },
-        onError: (error: Error) => {
-          console.error("Failed to send invitation:", error);
-          Alert.alert("Error", `Failed to send invitation: ${error.message}`);
-        },
+    });
+  };
+
+  const handleInvitePress = () => {
+    router.push("/(tabs)/(messages)/invite");
+  };
+
+  const renderContactItem = ({ item }: { item: User }) => {
+    const messageData = {
+      id: item.conversationId || `contact-${item.id}`,
+      user: {
+        id: item.id.toString(),
+        name: `${item.firstName} ${item.lastName}`,
+        firstName: item.firstName,
+        lastName: item.lastName,
+        email: item.email,
+        avatar: item.profilePictureUrl,
       },
+      lastMessage: item.lastMessage || "Start a conversation...",
+      timestamp: item.lastMessageTime || new Date().toISOString(),
+      unread: false,
+    };
+
+    return (
+      <View className="mb-2">
+        <MessageCard
+          message={messageData}
+          onPress={() => handleContactPress(item)}
+        />
+      </View>
     );
-  }, [searchQuery, initialMessage, inviteConversation, isEmailLike]);
+  };
 
-  const handleSearchChange = useCallback(
-    (text: string) => {
-      setSearchQuery(text);
+  const renderEmptyState = () => (
+    <View className="flex-1 items-center justify-center p-8">
+      <IconSymbol
+        name="person.2.fill"
+        size={48}
+        color={Colors.light.tabIconDefault}
+      />
+      <ThemedText className="text-center mt-4 text-lg font-medium">
+        No Contacts Yet
+      </ThemedText>
+      <ThemedText className="text-center mt-2 text-gray-600">
+        Start by inviting someone
+      </ThemedText>
+    </View>
+  );
 
-      if (isEmailLike(text.trim())) {
-        setSelectedMode("invite");
-      } else {
-        setSelectedMode("search");
-      }
-    },
-    [isEmailLike],
+  const renderErrorState = () => (
+    <View className="flex-1 justify-center items-center p-4">
+      <IconSymbol name="exclamationmark.triangle.fill" size={48} color="red" />
+      <ThemedText className="text-center mt-4 text-red-600">
+        Error loading contacts
+      </ThemedText>
+      <ThemedText className="text-center mt-2 text-sm">
+        {contactsError?.message}
+      </ThemedText>
+      <TouchableOpacity
+        className="bg-primary-500 rounded-lg px-4 py-2 mt-4"
+        onPress={() => refetch()}
+      >
+        <ThemedText className="text-white font-medium">Try Again</ThemedText>
+      </TouchableOpacity>
+    </View>
   );
 
   if (isLoadingUser) {
     return (
       <ThemedView className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#0056b3" />
+        <ActivityIndicator size="large" color={Colors.light.tint} />
         <ThemedText className="mt-4">Loading user information...</ThemedText>
       </ThemedView>
     );
   }
 
-  const filteredUsers =
-    selectedMode === "search" ? previousUsersData?.users || [] : [];
-
-  const renderUserItem = ({ item }: { item: User }) => (
-    <Pressable
-      className="p-2 mb-2 bg-white rounded-lg shadow-sm"
-      onPress={() => handleUserSelect(item)}
-      disabled={isCreatingConversation || isInviting}
-    >
-      <HStack className="items-center">
-        <Avatar size="sm" className="mr-3">
-          {item.profilePictureUrl ? (
-            <AvatarImage source={{ uri: item.profilePictureUrl }} />
-          ) : (
-            <AvatarFallbackText>{item.firstName.charAt(0)}</AvatarFallbackText>
-          )}
-        </Avatar>
-        <View className="flex-1">
-          <ThemedText type="defaultSemiBold">
-            {item.firstName} {item.lastName}
-          </ThemedText>
-          <ThemedText className="text-sm text-gray-500">
-            {item.email}
-          </ThemedText>
-        </View>
-        {(isCreatingConversation || isInviting) && (
-          <ActivityIndicator size="small" color="#0056b3" />
-        )}
-      </HStack>
-    </Pressable>
-  );
-
-  const renderEmailInvite = () => {
-    if (selectedMode !== "invite" || !isEmailLike(searchQuery.trim())) {
-      return null;
-    }
-
-    return (
-      <Pressable
-        className="p-4 mb-2 bg-blue-50 rounded-lg border border-blue-200"
-        onPress={handleEmailInvite}
-        disabled={isInviting || isCreatingConversation}
-      >
-        <HStack className="items-center">
-          <Avatar size="sm" className="mr-3 bg-blue-500">
-            <AvatarFallbackText className="text-white">
-              {searchQuery.trim().charAt(0).toUpperCase()}
-            </AvatarFallbackText>
-          </Avatar>
-          <View className="flex-1">
-            <ThemedText type="defaultSemiBold" className="text-blue-700">
-              Invite {searchQuery.trim()}
-            </ThemedText>
-            <ThemedText className="text-sm text-blue-600">
-              Send an invitation to this email address
-            </ThemedText>
-          </View>
-          {(isInviting || isCreatingConversation) && (
-            <ActivityIndicator size="small" color="#0056b3" />
-          )}
-        </HStack>
-      </Pressable>
-    );
-  };
-
-  const renderEmptyState = () => {
-    if (isInviting || isCreatingConversation) {
-      return null;
-    }
-
-    if (selectedMode === "invite" && isEmailLike(searchQuery.trim())) {
-      return null;
-    }
-
-    if (searchQuery.length >= 2 && selectedMode === "search") {
-      if (isLoadingPreviousUsers) {
-        return (
-          <View className="flex-1 items-center justify-center py-8">
-            <ActivityIndicator size="small" color="#0056b3" />
-            <ThemedText className="text-gray-500 text-center mt-2">
-              Searching users...
-            </ThemedText>
-          </View>
-        );
-      }
-
-      if (previousUsersError) {
-        return (
-          <View className="flex-1 items-center justify-center py-8">
-            <ThemedText className="text-red-500 text-center">
-              Error loading users. Please try again.
-            </ThemedText>
-          </View>
-        );
-      }
-
-      return (
-        <View className="flex-1 items-center justify-center py-8">
-          <ThemedText className="text-gray-500 text-center">
-            No previously messaged users found matching "{searchQuery}"
-          </ThemedText>
-        </View>
-      );
-    }
-
-    if (searchQuery.length > 0 && searchQuery.length < 2) {
-      return (
-        <View className="flex-1 items-center justify-center py-8">
-          <ThemedText className="text-gray-500 text-center">
-            Enter at least 2 characters to search
-          </ThemedText>
-        </View>
-      );
-    }
-
-    return (
-      <View className="flex-1 items-center justify-center py-8">
-        <ThemedText className="text-gray-500 text-center">
-          Search for someone you've previously messaged
-        </ThemedText>
-        <ThemedText className="text-gray-400 text-center mt-2 text-sm">
-          Enter an email address to send an invitation to someone new
-        </ThemedText>
-      </View>
-    );
-  };
-
-  const isProcessing = isCreatingConversation || isInviting;
+  const contacts = previousUsersData?.users || [];
 
   return (
-    <ThemedView className="flex-1 p-2">
+    <ThemedView className="flex-1">
       <SafeAreaView className="flex-1">
-        <BackButton />
-        <View className="flex-row items-center px-4 mb-2">
-          <ThemedText type="defaultSemiBold">
-            Send A Message or Invite someone new!
+        {/* Header */}
+        <View className="flex-row items-center px-2 py-2 border-b border-gray-200">
+          <BackButton />
+          <ThemedText className="text-lg font-medium text-center flex-1 mr-12">
+            Contacts
           </ThemedText>
         </View>
 
-        <View className="p-4 flex-1">
-          {/* Search Input */}
-          <Input className="rounded-2xl border border-gray-400 bg-gray-100 mb-4">
-            <InputSlot className="pl-3">
-              {isLoadingPreviousUsers ? (
-                <ActivityIndicator size="small" color="#0056b3" />
-              ) : (
-                <InputIcon as={SearchIcon} />
-              )}
-            </InputSlot>
-            <InputField
-              className="placeholder:text-gray-700"
-              placeholder="Search users or enter email to invite..."
-              value={searchQuery}
-              onChangeText={handleSearchChange}
-              autoCapitalize="none"
-              editable={!isProcessing}
+        {/* Content */}
+        <View className="flex-1 px-4 pt-4">
+          {isLoadingContacts && contacts.length === 0 ? (
+            <View className="flex-1 justify-center items-center">
+              <ActivityIndicator size="large" color={Colors.light.tint} />
+              <ThemedText className="mt-4">Loading contacts...</ThemedText>
+            </View>
+          ) : contactsError ? (
+            renderErrorState()
+          ) : (
+            <FlatList
+              data={contacts}
+              renderItem={renderContactItem}
+              keyExtractor={(item) => item.id.toString()}
+              contentContainerStyle={{
+                paddingBottom: 100, // Extra space for FAB
+                flexGrow: 1,
+              }}
+              ListEmptyComponent={renderEmptyState}
+              refreshing={isLoadingContacts}
+              onRefresh={refetch}
+              showsVerticalScrollIndicator={false}
             />
-          </Input>
-
-          {/* Initial Message Input */}
-          <Input className="rounded-2xl border border-gray-400 bg-gray-100 mb-4">
-            <InputField
-              className="placeholder:text-gray-700 ml-8 mt-4"
-              placeholder="Intial Message...."
-              value={initialMessage}
-              onChangeText={setInitialMessage}
-              multiline
-              editable={!isProcessing}
-            />
-          </Input>
-
-          {/* Mode Indicator */}
-          <View className="mb-2 flex-row items-center">
-            <ThemedText type="defaultSemiBold">
-              {selectedMode === "invite"
-                ? "Send Invitation"
-                : "Previously messaged users"}
-            </ThemedText>
-            {selectedMode === "invite" && (
-              <View className="ml-2 px-2 py-1 bg-blue-100 rounded">
-                <ThemedText className="text-xs text-blue-700">
-                  Invite Mode
-                </ThemedText>
-              </View>
-            )}
-          </View>
-
-          {/* Results List */}
-          <FlatList
-            data={filteredUsers}
-            renderItem={renderUserItem}
-            keyExtractor={(item) => item.id.toString()}
-            contentContainerStyle={{ paddingBottom: 20 }}
-            ListHeaderComponent={renderEmailInvite}
-            ListEmptyComponent={renderEmptyState}
-            keyboardShouldPersistTaps="handled"
-          />
+          )}
         </View>
+
+        {/* Floating Action Button for Invite */}
+        <Fab
+          size="md"
+          placement="bottom right"
+          className="bg-primary-500 mr-4 mb-10"
+          onPress={handleInvitePress}
+        >
+          <FabIcon as={AddIcon} className="text-white" />
+        </Fab>
       </SafeAreaView>
     </ThemedView>
   );
