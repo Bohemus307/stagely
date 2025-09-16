@@ -33,7 +33,6 @@ const PropertyList: React.FC<PropertyListProps> = ({
   };
 
   const handleDetailsPress = (property: Property) => {
-    console.log("Navigate to details for property:", property.id);
     router.push({
       pathname: "/(tabs)/(properties)/details",
       params: { propertyId: property.id },
@@ -41,7 +40,6 @@ const PropertyList: React.FC<PropertyListProps> = ({
   };
 
   const handlePhotosPress = (property: Property) => {
-    console.log("Navigate to photos for property:", property.id);
     router.push({
       pathname: "/(tabs)/(properties)/(photos)",
       params: { propertyId: property.id },
@@ -59,7 +57,6 @@ const PropertyList: React.FC<PropertyListProps> = ({
   };
 
   const renderProperty = ({ item }: { item: Property }) => {
-    console.log("Rendering property:", item.id);
     return (
       <View className="mb-4">
         <PropertyCard

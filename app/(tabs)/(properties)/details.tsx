@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { Badge } from "@/components/ui/badge";
 import { Box } from "@/components/ui/box";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { Image } from "@/components/ui/image";
 import { Button } from "@/components/ui/button";
 import StreetViewImage from "@/components/properties/details/StreetView";
 import { Spinner } from "@/components/ui/spinner";
@@ -19,6 +20,13 @@ const PropertyDetailsScreen = () => {
 
   // Use the new hook to fetch property data
   const { property, isLoading, error } = useGetProperty(propertyId || "");
+
+  const getCloudFrontUrl = (s3Url: string): string | null => {
+    if (!s3Url) return null;
+    const s3Key = s3Url.split("amazonaws.com/")[1];
+    if (!s3Key) return s3Url;
+    return `https://d24y6hzot6c372.cloudfront.net/${s3Key}`;
+  };
 
   if (isLoading) {
     return (
@@ -52,8 +60,19 @@ const PropertyDetailsScreen = () => {
         <BackButton />
       </View>
 
-      {/* Street View Image */}
-      {property.latitude && property.longitude && !streetViewError ? (
+      {/* Property Image - uploaded image takes priority */}
+      {property.imageUrl ? (
+        <Box className="h-48 w-full px-2">
+          <Image
+            source={{ uri: getCloudFrontUrl(property.imageUrl) || undefined }}
+            alt="Property Image"
+            className="h-full w-full object-cover rounded-lg"
+            onError={(error) => {
+              console.log("Custom image failed to load:", error);
+            }}
+          />
+        </Box>
+      ) : property.latitude && property.longitude && !streetViewError ? (
         <Box className="h-48 w-full px-2">
           <StreetViewImage
             latitude={property.latitude}
@@ -62,7 +81,7 @@ const PropertyDetailsScreen = () => {
             onError={() => setStreetViewError(true)}
           />
           <Badge className="absolute bottom-2 left-4 py-1 px-2 rounded">
-            <Text className=" text-xs">Street View</Text>
+            <Text className="text-xs">Street View</Text>
           </Badge>
         </Box>
       ) : (

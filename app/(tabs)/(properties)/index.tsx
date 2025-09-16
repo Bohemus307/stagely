@@ -1,29 +1,38 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 import PropertyList from "@/components/properties/list";
 import PropertySearch from "@/components/properties/search";
 import PropertyMetrics from "@/components/properties/PropertyMetrics";
-import { usePropertySearch } from "@/hooks/properties/usePropertiesSearch";
 import { Property } from "@/lib/@types/properties";
 import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
 import { router, useLocalSearchParams } from "expo-router";
 import { Box } from "@/components/ui/box";
 import { ThemedText } from "@/components/ThemedText";
+import { useGetProperties } from "@/hooks/properties/useGetProperties";
 
 const PropertiesScreen = () => {
   const params = useLocalSearchParams();
   const mode = params.mode as string;
   const isIncidentSelectionMode = mode === "incident-selection";
 
-  // Use property search hook directly in the screen component for initial load
-  const { properties: initialProperties, isLoading } = usePropertySearch(
-    "",
-    1,
-    10,
-  );
+  const {
+    properties: initialProperties,
+    isLoading,
+    refetch,
+  } = useGetProperties({
+    page: 1,
+    limit: 10,
+    sortBy: "updatedAt",
+    sortOrder: "desc",
+  });
+
   // State to hold search results when searching
   const [searchResults, setSearchResults] = useState<Property[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    refetch();
+  }, []);
 
   // Handler for search results from PropertySearch component
   const handleSearchResults = (properties: Property[]) => {
@@ -47,7 +56,9 @@ const PropertiesScreen = () => {
   };
 
   // Properties to display - either search results or initial properties
-  const displayProperties = isSearching ? searchResults : initialProperties;
+  const displayProperties = isSearching
+    ? { data: searchResults }
+    : initialProperties;
 
   return (
     <ResponsiveScreenWrapper scrollable={false}>

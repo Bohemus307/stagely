@@ -41,13 +41,6 @@ const StreetViewImage: React.FC<StreetViewImageProps> = ({
   // Get API key from Expo Constants
   const GOOGLE_MAPS_API_KEY = Constants.expoConfig?.extra?.googleMapsKey || "";
 
-  // Log for debugging
-  console.log("Street View URL params:", {
-    latitude,
-    longitude,
-    GOOGLE_MAPS_API_KEY: GOOGLE_MAPS_API_KEY ? "Present" : "Missing",
-  });
-
   const streetViewUrl = `https://maps.googleapis.com/maps/api/streetview?size=${size.width}x${size.height}&location=${latitude},${longitude}&key=${GOOGLE_MAPS_API_KEY}`;
 
   return (
@@ -107,13 +100,36 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
     ? "bg-white rounded-xl shadow-lg mb-4 border-2 border-primary-300 hover:border-primary-500"
     : "bg-white rounded-xl shadow-lg mb-4";
 
+  const getCloudFrontUrl = (s3Url: string): string | null => {
+    if (!s3Url) return null;
+    const s3Key = s3Url.split("amazonaws.com/")[1];
+    if (!s3Key) return s3Url;
+    return `https://d24y6hzot6c372.cloudfront.net/${s3Key}`;
+  };
+
   // Function to render the street view image or unavailable placeholder
   const renderPropertyImage = () => {
-    console.log("Rendering property image");
-
-    // If we have location and street view hasn't errored
+    // Show custom uploaded image if available
+    if (property.imageUrl) {
+      console.log("Using custom uploaded image");
+      const imageUrl = getCloudFrontUrl(property.imageUrl);
+      if (imageUrl) {
+        return (
+          <Box className="relative h-full w-full">
+            <Image
+              source={{ uri: imageUrl }}
+              alt="Property Image"
+              className="h-full w-full object-cover"
+              onError={(error) => {
+                console.log("Custom image failed to load:", error);
+              }}
+            />
+          </Box>
+        );
+      }
+    }
+    // Fall back to Street View if we have coordinates and no street view error
     if (property.latitude && !streetViewError) {
-      console.log("Attempting to use Street View");
       return (
         <Box className="relative h-full w-full">
           <StreetViewImage
@@ -121,23 +137,24 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
             longitude={property.longitude}
             size={{ width: 200, height: 200 }}
             onError={() => {
-              console.log("Setting street view error to true");
               setStreetViewError(true);
             }}
           />
+          <Badge className="absolute bottom-0 left-0 bg-primary-400/70 text-white text-xs py-0.5 px-1 rounded-tr">
+            <Text className="text-white text-xs">Street View</Text>
+          </Badge>
         </Box>
       );
     }
 
-    // Fallback to placeholder with message
-    console.log("Showing error state");
+    // Show placeholder when no image available
     return (
       <Box className="h-full w-full bg-secondary-100 flex items-center justify-center flex-col">
         <IconSymbol name="eye.slash" size={24} color="gray" />
+        <Text className="text-xs text-gray-500 mt-1 text-center">No Image</Text>
       </Box>
     );
   };
-
   return (
     <Pressable onPress={() => onPress(property)} className={cardClassName}>
       <Box className="rounded-lg shadow-lg overflow-hidden bg-white">

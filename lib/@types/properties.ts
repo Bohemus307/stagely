@@ -80,6 +80,7 @@ export interface Property {
   latitude: number;
   longitude: number;
   status: PropertyStatus;
+  imageUrl?: string;
   incidentCount: number;
   openIncidentCount: number;
   lastIncidentAt?: string;

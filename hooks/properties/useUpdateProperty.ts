@@ -13,9 +13,6 @@ interface UpdatePropertyData {
   imageUrl?: string;
 }
 
-/**
- *  hook to update a property
- */
 export const useUpdateProperty = (propertyId: string) => {
   const { getCredentials } = useAuth0();
   const queryClient = useQueryClient();
@@ -30,7 +27,6 @@ export const useUpdateProperty = (propertyId: string) => {
       }
 
       const credentials = await getCredentials();
-
       if (!credentials?.accessToken) {
         throw new Error("Access token not available");
       }
@@ -52,11 +48,44 @@ export const useUpdateProperty = (propertyId: string) => {
         throw new Error(errorData.message || `API error: ${response.status}`);
       }
 
-      return response.json();
+      const result = await response.json();
+      return result;
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["property", propertyId] });
-      queryClient.invalidateQueries({ queryKey: ["properties"] });
+    onSuccess: async (updatedProperty) => {
+      // Update individual property cache
+      queryClient.setQueryData(["property", propertyId], updatedProperty);
+
+      queryClient.invalidateQueries({
+        queryKey: ["properties"],
+        exact: false,
+      });
+
+      // 3. Also force an immediate refetch of the most common property queries
+      await Promise.all([
+        // Refetch the main properties list (used by PropertiesScreen)
+        queryClient.refetchQueries({
+          queryKey: [
+            "properties",
+            1,
+            10,
+            undefined,
+            undefined,
+            undefined,
+            "updatedAt",
+            "desc",
+            "",
+          ],
+          exact: true,
+        }),
+        // Refetch the search query (used by usePropertySearch)
+        queryClient.refetchQueries({
+          queryKey: ["properties", "", 1, 10],
+          exact: true,
+        }),
+      ]);
+    },
+    onError: (error) => {
+      console.error("❌ Property update failed:", error);
     },
   });
 
