@@ -2,8 +2,6 @@ import { useLocalSearchParams } from "expo-router";
 import { useState, useRef, useEffect, useCallback, memo, useMemo } from "react";
 import {
   FlatList,
-  KeyboardAvoidingView,
-  Platform,
   SafeAreaView,
   TextInput,
   TouchableOpacity,
@@ -22,14 +20,12 @@ import {
   AvatarFallbackText,
   AvatarImage,
 } from "@/components/ui/avatar";
-import { Ionicons } from "@expo/vector-icons";
 import { useGetConversation } from "@/hooks/messaging/useConversations";
 import {
   useGetMessages,
   useSendMessage,
   useMarkAsRead,
 } from "@/hooks/messaging/useMessages";
-
 import { useAuthUser } from "@/hooks/useAuthUser";
 import { ChatMessage } from "@/lib/@types/messages";
 
@@ -335,8 +331,9 @@ const ConversationScreen = () => {
         <View className="border-b border-gray-200 pb-2">
           <View className="px-2 flex-row items-center">
             <BackButton />
-
-            <HStack className="items-center">
+          </View>
+          <View>
+            <HStack className="items-center ml-24">
               <Avatar size="sm" className="mr-2">
                 {otherUserAvatar ? (
                   <AvatarImage source={{ uri: otherUserAvatar }} />
@@ -362,63 +359,62 @@ const ConversationScreen = () => {
         </View>
 
         {/* Message List */}
-        <FlatList
-          ref={flatListRef}
-          data={formattedMessages}
-          renderItem={renderMessage}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{
-            padding: 16,
-            flexGrow: 1,
-          }}
-          inverted
-          onRefresh={refetchMessages}
-          refreshing={isLoadingMessages}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="interactive"
-        />
+        <View style={{ flex: 1 }}>
+          <FlatList
+            ref={flatListRef}
+            data={formattedMessages}
+            renderItem={renderMessage}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={{
+              paddingHorizontal: 16,
+              paddingVertical: 16,
+            }}
+            style={{ flex: 1 }}
+            inverted
+            onRefresh={refetchMessages}
+            refreshing={isLoadingMessages}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="interactive"
+          />
+        </View>
 
         {/* Message Input */}
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+        <View
+          className="border-t border-gray-200 px-2 pt-2 pb-2 mb-13 flex-row items-center"
+          style={{
+            borderTopColor: "#e5e7eb",
+            marginBottom: 52,
+          }}
         >
-          <HStack className="p-2 border-t border-gray-200 bg-white">
-            <TextInput
-              ref={textInputRef}
-              className="flex-1 bg-gray-100 rounded-full px-4 py-2 mr-2"
-              placeholder="Type a message..."
-              value={newMessage}
-              onChangeText={setNewMessage}
-              multiline={false}
-              returnKeyType="send"
-              onSubmitEditing={handleSendMessage}
-              editable={!!backendUser?.id && !isSendingMessage}
-              autoCorrect={false}
-              autoCapitalize="sentences"
-              keyboardType="default"
-              textContentType="none"
-              autoComplete="off"
-            />
-            <TouchableOpacity
-              onPress={handleSendMessage}
-              disabled={
-                newMessage.trim() === "" || isSendingMessage || !backendUser?.id
-              }
-              className={`rounded-full w-10 h-10 items-center justify-center ${
-                newMessage.trim() === "" || isSendingMessage || !backendUser?.id
-                  ? "bg-gray-300"
-                  : "bg-primary-500"
-              }`}
-            >
-              {isSendingMessage ? (
-                <ActivityIndicator size="small" color="white" />
-              ) : (
-                <Ionicons name="send" size={18} color="white" />
-              )}
-            </TouchableOpacity>
-          </HStack>
-        </KeyboardAvoidingView>
+          <TextInput
+            ref={textInputRef}
+            className="flex-1 rounded-full px-4 py-2 mr-2 text-base"
+            style={{
+              backgroundColor: "#f3f4f6",
+              height: 40,
+            }}
+            placeholder="Type a message..."
+            value={newMessage}
+            onChangeText={setNewMessage}
+            returnKeyType="send"
+            onSubmitEditing={handleSendMessage}
+            editable={!!backendUser?.id && !isSendingMessage}
+            autoCorrect={false}
+            autoCapitalize="sentences"
+            keyboardType="default"
+            textContentType="none"
+            autoComplete="off"
+          />
+          <TouchableOpacity
+            onPress={handleSendMessage}
+            className="rounded-full w-10 h-10 justify-center items-center"
+            style={{
+              backgroundColor: "#042C44",
+            }}
+          >
+            <Text style={{ color: "white" }}>→</Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     </ThemedView>
   );
