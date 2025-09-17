@@ -3,7 +3,7 @@ import { SafeAreaView, Dimensions, Alert } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import * as MediaLibrary from "expo-media-library";
 import { useUpdateProperty } from "@/hooks/properties/useUpdateProperty";
-import useS3ImageUpload from "@/hooks/useImageUpload";
+import { useS3Upload } from "@/hooks/useS3Upload";
 import GalleryHeader from "@/components/photos/GalleryHeader";
 import GalleryImageGrid from "@/components/photos/GalleryImageGrid";
 import GalleryPermissionDenied from "@/components/photos/GalleryPermissionDenied";
@@ -27,7 +27,6 @@ const PropertyPhotoSelect = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
-  // Hooks
   const {
     updateProperty,
     isPending: isUpdating,
@@ -35,7 +34,12 @@ const PropertyPhotoSelect = () => {
     isError,
     error,
   } = useUpdateProperty(propertyId);
-  const { uploadToS3, uploading } = useS3ImageUpload();
+
+  const {
+    uploadToS3,
+    isLoading: uploading,
+    error: uploadError,
+  } = useS3Upload();
 
   const windowWidth = Dimensions.get("window").width;
   const imageSize = (windowWidth - 24) / 3;
@@ -62,7 +66,9 @@ const PropertyPhotoSelect = () => {
         [
           {
             text: "OK",
-            onPress: () => router.push("/(tabs)/(properties)/"),
+            onPress: () => {
+              router.push("/(tabs)/(properties)/");
+            },
           },
         ],
       );
@@ -120,6 +126,48 @@ const PropertyPhotoSelect = () => {
     return fileName;
   };
 
+  // Convert URI to Blob for useS3Upload
+  const convertUriToBlob = async (uri: string): Promise<Blob> => {
+    try {
+      // Handle ph:// URIs from iOS photo library
+      if (uri.startsWith("ph://")) {
+        // Extract asset ID from ph:// URI
+        const assetId = uri.replace("ph://", "").split("/")[0];
+
+        // Get asset info to get the actual file URI
+        const asset = await MediaLibrary.getAssetInfoAsync(assetId);
+
+        // Use localUri if available, otherwise fall back to uri
+        const actualUri = asset.localUri || asset.uri;
+
+        if (!actualUri) {
+          throw new Error("Could not get actual URI from photo library asset");
+        }
+
+        // Fetch the actual file
+        const response = await fetch(actualUri);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch image: ${response.status}`);
+        }
+
+        const blob = await response.blob();
+
+        return blob;
+      } else {
+        const response = await fetch(uri);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch image: ${response.status}`);
+        }
+
+        const blob = await response.blob();
+
+        return blob;
+      }
+    } catch (error) {
+      console.error("[convertUriToBlob] Error:", error);
+      throw error;
+    }
+  };
   const handleNext = async () => {
     const selectedImageArray = Array.from(selectedImages.values());
 
@@ -129,32 +177,26 @@ const PropertyPhotoSelect = () => {
     }
 
     try {
-      const selectedImage = selectedImageArray[0]; // Only one image for property
+      const selectedImage = selectedImageArray[0];
 
       const fileName = getImageFileName(selectedImage.uri);
 
-      // Convert the selected image to the format expected by useS3ImageUpload
-      const imageAsset = {
-        uri: selectedImage.uri,
-        width: 0, // Will be filled by S3 upload hook if needed
-        height: 0, // Will be filled by S3 upload hook if needed
-        fileName: fileName,
-      };
+      // Convert URI to Blob for useS3Upload hook
+      const blob = await convertUriToBlob(selectedImage.uri);
 
-      // Upload to S3 using the existing hook
-      const uploadResult = await uploadToS3(imageAsset);
+      // Upload to S3 using your working useS3Upload hook
+      const uploadedUrl = await uploadToS3(blob, fileName);
 
-      if (uploadResult?.success && uploadResult.url) {
-        // Update property with new image URL
-        updateProperty({
-          imageUrl: uploadResult.url,
-        });
-      } else {
-        throw new Error(uploadResult?.error || "Upload failed");
-      }
+      // Update property with new image URL
+      updateProperty({
+        imageUrl: uploadedUrl,
+      });
     } catch (error) {
-      console.error("Error uploading photo:", error);
-      Alert.alert("Upload Error", "Failed to upload photo. Please try again.");
+      console.error("[PropertyPhotoSelect] Error uploading photo:", error);
+
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      Alert.alert("Upload Error", `Failed to upload photo: ${errorMessage}`);
     }
   };
 

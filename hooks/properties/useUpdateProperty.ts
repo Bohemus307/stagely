@@ -13,9 +13,6 @@ interface UpdatePropertyData {
   imageUrl?: string;
 }
 
-/**
- *  hook to update a property
- */
 export const useUpdateProperty = (propertyId: string) => {
   const { getCredentials } = useAuth0();
   const queryClient = useQueryClient();
@@ -30,7 +27,6 @@ export const useUpdateProperty = (propertyId: string) => {
       }
 
       const credentials = await getCredentials();
-
       if (!credentials?.accessToken) {
         throw new Error("Access token not available");
       }
@@ -52,11 +48,21 @@ export const useUpdateProperty = (propertyId: string) => {
         throw new Error(errorData.message || `API error: ${response.status}`);
       }
 
-      return response.json();
+      const result = await response.json();
+      return result;
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["property", propertyId] });
-      queryClient.invalidateQueries({ queryKey: ["properties"] });
+    onSuccess: async (updatedProperty) => {
+      // Update the specific property cache
+      queryClient.setQueryData(["property", propertyId], updatedProperty);
+
+      // Invalidate all properties-related queries - React Query will handle the rest
+      queryClient.invalidateQueries({
+        queryKey: ["properties"],
+        exact: false,
+      });
+    },
+    onError: (error) => {
+      console.error("Property update failed:", error);
     },
   });
 
