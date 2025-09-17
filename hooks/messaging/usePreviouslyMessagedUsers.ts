@@ -56,7 +56,7 @@ export const usePreviouslyMessagedUsers = (
 
       return response.json();
     },
-    enabled: enabled && !!apiUrl && !!backendUser?.id && search.length >= 2,
+    enabled: enabled && !!apiUrl && !!backendUser?.id,
     staleTime: 30000, // Cache for 30 seconds
     gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
