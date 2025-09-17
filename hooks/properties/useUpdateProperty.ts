@@ -52,40 +52,17 @@ export const useUpdateProperty = (propertyId: string) => {
       return result;
     },
     onSuccess: async (updatedProperty) => {
-      // Update individual property cache
+      // Update the specific property cache
       queryClient.setQueryData(["property", propertyId], updatedProperty);
 
+      // Invalidate all properties-related queries - React Query will handle the rest
       queryClient.invalidateQueries({
         queryKey: ["properties"],
         exact: false,
       });
-
-      // 3. Also force an immediate refetch of the most common property queries
-      await Promise.all([
-        // Refetch the main properties list (used by PropertiesScreen)
-        queryClient.refetchQueries({
-          queryKey: [
-            "properties",
-            1,
-            10,
-            undefined,
-            undefined,
-            undefined,
-            "updatedAt",
-            "desc",
-            "",
-          ],
-          exact: true,
-        }),
-        // Refetch the search query (used by usePropertySearch)
-        queryClient.refetchQueries({
-          queryKey: ["properties", "", 1, 10],
-          exact: true,
-        }),
-      ]);
     },
     onError: (error) => {
-      console.error("❌ Property update failed:", error);
+      console.error("Property update failed:", error);
     },
   });
 

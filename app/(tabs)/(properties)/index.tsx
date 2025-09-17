@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { View } from "react-native";
 import PropertyList from "@/components/properties/list";
 import PropertySearch from "@/components/properties/search";
@@ -15,11 +15,7 @@ const PropertiesScreen = () => {
   const mode = params.mode as string;
   const isIncidentSelectionMode = mode === "incident-selection";
 
-  const {
-    properties: initialProperties,
-    isLoading,
-    refetch,
-  } = useGetProperties({
+  const { properties: initialProperties, isLoading } = useGetProperties({
     page: 1,
     limit: 10,
     sortBy: "updatedAt",
@@ -29,10 +25,6 @@ const PropertiesScreen = () => {
   // State to hold search results when searching
   const [searchResults, setSearchResults] = useState<Property[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
-
-  useEffect(() => {
-    refetch();
-  }, []);
 
   // Handler for search results from PropertySearch component
   const handleSearchResults = (properties: Property[]) => {

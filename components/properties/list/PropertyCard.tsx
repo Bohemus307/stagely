@@ -111,7 +111,6 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   const renderPropertyImage = () => {
     // Show custom uploaded image if available
     if (property.imageUrl) {
-      console.log("Using custom uploaded image");
       const imageUrl = getCloudFrontUrl(property.imageUrl);
       if (imageUrl) {
         return (
