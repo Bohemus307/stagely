@@ -1,8 +1,8 @@
 import { TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useNavigation } from "expo-router";
-import { Colors } from "react-native/Libraries/NewAppScreen";
 import { ThemedText } from "./ThemedText";
+import { Colors } from "@/constants/Colors";
 
 const BackButton = () => {
   const navigation = useNavigation();
@@ -22,12 +22,11 @@ const BackButton = () => {
   };
 
   return (
-    <TouchableOpacity onPress={handleBack} className="flex flex-row px-1 py-3">
-      <Ionicons
-        name="chevron-back"
-        size={24}
-        color={Colors.light.tabIconDefault}
-      />
+    <TouchableOpacity
+      onPress={handleBack}
+      className="flex flex-row items-center px-1 py-3"
+    >
+      <Ionicons name="chevron-back" size={22} color={Colors.light.text} />
       <ThemedText className="font-medium">Back</ThemedText>
     </TouchableOpacity>
   );

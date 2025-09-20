@@ -5,7 +5,6 @@ import { HStack } from "@/components/ui/hstack";
 import { Box } from "@/components/ui/box";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import React from "react";
-import { VStack } from "../ui/vstack";
 
 export default function QuickActions(): JSX.Element {
   const router = useRouter();
@@ -23,30 +22,26 @@ export default function QuickActions(): JSX.Element {
       </ThemedText>
       <HStack className="justify-center px-2 mb-2 w-full gap-4">
         <Button
-          className="h-16 w-1/2 rounded-lg flex flex-col items-center justify-center shadow-sm bg-background-50"
+          className="h-16 w-1/2 rounded-lg flex flex-col items-center justify-center shadow-sm bg-primary-500"
           onPress={addProperty}
         >
-          <VStack className="items-center justify-center">
-            <IconSymbol size={18} name="building.2.fill" color="grey" />
-            <ButtonText className="mt-1 text-primary-500">
-              Add Property
-            </ButtonText>
-          </VStack>
+          <HStack className="items-center justify-center gap-2">
+            <IconSymbol size={38} name="building.2.fill" color="white" />
+            <ButtonText className="mt-1 text-white">Add Property</ButtonText>
+          </HStack>
         </Button>
         <Button
-          className="h-16 w-1/2 rounded-lg flex flex-col items-center justify-center shadow-sm bg-background-50"
+          className="h-16 w-1/2 rounded-lg flex flex-col items-center justify-center shadow-sm bg-primary-500"
           onPress={addIncident}
         >
-          <VStack className="items-center justify-center">
+          <HStack className="items-center gap-2 justify-center">
             <IconSymbol
-              size={18}
+              size={38}
               name="exclamationmark.triangle.fill"
-              color="grey"
+              color="white"
             />
-            <ButtonText className="mt-1 text-primary-500">
-              Add Incident
-            </ButtonText>
-          </VStack>
+            <ButtonText className="mt-1 text-white">Add Incident</ButtonText>
+          </HStack>
         </Button>
       </HStack>
     </Box>

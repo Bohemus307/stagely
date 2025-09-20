@@ -57,7 +57,7 @@ describe("PropertyList Component", () => {
     const { getByText } = render(<PropertyList properties={[]} />);
 
     expect(
-      getByText("No properties found. Add your first property to get started."),
+      getByText("No properties found. Add property to get started."),
     ).toBeTruthy();
     expect(getByText("Add Property")).toBeTruthy();
   });
@@ -113,18 +113,6 @@ describe("PropertyList Component", () => {
       pathname: "/(tabs)/(properties)/(photos)",
       params: { propertyId: mockProperties[2].id },
     });
-  });
-
-  test("navigates to documents page when documents button is pressed", () => {
-    const { getAllByText } = render(
-      <PropertyList properties={mockProperties} />,
-    );
-
-    // Find all "View Documents" buttons and press the first one
-    const documentsButtons = getAllByText("Documents");
-    fireEvent.press(documentsButtons[0]);
-
-    expect(router.push).toHaveBeenCalledWith("/(tabs)/(properties)/documents");
   });
 
   test("does not crash when onSelectProperty is not provided", () => {

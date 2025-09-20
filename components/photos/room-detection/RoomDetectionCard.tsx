@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Animated, Dimensions, ScrollView, Alert } from "react-native";
 import { Box } from "@/components/ui/box";
 import { ThemedText } from "@/components/ThemedText";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonText } from "@/components/ui/button";
 import RoomDetectionHeader from "./RoomDetectionHeader";
 import RoomTypeSelector, { RoomType } from "./RoomTypeSelector";
 import ConfidenceMeter from "./ConfidenceMeter";
@@ -36,6 +36,7 @@ const ROOM_TYPES: RoomType[] = [
   { id: "garage", name: "Garage", icon: "car.fill" },
   { id: "exterior", name: "Exterior", icon: "house.fill" },
   { id: "basement", name: "Basement", icon: "stairs" },
+  { id: "hallway", name: "Hallway", icon: "shoe.fill" },
   { id: "other", name: "Other", icon: "questionmark.circle.fill" },
 ];
 
@@ -263,7 +264,9 @@ const RoomDetectionCard: React.FC<RoomDetectionCardProps> = ({
               className="flex-1 bg-primary-500"
               disabled={isDisabled}
             >
-              <ThemedText>{isUpdating ? "Updating..." : "Confirm"}</ThemedText>
+              <ButtonText className="text-white">
+                {isUpdating ? "Updating..." : "Confirm"}
+              </ButtonText>
             </Button>
           </Box>
         </Box>

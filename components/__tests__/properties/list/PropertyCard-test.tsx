@@ -44,6 +44,7 @@ describe("PropertyCard Component", () => {
         propertyId: 0,
         createdAt: "",
         updatedAt: "",
+        aiClassified: false,
       },
       {
         id: 12345,
@@ -56,6 +57,7 @@ describe("PropertyCard Component", () => {
         propertyId: 0,
         createdAt: "",
         updatedAt: "",
+        aiClassified: false,
       },
     ],
     createdAt: "2025-01-01T00:00:00Z",
@@ -185,20 +187,5 @@ describe("PropertyCard Component", () => {
 
     fireEvent.press(getByText("Photos"));
     expect(mockOnPhotosPress).toHaveBeenCalledWith(mockProperty);
-  });
-
-  test("calls onDocumentsPress when Documents button is pressed", () => {
-    const { getByText } = render(
-      <PropertyCard
-        property={mockProperty}
-        onPress={mockOnPress}
-        onDetailsPress={mockOnDetailsPress}
-        onPhotosPress={mockOnPhotosPress}
-        onDocumentsPress={mockOnDocumentsPress}
-      />,
-    );
-
-    fireEvent.press(getByText("Documents"));
-    expect(mockOnDocumentsPress).toHaveBeenCalledWith(mockProperty);
   });
 });

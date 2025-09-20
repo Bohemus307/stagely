@@ -240,14 +240,14 @@ const MessagesList: React.FC<MessageListProps> = ({
           paddingBottom: 15,
           flexGrow: filteredMessages.length === 0 ? 1 : undefined,
         }}
-        className="flex-1 bg-primary-50"
+        className="flex-1"
         showsVerticalScrollIndicator={true}
         ListEmptyComponent={<EmptyListComponent />}
         onRefresh={() => refetch()}
         refreshing={isLoading || false}
       />
 
-      <Box className="absolute bottom-6 lg:bottom-12 right-6">
+      <Box className="absolute bottom-0 lg:bottom-10 right-6">
         <Fab size="lg" placement="bottom right" onPress={handleNewMessage}>
           <FabIcon size="xl" as={AddIcon} />
         </Fab>

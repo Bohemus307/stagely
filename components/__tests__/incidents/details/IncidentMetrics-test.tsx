@@ -63,6 +63,7 @@ describe("IncidentMetrics", () => {
     images: [],
     createdAt: "",
     updatedAt: "",
+    aiClassified: false,
   });
 
   const mockIncidents: Incident[] = [

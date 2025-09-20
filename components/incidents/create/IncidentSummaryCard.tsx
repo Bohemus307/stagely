@@ -114,14 +114,6 @@ export const IncidentSummaryCard: React.FC<IncidentSummaryProps> = ({
               </Box>
             </HStack>
 
-            {/* Description */}
-            <Box>
-              <ThemedText className="text-xs text-gray-500 mb-1">
-                Description
-              </ThemedText>
-              <ThemedText className="text-gray-700">{description}</ThemedText>
-            </Box>
-
             {/* Location if available */}
             {spaceType && (
               <Box>
@@ -151,14 +143,14 @@ export const IncidentSummaryCard: React.FC<IncidentSummaryProps> = ({
 
         {/* AI Analysis - Clean and Simple */}
         {featureVector?.claudeAnalysis && (
-          <Box className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+          <Box className="bg-primary-50 rounded-xl p-4 border border-primary-100">
             <HStack className="items-start mb-2">
               <IconSymbol name="sparkles" size={16} color={Colors.light.tint} />
-              <ThemedText className="ml-2 font-semibold text-blue-900">
+              <ThemedText className="ml-2 font-semibold text-primary-900">
                 AI Analysis
               </ThemedText>
             </HStack>
-            <ThemedText className="text-sm text-blue-800 leading-5">
+            <ThemedText className="text-sm text-primary-800 leading-5">
               {featureVector.claudeAnalysis}
             </ThemedText>
 
@@ -176,14 +168,14 @@ export const IncidentSummaryCard: React.FC<IncidentSummaryProps> = ({
               (featureVector.summary.totalAdded > 0 ||
                 featureVector.summary.totalMoved > 0 ||
                 featureVector.summary.totalRemoved > 0) && (
-                <HStack className="mt-3 pt-3 border-t border-blue-100 gap-4">
-                  <ThemedText className="text-xs text-blue-700">
+                <HStack className="mt-3 pt-3 border-t border-primary-100 gap-4">
+                  <ThemedText className="text-xs text-primary-700">
                     Items Added: {featureVector.summary.totalAdded}
                   </ThemedText>
-                  <ThemedText className="text-xs text-blue-700">
+                  <ThemedText className="text-xs text-primary-700">
                     Items Moved: {featureVector.summary.totalMoved}
                   </ThemedText>
-                  <ThemedText className="text-xs text-blue-700">
+                  <ThemedText className="text-xs text-primary-700">
                     Items Removed: {featureVector.summary.totalRemoved}
                   </ThemedText>
                 </HStack>

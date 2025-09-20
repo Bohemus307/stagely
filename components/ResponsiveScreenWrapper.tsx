@@ -153,7 +153,6 @@ const ResponsiveScreenWrapper: React.FC<ResponsiveScreenWrapperProps> = ({
       flex: 1,
       backgroundColor: Colors.light.background,
       paddingHorizontal: isTablet || isLargeTablet ? 16 : 0,
-      // We'll handle the bottom padding in the contentContainerStyle instead
     },
   });
 
@@ -206,7 +205,7 @@ const ResponsiveScreenWrapper: React.FC<ResponsiveScreenWrapperProps> = ({
   return (
     <ResponsiveContext.Provider value={responsiveValue}>
       <SafeAreaView
-        className="bg-white"
+        //className="bg-white"
         style={{ flex: 1 }}
         edges={edges}
         {...safeAreaProps}

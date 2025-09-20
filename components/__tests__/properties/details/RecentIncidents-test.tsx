@@ -1,8 +1,6 @@
 import React from "react";
 import { render } from "@testing-library/react-native";
 import RecentIncidents from "@/components/properties/details/RecentIncidents";
-import { router } from "expo-router";
-import { fireEvent } from "@testing-library/react-native";
 import {
   IncidentImage,
   Incident,
@@ -39,6 +37,7 @@ describe("RecentIncidents Component", () => {
     images,
     createdAt: "",
     updatedAt: "",
+    aiClassified: false,
   });
 
   // Create multiple incidents
@@ -185,28 +184,11 @@ describe("RecentIncidents Component", () => {
     expect(getByText("Medium Priority")).toBeTruthy();
   });
 
-  test("displays View All button when there are more than 3 incidents", () => {
-    const { getByText } = render(<RecentIncidents property={mockProperty} />);
-    expect(getByText("View All 5 Incidents")).toBeTruthy();
-  });
-
   test("does not display View All button when there are 3 or fewer incidents", () => {
     const { queryByText } = render(
       <RecentIncidents property={propertyWithFewerIncidents} />,
     );
     expect(queryByText(/View All/)).toBeFalsy();
-  });
-
-  test("navigates to incidents page when View All button is clicked", () => {
-    const { getByText } = render(<RecentIncidents property={mockProperty} />);
-
-    const viewAllButton = getByText("View All 5 Incidents");
-    fireEvent.press(viewAllButton);
-
-    expect(router.push).toHaveBeenCalledWith({
-      pathname: "/(tabs)/(incidents)",
-      params: { propertyId: 12345 },
-    });
   });
 
   test("handles incidents with images correctly", () => {

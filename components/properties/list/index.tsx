@@ -81,7 +81,7 @@ const PropertyList: React.FC<PropertyListProps> = ({
       <Text className="text-center my-3">
         {selectionMode
           ? "No properties found. Please add a property first before reporting an incident."
-          : "No properties found. Add your first property to get started."}
+          : "No properties found. Add property to get started."}
       </Text>
       {!selectionMode && (
         <TouchableOpacity
@@ -106,7 +106,7 @@ const PropertyList: React.FC<PropertyListProps> = ({
           paddingBottom: 15,
           flexGrow: 1,
         }}
-        className="flex-1 bg-primary-50"
+        className="flex-1"
         showsVerticalScrollIndicator={true}
         ListEmptyComponent={<EmptyListComponent />}
       />

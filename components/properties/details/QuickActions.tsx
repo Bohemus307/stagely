@@ -1,11 +1,10 @@
 import React from "react";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonText } from "@/components/ui/button";
 import { Box } from "@/components/ui/box";
 import { HStack } from "@/components/ui/hstack";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { VStack } from "@/components/ui/vstack";
 import { router } from "expo-router";
-import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { Property } from "@/lib/@types/properties";
 
@@ -18,7 +17,7 @@ const QuickActions = ({ property }: Props) => {
     <Box className="bg-primary-50 p-4 mb-2 rounded-2xl">
       <VStack className="gap-1">
         <Button
-          className="bg-white border border-primary-300 "
+          className="bg-primary-500"
           onPress={() =>
             router.push({
               pathname: "/(tabs)/(properties)/(photos)",
@@ -32,12 +31,12 @@ const QuickActions = ({ property }: Props) => {
               size={18}
               color={Colors.light.tabIconDefault}
             />
-            <ThemedText className="ml-2 text-primary-700">Photos</ThemedText>
+            <ButtonText className="ml-2 text-white">Photos</ButtonText>
           </HStack>
         </Button>
 
         <Button
-          className="bg-white border border-primary-300 "
+          className="bg-primary-500"
           onPress={() =>
             router.push({
               pathname: "/(tabs)/(properties)/documents",
@@ -51,12 +50,12 @@ const QuickActions = ({ property }: Props) => {
               size={18}
               color={Colors.light.tabIconDefault}
             />
-            <ThemedText className="ml-2 text-primary-700">Documents</ThemedText>
+            <ButtonText className="ml-2 text-white">Documents</ButtonText>
           </HStack>
         </Button>
 
         <Button
-          className="bg-white border border-primary-300 "
+          className="bg-primary-500"
           onPress={() =>
             router.push({
               pathname: "/(tabs)/(properties)/edit",
@@ -70,7 +69,7 @@ const QuickActions = ({ property }: Props) => {
               size={18}
               color={Colors.light.tabIconDefault}
             />
-            <ThemedText className="ml-2 text-primary-700">Edit</ThemedText>
+            <ButtonText className="ml-2 text-white">Edit</ButtonText>
           </HStack>
         </Button>
       </VStack>

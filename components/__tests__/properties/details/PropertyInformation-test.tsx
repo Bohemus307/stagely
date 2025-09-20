@@ -28,6 +28,7 @@ describe("PropertyInformation", () => {
       createdAt: "2025-02-15T10:30:00Z",
       updatedAt: "2025-02-15T10:30:00Z",
       images: [],
+      aiClassified: false,
     },
     {
       id: 102,
@@ -41,6 +42,7 @@ describe("PropertyInformation", () => {
       createdAt: "2025-02-10T14:15:00Z",
       updatedAt: "2025-02-12T09:45:00Z",
       images: [],
+      aiClassified: false,
     },
   ];
 

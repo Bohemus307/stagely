@@ -13,6 +13,41 @@ import {
   IncidentStatus,
 } from "@/lib/@types/properties";
 
+// Add these mock declarations to the top of your test file alongside your other mocks
+
+// Mock expo-media-library
+jest.mock("expo-media-library", () => ({
+  getAssetsAsync: jest.fn(),
+  requestPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ status: "granted" }),
+  ),
+  getPermissionsAsync: jest.fn(() => Promise.resolve({ status: "granted" })),
+  createAssetAsync: jest.fn(),
+  // Add any other methods from expo-media-library that your app uses
+}));
+
+// Mock expo-file-system
+jest.mock("expo-file-system", () => ({
+  documentDirectory: "file://test-directory/",
+  downloadAsync: jest.fn(),
+  getInfoAsync: jest.fn(),
+  makeDirectoryAsync: jest.fn(),
+  readAsStringAsync: jest.fn(),
+  writeAsStringAsync: jest.fn(),
+  deleteAsync: jest.fn(),
+  // Add any other methods you use
+}));
+
+// Mock expo-image-manipulator
+jest.mock("expo-image-manipulator", () => ({
+  manipulateAsync: jest.fn(),
+  SaveFormat: {
+    JPEG: "jpeg",
+    PNG: "png",
+  },
+  // Add other methods or constants you use
+}));
+
 // Mock the helper functions
 jest.mock("@/components/properties/lib/utils/detailsHelpers", () => ({
   formatDate: jest.fn((date) => `Formatted: ${date}`),
@@ -106,6 +141,7 @@ describe("IncidentDetails", () => {
       images: [],
       createdAt: "",
       updatedAt: "",
+      aiClassified: false,
     };
 
     return { ...baseIncident, ...overrides };

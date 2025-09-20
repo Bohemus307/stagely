@@ -17,6 +17,7 @@ import MessageCard from "@/components/message/list/MessageCard";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { Fab, FabIcon } from "@/components/ui/fab";
+import { Box } from "@/components/ui/box";
 
 const NewMessageScreen = () => {
   const { backendUser, isLoading: isLoadingUser } = useAuthUser();
@@ -151,14 +152,11 @@ const NewMessageScreen = () => {
         </View>
 
         {/* Floating Action Button for Invite */}
-        <Fab
-          size="md"
-          placement="bottom right"
-          className="bg-primary-500 mr-4 mb-10"
-          onPress={handleInvitePress}
-        >
-          <FabIcon as={AddIcon} className="text-white" />
-        </Fab>
+        <Box className="absolute bottom-28 right-6">
+          <Fab size="lg" placement="bottom right" onPress={handleInvitePress}>
+            <FabIcon size="xl" as={AddIcon} />
+          </Fab>
+        </Box>
       </SafeAreaView>
     </ThemedView>
   );

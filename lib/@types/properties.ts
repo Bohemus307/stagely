@@ -54,6 +54,38 @@ export enum SpaceType {
   Unknown = "Unknown",
 }
 
+// Feature Vector interfaces
+export interface FeatureVectorChangeSummary {
+  overallChanges: string;
+  totalAdded: number;
+  totalMoved: number;
+  totalRemoved: number;
+}
+
+export interface ItemChange {
+  // Define the properties of added/moved/removed items here
+  // For example:
+  id?: string;
+  name?: string;
+  description?: string;
+  boundingBox?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  confidence?: number;
+}
+
+export interface IncidentFeatureVector {
+  addedItems: ItemChange[];
+  claudeAnalysis: string;
+  comparisonImageUrl: string;
+  movedItems: ItemChange[];
+  removedItems: ItemChange[];
+  summary: FeatureVectorChangeSummary;
+}
+
 // Interfaces
 export interface User {
   id: number;
@@ -66,6 +98,8 @@ export interface User {
   lastLogin?: string;
   createdAt: string;
   updatedAt: string;
+  isPlaceholder: boolean;
+  invitedById: number;
 }
 
 export interface Property {
@@ -187,6 +221,9 @@ export interface Incident {
   status: IncidentStatus;
   createdAt: string;
   updatedAt: string;
+  aiClassified: boolean;
+  spaceType?: SpaceType | null;
+  featureVector?: IncidentFeatureVector;
 
   // Relations
   property?: Property;
@@ -195,7 +232,7 @@ export interface Incident {
 
 export interface IncidentImage {
   id: number;
-  incidentId: number;
+  incidentId?: number;
   imageUrl: string;
   caption?: string;
   takenAt: string;

@@ -91,7 +91,7 @@ const MessageCard: React.FC<MessageCardProps> = ({ message, onPress }) => {
   return (
     <TouchableOpacity onPress={() => onPress(message)} className="mb-2">
       <Box
-        className={`bg-white p-2 shadow-sm rounded-lg ${message.unread ? "border-l-4 border-blue-500" : ""}`}
+        className={`bg-white p-2 shadow-sm rounded-lg ${message.unread ? "border-l-4 border-primary-500" : ""}`}
       >
         <HStack className="justify-between items-center">
           <Avatar size="sm">
@@ -125,9 +125,6 @@ const MessageCard: React.FC<MessageCardProps> = ({ message, onPress }) => {
                 <ThemedText className="text-xs text-primary-500">
                   {formatMessageTime(message.timestamp)}
                 </ThemedText>
-                {message.unread && (
-                  <Badge className="bg-blue-500 h-2 w-2 rounded-full" />
-                )}
               </HStack>
             </HStack>
 

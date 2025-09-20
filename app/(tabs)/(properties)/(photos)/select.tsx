@@ -485,10 +485,7 @@ const GallerySelectScreen = () => {
 
   // Show success animation
   if (currentStep === "success") {
-    const confirmedRoom =
-      uploadResults[0]?.confirmedRoomType ||
-      uploadResults[0]?.spaceData?.type ||
-      "space";
+    const confirmedRoom = uploadResults[0];
 
     console.log("Success screen - showing room type:", confirmedRoom);
     console.log(
@@ -498,11 +495,11 @@ const GallerySelectScreen = () => {
         detected: r.spaceData?.type,
       })),
     );
-
+    console.log("ROOM", confirmedRoom);
     return (
       <Modal animationType="fade" presentationStyle="fullScreen">
         <SuccessAnimation
-          roomType={confirmedRoom}
+          roomType={confirmedRoom.spaceData.name}
           imageCount={uploadResults.length}
           onComplete={handleSuccessComplete}
         />

@@ -7,9 +7,43 @@ import {
   getStatusIcon,
 } from "@/components/incidents/lib/utils/incidentHelpers";
 
+// Add these mock declarations to the top of your test file alongside your other mocks
+
+// Mock expo-media-library
+jest.mock("expo-media-library", () => ({
+  getAssetsAsync: jest.fn(),
+  requestPermissionsAsync: jest.fn(() =>
+    Promise.resolve({ status: "granted" }),
+  ),
+  getPermissionsAsync: jest.fn(() => Promise.resolve({ status: "granted" })),
+  createAssetAsync: jest.fn(),
+  // Add any other methods from expo-media-library that your app uses
+}));
+
+// Mock expo-file-system
+jest.mock("expo-file-system", () => ({
+  documentDirectory: "file://test-directory/",
+  downloadAsync: jest.fn(),
+  getInfoAsync: jest.fn(),
+  makeDirectoryAsync: jest.fn(),
+  readAsStringAsync: jest.fn(),
+  writeAsStringAsync: jest.fn(),
+  deleteAsync: jest.fn(),
+  // Add any other methods you use
+}));
+
+// Mock expo-image-manipulator
+jest.mock("expo-image-manipulator", () => ({
+  manipulateAsync: jest.fn(),
+  SaveFormat: {
+    JPEG: "jpeg",
+    PNG: "png",
+  },
+  // Add other methods or constants you use
+}));
+
 // We're not going to mock Date.now() globally because it might be causing timezone issues
 // Instead, we'll pass in a fixed "now" date to each test where needed
-const FIXED_NOW = new Date("2025-03-11T12:00:00Z").getTime();
 
 describe("getTimeAgo function", () => {
   // Instead of trying to mock Date.now globally, we'll modify our tests

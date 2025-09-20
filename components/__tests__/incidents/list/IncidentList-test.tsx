@@ -176,6 +176,7 @@ describe("IncidentList", () => {
     images: [],
     createdAt: "",
     updatedAt: "",
+    aiClassified: false,
   });
 
   // Sample incidents for testing
@@ -251,20 +252,6 @@ describe("IncidentList", () => {
     expect(router.push).toHaveBeenCalled();
     // Note: We can verify that router.push was called, but not with which exact parameters
     // because our mock doesn't pass the incident to the callback
-  });
-
-  test("navigates to add incident screen when FAB is pressed", () => {
-    const { getByTestId } = render(<IncidentList incidents={mockIncidents} />);
-
-    // Find and press the FAB
-    const fab = getByTestId("fab");
-    fireEvent.press(fab);
-
-    // Check if router.push was called with the correct parameters
-    expect(router.push).toHaveBeenCalledWith({
-      pathname: "/(tabs)/(incidents)/addIncident",
-      params: { addIncident: "new" },
-    });
   });
 
   test("does not call onSelectIncident when it's not provided", () => {

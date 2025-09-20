@@ -6,7 +6,8 @@ import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
 import IncidentCard from "@/components/incidents/list/IncidentCard";
 import { Incident } from "@/lib/@types/properties";
-import AddIncidentButtonFab from "@/components/incidents/AddIncidentButtonFab";
+import { Fab, FabIcon } from "@/components/ui/fab";
+import { AddIcon } from "@/components/ui/icon";
 
 export interface IncidentListProps {
   incidents: Incident[];
@@ -35,6 +36,9 @@ const IncidentList: React.FC<IncidentListProps> = ({
       params: { incidentId: incident.id },
     });
   };
+
+  const addIncident = (): void =>
+    router.push("/(tabs)/(incidents)/addIncident");
 
   const renderIncident = ({ item }: { item: Incident }) => (
     <View className="mb-4">
@@ -107,7 +111,9 @@ const IncidentList: React.FC<IncidentListProps> = ({
       />
 
       <Box className="absolute bottom-0 right-6">
-        <AddIncidentButtonFab />
+        <Fab size="lg" placement="bottom right" onPress={addIncident}>
+          <FabIcon size="xl" as={AddIcon} />
+        </Fab>
       </Box>
     </Box>
   );

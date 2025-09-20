@@ -38,10 +38,6 @@ describe("PropertyDetails", () => {
   test("renders correctly with property data", () => {
     const { getByText } = render(<PropertyDetails property={mockProperty} />);
 
-    // Check if property ID is displayed correctly
-    expect(getByText("Property ID")).toBeTruthy();
-    expect(getByText("12345")).toBeTruthy();
-
     // Check if the dates are displayed (using the mocked formatDate function)
     expect(getByText("Added On")).toBeTruthy();
     expect(getByText("Formatted: 2025-01-01T00:00:00Z")).toBeTruthy();
@@ -57,40 +53,6 @@ describe("PropertyDetails", () => {
     expect(formatDate).toHaveBeenCalledTimes(2);
     expect(formatDate).toHaveBeenNthCalledWith(1, "2025-01-01T00:00:00Z");
     expect(formatDate).toHaveBeenNthCalledWith(2, "2025-02-01T00:00:00Z");
-  });
-
-  test("handles property with missing dates gracefully", () => {
-    const propertyWithMissingDates = {
-      ...mockProperty,
-      created_at: undefined,
-      updated_at: null,
-    };
-
-    const { getByText } = render(
-      <PropertyDetails
-        property={propertyWithMissingDates as unknown as Property}
-      />,
-    );
-
-    // Component should still render without crashing
-    expect(getByText("Property ID")).toBeTruthy();
-
-    // formatDate would be called with undefined/null
-    expect(formatDate).toHaveBeenCalledTimes(2);
-  });
-
-  test("renders with extremely large property ID", () => {
-    const propertyWithLargeId = {
-      ...mockProperty,
-      id: 999999999999999,
-    };
-
-    const { getByText } = render(
-      <PropertyDetails property={propertyWithLargeId as Property} />,
-    );
-
-    // Check if the large ID is displayed correctly
-    expect(getByText("999999999999999")).toBeTruthy();
   });
 
   test("renders with string dates instead of ISO format", () => {

@@ -23,6 +23,7 @@ import { Fab, FabIcon } from "@/components/ui/fab";
 import EmptyPhotosState from "@/components/photos/details/emptyPhotoState";
 import PhotoSearch from "@/components/photos/details/photoSearch";
 import { Badge } from "@/components/ui/badge";
+import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
 
 // Enhanced PropertyImage type with space type information
 interface EnhancedPropertyImage extends PropertyImage {
@@ -166,42 +167,46 @@ const PropertyPhotosScreen: React.FC = () => {
 
   // Pass spaceTypes to PhotoSearch for filtering options
   return (
-    <SafeAreaView className="flex-1">
-      <View className="p-2">
-        <BackButton />
-      </View>
-
-      {!propertyLoading && (
-        <PhotoSearch
-          property={property}
-          activeFilter={activeFilter}
-          setActiveFilter={setActiveFilter}
-          spaceTypes={["all", ...spaceTypes]} // Include "all" option and available space types
-        />
-      )}
-
-      {/* Image grid */}
-      {filteredImages.length > 0 ? (
-        <FlatList
-          data={filteredImages}
-          renderItem={renderPhotoItem}
-          keyExtractor={(item, index) => `${item.id || "image"}-${index}`}
-          numColumns={3}
-          contentContainerStyle={{ padding: 4 }}
-        />
-      ) : (
-        <View className="flex-1 pt-5">
-          <EmptyPhotosState onAddPhotos={handleAddPhotos} />
+    <ResponsiveScreenWrapper scrollable={false}>
+      <SafeAreaView className="flex-1">
+        <View className="p-2">
+          <BackButton />
         </View>
-      )}
 
-      {/* Floating Action Button */}
-      <Box className="absolute bottom-24 right-6">
-        <Fab size="lg" placement="bottom right" onPress={handleAddPhotos}>
-          <FabIcon size="xl" as={AddIcon} />
-        </Fab>
-      </Box>
-    </SafeAreaView>
+        {!propertyLoading && (
+          <PhotoSearch
+            property={property}
+            activeFilter={activeFilter}
+            setActiveFilter={setActiveFilter}
+            spaceTypes={["all", ...spaceTypes]} // Include "all" option and available space types
+          />
+        )}
+
+        {/* Image grid */}
+        {filteredImages.length > 0 ? (
+          <FlatList
+            data={filteredImages}
+            renderItem={renderPhotoItem}
+            keyExtractor={(item, index) =>
+              `${item.spaceId || "image"}-${index}`
+            }
+            numColumns={3}
+            contentContainerStyle={{ padding: 4 }}
+          />
+        ) : (
+          <View className="flex-1 pt-5">
+            <EmptyPhotosState onAddPhotos={handleAddPhotos} />
+          </View>
+        )}
+
+        {/* Floating Action Button */}
+        <Box className="absolute bottom-0 lg:bottom-10 right-6">
+          <Fab size="lg" placement="bottom right" onPress={handleAddPhotos}>
+            <FabIcon size="xl" as={AddIcon} />
+          </Fab>
+        </Box>
+      </SafeAreaView>
+    </ResponsiveScreenWrapper>
   );
 };
 

@@ -433,22 +433,26 @@ export const PhotoSelector: React.FC<PhotoSelectorProps> = ({
                 className="bg-gradient-to-r from-blue-500 to-primary-500 rounded-xl overflow-hidden mb-4"
               >
                 <Box className="flex-row items-center py-5 px-4">
-                  <Box className="w-14 h-14 bg-white/20 rounded-full justify-center items-center mr-4">
+                  <Box className="w-14 h-14 bg-gray-200 rounded-full justify-center items-center mr-4">
                     <IconSymbol
                       name="camera.fill"
                       size={28}
-                      color={Colors.light.tabIconDefault}
+                      color={Colors.light.tabIconSelected}
                     />
                   </Box>
                   <VStack className="flex-1">
-                    <ThemedText className="text-lg font-semibold text-white">
+                    <ThemedText className="text-lg font-semibold">
                       Open Camera
                     </ThemedText>
                     <ThemedText className="text-sm text-white/80">
                       Take a photo of the incident
                     </ThemedText>
                   </VStack>
-                  <IconSymbol name="chevron.right" size={20} color="white" />
+                  <IconSymbol
+                    name="chevron.right"
+                    size={20}
+                    color={Colors.light.tabIconSelected}
+                  />
                 </Box>
               </Pressable>
 
@@ -461,7 +465,7 @@ export const PhotoSelector: React.FC<PhotoSelectorProps> = ({
                     <IconSymbol
                       name="photo.on.rectangle"
                       size={28}
-                      color={Colors.light.tabIconDefault}
+                      color={Colors.light.tabIconSelected}
                     />
                   </Box>
                   <VStack className="flex-1">
@@ -475,13 +479,13 @@ export const PhotoSelector: React.FC<PhotoSelectorProps> = ({
                   <IconSymbol
                     name="chevron.right"
                     size={20}
-                    color={Colors.light.tabIconDefault}
+                    color={Colors.light.tabIconSelected}
                   />
                 </Box>
               </Pressable>
 
               {/* AI Analysis Info */}
-              <Box className="bg-blue-50 p-4 rounded-lg">
+              <Box className="bg-primary-50 p-4 rounded-lg">
                 <HStack className="items-start">
                   <IconSymbol
                     name="sparkles"

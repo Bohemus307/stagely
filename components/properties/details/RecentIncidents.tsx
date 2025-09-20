@@ -4,14 +4,12 @@ import { Box } from "@/components/ui/box";
 import { Heading } from "@/components/ui/heading";
 import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
-import { router } from "expo-router";
 import {
   getIncidentStatusBadge,
   getSeverityBadge,
   formatDate,
 } from "../lib/utils/detailsHelpers";
 import { Image } from "@/components/ui/image";
-import { Button } from "@/components/ui/button";
 import { ThemedText } from "@/components/ThemedText";
 import { Incident, Property } from "@/lib/@types/properties";
 
@@ -22,7 +20,9 @@ type Props = {
 const RecentIncidents = ({ property }: Props) => {
   return (
     <Box className="mb-6">
-      <Heading className="text-lg font-semibold mb-3">Recent Incidents</Heading>
+      <Heading className="text-lg font-semibold mb-3 ml-4">
+        Recent Incidents
+      </Heading>
 
       <VStack className="gap-3">
         {property?.incidents?.slice(0, 3).map((incident: Incident) => (
@@ -78,23 +78,6 @@ const RecentIncidents = ({ property }: Props) => {
           </Box>
         ))}
       </VStack>
-
-      {/* View All Button */}
-      {property.incidents && property.incidents.length > 3 && (
-        <Button
-          className="mt-3 py-2 bg-white"
-          onPress={() =>
-            router.push({
-              pathname: "/(tabs)/(incidents)",
-              params: { propertyId: property.id },
-            })
-          }
-        >
-          <ThemedText className="text-primary-700 text-center">
-            View All {property.incidents.length} Incidents
-          </ThemedText>
-        </Button>
-      )}
     </Box>
   );
 };

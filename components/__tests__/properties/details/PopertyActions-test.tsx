@@ -48,6 +48,7 @@ const createIncident = (
   ...(resolved_at ? { resolved_at } : {}),
   createdAt: "",
   updatedAt: "",
+  aiClassified: false,
 });
 
 // Helper function to create test property

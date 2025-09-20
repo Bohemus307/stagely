@@ -27,7 +27,9 @@ const PropertyInformation = ({ property }: Props) => {
           <Heading className="text-lg w-3/4 font-bold">
             <ThemedText>{property.address}</ThemedText>
           </Heading>
-          <Badge className={`${statusBadge.color} py-1 px-3 rounded-full`}>
+          <Badge
+            className={`${statusBadge.color} items-center justify-center py-1 px-3 rounded-full`}
+          >
             <ThemedText>{statusBadge.text}</ThemedText>
           </Badge>
         </HStack>

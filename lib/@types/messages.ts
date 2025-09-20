@@ -17,6 +17,7 @@ export interface User {
   lastName: string;
   email: string;
   profilePictureUrl?: string;
+  invitationToken?: string;
 }
 
 export interface Conversation {

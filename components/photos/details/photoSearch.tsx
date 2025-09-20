@@ -1,5 +1,5 @@
 import React from "react";
-import { View, ScrollView, Pressable } from "react-native";
+import { View, ScrollView, Pressable, Text } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { Property } from "@/lib/@types/properties";
 
@@ -42,10 +42,10 @@ const PhotoSearch: React.FC<PhotoSearchProps> = ({
               className={`px-4 py-2 mr-2 rounded-full ${
                 activeFilter === type
                   ? "bg-primary-500"
-                  : "bg-gray-200 dark:bg-gray-700"
+                  : "bg-white dark:bg-primary-700"
               }`}
             >
-              <ThemedText
+              <Text
                 className={`${
                   activeFilter === type
                     ? "text-white"
@@ -53,7 +53,7 @@ const PhotoSearch: React.FC<PhotoSearchProps> = ({
                 } capitalize`}
               >
                 {type}
-              </ThemedText>
+              </Text>
             </View>
           </Pressable>
         ))}

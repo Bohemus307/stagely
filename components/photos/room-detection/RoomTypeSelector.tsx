@@ -1,5 +1,5 @@
 import React from "react";
-import { Pressable } from "react-native";
+import { Pressable, Text } from "react-native";
 import { Box } from "@/components/ui/box";
 import { ThemedText } from "@/components/ThemedText";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -56,14 +56,14 @@ const RoomTypeSelector: React.FC<RoomTypeSelectorProps> = ({
                   />
                 </Box>
                 <Box className="flex-1">
-                  <ThemedText
+                  <Text
                     className={`
                       text-sm font-medium
                       ${isSelected ? "text-primary-600" : "text-gray-700"}
                     `}
                   >
                     {room.name}
-                  </ThemedText>
+                  </Text>
                   {isDetected && (
                     <ThemedText className="text-xs text-gray-500">
                       AI detected

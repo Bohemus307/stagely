@@ -68,28 +68,34 @@ describe("detailsHelpers", () => {
   describe("getSeverityBadge", () => {
     test("returns correct badge class for high severity", () => {
       const result = getSeverityBadge("High");
-      expect(result).toBe("bg-red-400/80 text-red-800");
+      expect(result).toBe("bg-red-400/80 text-red-800 rounded-xl");
     });
 
     test("returns correct badge class for medium severity", () => {
       const result = getSeverityBadge("Medium");
-      expect(result).toBe("bg-amber-400/80 text-amber-800");
+      expect(result).toBe("bg-amber-400/80 text-amber-800 rounded-xl");
     });
 
     test("returns correct badge class for low severity", () => {
       const result = getSeverityBadge("Low");
-      expect(result).toBe("bg-blue-400/80 text-blue-800");
+      expect(result).toBe("bg-blue-400/80 text-blue-800 rounded-xl");
     });
 
     test("returns default badge class for unknown severity", () => {
       const result = getSeverityBadge("Unknown");
-      expect(result).toBe("bg-gray-400/80 text-gray-800");
+      expect(result).toBe("bg-gray-400/80 text-gray-800 rounded-xl");
     });
 
     test("is case insensitive", () => {
-      expect(getSeverityBadge("HIGH")).toBe("bg-red-400/80 text-red-800");
-      expect(getSeverityBadge("high")).toBe("bg-red-400/80 text-red-800");
-      expect(getSeverityBadge("High")).toBe("bg-red-400/80 text-red-800");
+      expect(getSeverityBadge("HIGH")).toBe(
+        "bg-red-400/80 text-red-800 rounded-xl",
+      );
+      expect(getSeverityBadge("high")).toBe(
+        "bg-red-400/80 text-red-800 rounded-xl",
+      );
+      expect(getSeverityBadge("High")).toBe(
+        "bg-red-400/80 text-red-800 rounded-xl",
+      );
     });
   });
 

@@ -19,13 +19,6 @@ const PropertyDetails = ({ property }: Props) => {
 
       <VStack className="gap-2">
         <HStack className="justify-between">
-          <ThemedText className="text-primary-500">Property ID</ThemedText>
-          <ThemedText className="font-medium">{property.id}</ThemedText>
-        </HStack>
-
-        <Divider className="bg-primary-200" />
-
-        <HStack className="justify-between">
           <ThemedText className="text-primary-500">Added On</ThemedText>
           <ThemedText className="font-medium">
             {formatDate(property.createdAt)}

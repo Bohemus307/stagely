@@ -6,7 +6,7 @@ export interface CreateIncidentData {
   userId?: number;
   propertyId: number;
   incidentType: string;
-  description: string;
+  description?: string;
   reportedAt?: string;
   severity: "Low" | "Medium" | "High" | "Critical";
   status?: "Open" | "In_Progress" | "Resolved" | "Closed";

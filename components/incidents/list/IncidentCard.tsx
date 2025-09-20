@@ -58,7 +58,6 @@ export interface IncidentCardProps {
 
 const IncidentCard: React.FC<IncidentCardProps> = ({
   incident,
-  onPress,
   onDetailsPress,
 }) => {
   const { property } = useGetProperty(incident.propertyId.toString());
@@ -168,8 +167,8 @@ const IncidentCard: React.FC<IncidentCardProps> = ({
             className="flex-1 py-3 flex items-center justify-center"
             onPress={() => onDetailsPress(incident)}
           >
-            <Text className="text-sm font-medium text-primary-700">
-              View Details
+            <Text className="text-lg font-medium text-primary-700">
+              Details
             </Text>
           </Pressable>
         </HStack>

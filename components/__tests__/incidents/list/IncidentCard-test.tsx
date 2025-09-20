@@ -156,6 +156,7 @@ describe("IncidentCard", () => {
       images: [],
       createdAt: "",
       updatedAt: "",
+      aiClassified: false,
     };
 
     return { ...baseIncident, ...overrides };
@@ -182,7 +183,7 @@ describe("IncidentCard", () => {
     );
 
     expect(getByText("Water Damage")).toBeTruthy();
-    expect(getByText("View Details")).toBeTruthy();
+    expect(getByText("Details")).toBeTruthy();
   });
 
   test("calls onDetailsPress when View Details is pressed", () => {
@@ -194,8 +195,8 @@ describe("IncidentCard", () => {
       />,
     );
 
-    // Press the View Details button
-    fireEvent.press(getByText("View Details"));
+    // Press the Details button
+    fireEvent.press(getByText("Details"));
 
     // Check if onDetailsPress was called with the incident
     expect(mockOnDetailsPress).toHaveBeenCalledTimes(1);

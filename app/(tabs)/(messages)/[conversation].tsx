@@ -28,6 +28,7 @@ import {
 } from "@/hooks/messaging/useMessages";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import { ChatMessage } from "@/lib/@types/messages";
+import { IconSymbol } from "@/components/ui/IconSymbol";
 
 const getDisplayName = (participant: any): string => {
   if (
@@ -79,31 +80,40 @@ const MessageItem = memo(
     formatMessageTime: (timestamp: string) => string;
   }) => {
     const isCurrentUser = item.sender === "current-user";
+    const [showTimestamp, setShowTimestamp] = useState(false);
+
+    const toggleTimestamp = () => {
+      setShowTimestamp(!showTimestamp);
+    };
 
     return (
       <View
         className={`mb-3 max-w-3/4 ${isCurrentUser ? "self-end" : "self-start"}`}
       >
-        <Box
-          className={`rounded-2xl p-3 ${isCurrentUser ? "bg-primary-500" : "bg-gray-200"}`}
-        >
-          <Text
-            className={` ${isCurrentUser ? "text-white" : "text-gray-800"}`}
+        <TouchableOpacity onPress={toggleTimestamp} activeOpacity={0.7}>
+          <Box
+            className={`rounded-2xl p-3 ${isCurrentUser ? "bg-primary-500" : "bg-gray-200"}`}
           >
-            {item.text}
-          </Text>
-          <Text
-            className={`text-xs mt-1 ${isCurrentUser ? "text-white/70" : "text-gray-500"}`}
-          >
-            {formatMessageTime(item.timestamp)}
-            {isCurrentUser && item.status && (
-              <Text className="ml-1">
-                {" "}
-                · {item.status === "read" ? "Read" : item.status}
+            <Text
+              className={`${isCurrentUser ? "text-white" : "text-gray-800"}`}
+            >
+              {item.text}
+            </Text>
+            {showTimestamp && (
+              <Text
+                className={`text-xs mt-1 ${isCurrentUser ? "text-white/70" : "text-gray-500"}`}
+              >
+                {formatMessageTime(item.timestamp)}
+                {isCurrentUser && item.status && (
+                  <Text className="ml-1">
+                    {" "}
+                    · {item.status === "read" ? "Read" : item.status}
+                  </Text>
+                )}
               </Text>
             )}
-          </Text>
-        </Box>
+          </Box>
+        </TouchableOpacity>
       </View>
     );
   },
@@ -388,10 +398,10 @@ const ConversationScreen = () => {
         >
           <TextInput
             ref={textInputRef}
-            className="flex-1 rounded-full px-4 py-2 mr-2 text-base"
+            className="flex-1 rounded-full px-4 items-center mr-2 text-base"
             style={{
               backgroundColor: "#f3f4f6",
-              height: 40,
+              height: 45,
             }}
             placeholder="Type a message..."
             value={newMessage}
@@ -412,7 +422,7 @@ const ConversationScreen = () => {
               backgroundColor: "#042C44",
             }}
           >
-            <Text style={{ color: "white" }}>→</Text>
+            <IconSymbol name="paperplane.fill" size={20} color="white" />
           </TouchableOpacity>
         </View>
       </SafeAreaView>

@@ -17,10 +17,10 @@ const PhotoSelectionScreen = () => {
   const handleTakePhoto = (): void => {
     console.log("Taking a photo for property:", propertyId);
     // Navigate to camera screen
-    // router.push({
-    //   pathname: "/properties/[propertyId]/photos/camera",
-    //   params: { propertyId },
-    // });
+    router.push({
+      pathname: "/(tabs)/(properties)/(photos)/camera",
+      params: { propertyId },
+    });
   };
 
   const handleSelectFromGallery = (): void => {

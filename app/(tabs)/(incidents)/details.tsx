@@ -7,7 +7,6 @@ import { ThemedText } from "@/components/ThemedText";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, SafeAreaView, ScrollView, View, Text } from "react-native";
-import IncidentNotes from "@/components/incidents/details/IncidentNotes";
 import IncidentActions from "@/components/incidents/details/IncidentQuickActions";
 import { Box } from "@/components/ui/box";
 import StreetViewImage from "@/components/properties/details/StreetView";
@@ -17,18 +16,18 @@ import { IncidentImage } from "@/lib/@types/properties";
 import { useGetIncidentById } from "@/hooks/incidents/useGetIncidentsById";
 import { useUpdateIncidentStatus } from "@/hooks/incidents/useUpdateIncidentStatus";
 import { useGetProperty } from "@/hooks/properties/useGetPropertyById";
+import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
 
 const IncidentsDetailsScreen = () => {
   const params = useLocalSearchParams();
   const incidentId = params.incidentId as string;
   const [streetViewError, setStreetViewError] = useState(false);
-  const [notes, setNotes] = useState<{ text: string; timestamp: string }[]>([]);
 
   const {
     incident,
     isLoading: incidentLoading,
     error: incidentError,
-  } = useGetIncidentById(incidentId, { enabled: !!incidentId });
+  } = useGetIncidentById(incidentId);
 
   // Debug logging
   useEffect(() => {
@@ -76,10 +75,6 @@ const IncidentsDetailsScreen = () => {
     router.push({
       pathname: "/(tabs)/(incidents)/(photos)/add",
     });
-  };
-
-  const handleAddNote = (note: { text: string; timestamp: string }) => {
-    setNotes([...notes, note]);
   };
 
   const handleEscalate = () => {
@@ -142,7 +137,7 @@ const IncidentsDetailsScreen = () => {
   }
 
   return (
-    <View className="flex-1">
+    <ResponsiveScreenWrapper scrollable={false}>
       <SafeAreaView className="flex-1">
         <BackButton />
         <ScrollView className="flex-1">
@@ -173,7 +168,7 @@ const IncidentsDetailsScreen = () => {
           />
           {isStatusUpdating && (
             <Box className="mx-4 mb-4 p-2 bg-blue-100 rounded">
-              <Text className="text-blue-800">Updating status...</Text>
+              <Text className="text-primary-800">Updating status...</Text>
             </Box>
           )}
 
@@ -211,9 +206,6 @@ const IncidentsDetailsScreen = () => {
             </Box>
           )}
 
-          {/* Notes Section */}
-          <IncidentNotes initialNotes={notes} onAddNote={handleAddNote} />
-
           {/* Action Buttons */}
           <IncidentActions
             incident={incident}
@@ -224,7 +216,7 @@ const IncidentsDetailsScreen = () => {
           />
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </ResponsiveScreenWrapper>
   );
 };
 

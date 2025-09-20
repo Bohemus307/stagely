@@ -206,7 +206,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
                 className="flex-1 py-3 flex items-center justify-center border-r border-primary-100"
                 onPress={() => onDetailsPress(property)}
               >
-                <Text className="text-sm font-medium text-primary-700">
+                <Text className="text-lg font-medium text-primary-500">
                   Details
                 </Text>
               </Pressable>
@@ -214,16 +214,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
                 className="flex-1 py-3 flex items-center justify-center border-r border-primary-100"
                 onPress={() => onPhotosPress(property)}
               >
-                <Text className="text-sm font-medium text-primary-700">
+                <Text className="text-lg font-medium text-primary-500">
                   Photos
-                </Text>
-              </Pressable>
-              <Pressable
-                className="flex-1 py-3 flex items-center justify-center"
-                onPress={() => onDocumentsPress(property)}
-              >
-                <Text className="text-sm font-medium text-primary-700">
-                  Documents
                 </Text>
               </Pressable>
             </HStack>

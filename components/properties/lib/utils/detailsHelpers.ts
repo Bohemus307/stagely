@@ -44,13 +44,13 @@ export const formatDate = (dateString: string): string => {
 export const getSeverityBadge = (severity: string) => {
   switch (severity.toLowerCase()) {
     case "high":
-      return "bg-red-400/80 text-red-800";
+      return "bg-red-400/80 text-red-800 rounded-xl";
     case "medium":
-      return "bg-amber-400/80 text-amber-800";
+      return "bg-amber-400/80 text-amber-800 rounded-xl";
     case "low":
-      return "bg-blue-400/80 text-blue-800";
+      return "bg-blue-400/80 text-blue-800 rounded-xl";
     default:
-      return "bg-gray-400/80 text-gray-800";
+      return "bg-gray-400/80 text-gray-800 rounded-xl";
   }
 };
 

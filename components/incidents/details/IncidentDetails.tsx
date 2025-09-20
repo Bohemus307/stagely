@@ -108,7 +108,12 @@ const IncidentDetails: React.FC<IncidentDetailsProps> = ({
       )}
 
       <Box className="mt-4">
+        <ThemedText className="mb-2 font-bold">User Description:</ThemedText>
         <ThemedText type="default">{incident.description}</ThemedText>
+      </Box>
+      <Box className="mt-4">
+        <ThemedText className="mb-2 font-bold">AI Analysis:</ThemedText>
+        <ThemedText>{incident?.featureVector?.claudeAnalysis}</ThemedText>
       </Box>
 
       <Divider className="my-3 bg-gray-200" />

@@ -47,6 +47,7 @@ import { IncidentSummaryCard } from "@/components/incidents/create/IncidentSumma
 import { Image } from "@/components/ui/image";
 import { Spinner } from "@/components/ui/spinner";
 import { useS3Upload } from "@/hooks/useS3Upload";
+import * as ImageManipulator from "expo-image-manipulator";
 
 // Helper function to convert S3 URL to CloudFront URL
 const getCloudFrontUrl = (s3Url: string): string | null => {
@@ -203,6 +204,7 @@ const AddIncidentScreen = () => {
             id: asset.id,
             hasLocalUri: !!asset.localUri,
             hasUri: !!asset.uri,
+            filename: asset.filename,
           });
 
           // Use localUri if available
@@ -249,9 +251,43 @@ const AddIncidentScreen = () => {
         }
       }
 
+      // **NEW: Convert HEIC/HEIF to JPEG using Expo ImageManipulator**
+      console.log("[uriToBlob] Converting image to JPEG and optimizing...");
+
+      try {
+        // Use ImageManipulator to convert any format (including HEIC) to JPEG
+        const result = await ImageManipulator.manipulateAsync(
+          processedUri,
+          [
+            // Resize if too large (optional - adjust as needed)
+            { resize: { width: 1568 } }, // Maintains aspect ratio, max width 1568px
+          ],
+          {
+            compress: 0.85, // 85% quality for good balance of quality/size
+            format: ImageManipulator.SaveFormat.JPEG, // Force JPEG output
+          },
+        );
+
+        console.log("[uriToBlob] Image converted successfully:", {
+          originalUri: processedUri.substring(0, 30) + "...",
+          convertedUri: result.uri.substring(0, 30) + "...",
+          width: result.width,
+          height: result.height,
+        });
+
+        // Use the converted image URI
+        processedUri = result.uri;
+      } catch (conversionError) {
+        console.warn(
+          "[uriToBlob] Image conversion failed, using original:",
+          conversionError,
+        );
+        // Continue with original URI if conversion fails
+      }
+
       // Fetch and convert to blob
       console.log(
-        "[uriToBlob] Fetching from URI:",
+        "[uriToBlob] Fetching from processed URI:",
         processedUri.substring(0, 30) + "...",
       );
       const response = await fetch(processedUri);
@@ -267,6 +303,12 @@ const AddIncidentScreen = () => {
         size: blob.size,
         type: blob.type || "image/jpeg",
       });
+
+      // Ensure blob has correct MIME type
+      if (!blob.type || blob.type === "application/octet-stream") {
+        console.log("[uriToBlob] Fixing blob MIME type to image/jpeg");
+        return new Blob([blob], { type: "image/jpeg" });
+      }
 
       return blob;
     } catch (error) {
@@ -644,7 +686,7 @@ const AddIncidentScreen = () => {
                   </ThemedText>
                   <Select
                     selectedValue={incidentDetails.type}
-                    onValueChange={(value) =>
+                    onValueChange={(value: any) =>
                       setIncidentDetails({ ...incidentDetails, type: value })
                     }
                   >
@@ -714,7 +756,7 @@ const AddIncidentScreen = () => {
                     <TextareaInput
                       placeholder="Describe the incident in detail. Include when you first noticed it, any potential causes, and immediate concerns..."
                       value={incidentDetails.description}
-                      onChangeText={(text) =>
+                      onChangeText={(text: any) =>
                         setIncidentDetails({
                           ...incidentDetails,
                           description: text,

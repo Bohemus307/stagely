@@ -69,6 +69,7 @@ export default function IncidentCameraScreen(): React.ReactElement {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [cameraReady, setCameraReady] = useState<boolean>(false);
   const [uploading, setUploading] = useState<boolean>(false);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   // Initialize the add incident images hook if we have an incidentId
   const {
@@ -76,6 +77,17 @@ export default function IncidentCameraScreen(): React.ReactElement {
     isPending: isAddingImages,
     isSuccess: isAddImagesSuccess,
   } = useAddIncidentImages(incidentId || "");
+
+  useEffect(() => {
+    if (permission?.granted) {
+      // Give the camera time to initialize
+      const timer = setTimeout(() => {
+        setIsInitializing(false);
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [permission]);
 
   // Get the property details based on the ID
   useEffect(() => {
@@ -184,6 +196,7 @@ export default function IncidentCameraScreen(): React.ReactElement {
 
   // Handle camera ready
   const handleCameraReady = (): void => {
+    console.log("Camera ready event fired at:", new Date().toISOString());
     setCameraReady(true);
   };
 
@@ -387,19 +400,18 @@ export default function IncidentCameraScreen(): React.ReactElement {
   }
 
   return (
-    <SafeAreaView>
+    <SafeAreaView className="flex-1">
       <View className="flex-1 bg-black">
         <StatusBar style="light" />
 
         {/* Camera View */}
-        {!showGallery && (
+        {!showGallery && !isInitializing && (
           <CameraView
             ref={cameraRef}
             className="flex-1"
             facing={cameraType}
             flash={flashMode}
             onCameraReady={handleCameraReady}
-            ratio="16:9"
           >
             {/* Camera UI Overlay */}
             <View className="flex-1 flex-col justify-between">

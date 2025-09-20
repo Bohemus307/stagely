@@ -292,7 +292,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
           </HStack>
         )}
       </VStack>
-      <HStack className="items-center gap-2">
+      <HStack className="items-center gap-2 pl-2">
         <Badge className={getStatusColor(property.status)}>
           <ThemedText className="text-white text-xs">
             {property.status}
