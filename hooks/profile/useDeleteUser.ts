@@ -1,8 +1,13 @@
 import { useAuth0 } from "react-native-auth0";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Constants from "expo-constants";
-import { UserResponse } from "./useUpdateUser";
 
+interface DeleteResponse {
+  success: boolean;
+  id: number;
+  auth0Deleted: boolean;
+  message: string;
+}
 export const useDeleteUser = () => {
   const { getCredentials } = useAuth0();
   const queryClient = useQueryClient();
@@ -10,7 +15,7 @@ export const useDeleteUser = () => {
   const apiUrl =
     Constants.expoConfig?.extra?.stagelyApiUrl || process.env.STAGELY_API_URL;
 
-  const mutation = useMutation<UserResponse, Error, string>({
+  const mutation = useMutation<DeleteResponse, Error, string>({
     mutationFn: async (userId: string) => {
       if (!apiUrl) {
         throw new Error("API URL not available");
@@ -38,12 +43,15 @@ export const useDeleteUser = () => {
         if (response.status === 404) {
           throw new Error("User not found");
         }
-        throw new Error(`API error: ${response.status}`);
+        if (response.status === 409) {
+          throw new Error("User is already deleted");
+        }
+        throw new Error(`Failed to delete user: ${response.status}`);
       }
 
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
