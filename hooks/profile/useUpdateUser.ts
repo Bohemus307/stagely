@@ -35,7 +35,6 @@ export const useUpdateUser = (userId?: string) => {
         throw new Error("API URL not available");
       }
 
-      // If userId is not provided directly, try to get it from currentUser query cache
       let id = userId;
       if (!id) {
         const currentUser = queryClient.getQueryData<any>([
@@ -81,14 +80,9 @@ export const useUpdateUser = (userId?: string) => {
 
       return responseData;
     },
-    onSuccess: (data) => {
-      if (userId) {
-        queryClient.invalidateQueries({ queryKey: ["user", userId] });
-      }
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
 
-      // Force refetch of current user data
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
       queryClient.refetchQueries({ queryKey: ["currentUser"] });
     },
   });

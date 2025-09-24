@@ -1,8 +1,8 @@
 import { ThemedText } from "@/components/ThemedText";
 import { Box } from "@/components/ui/box";
 import { router } from "expo-router";
-import React from "react";
-import { View } from "react-native";
+import React, { useEffect } from "react";
+import { Alert, View } from "react-native";
 import ProfileHeader from "@/components/profile/details/ProfileHeader";
 import ProfileMenuItem from "@/components/profile/details/ProfileMenuItem";
 import { Spinner } from "@/components/ui/spinner";
@@ -10,11 +10,55 @@ import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import { useAuth0 } from "react-native-auth0";
 import { User } from "@/lib/@types/properties";
+import { useDeleteUser } from "@/hooks/profile/useDeleteUser";
 
 const ProfileScreen = () => {
   const { auth0User, backendUser: user, isLoading } = useAuthUser();
-
   const { clearSession } = useAuth0();
+  const {
+    deleteUser,
+    isPending: isDeletingAccount,
+    isSuccess: isDeleteSuccess,
+    isError: isDeleteError,
+    error: deleteError,
+    reset: resetDeleteMutation,
+  } = useDeleteUser();
+
+  useEffect(() => {
+    if (isDeleteSuccess) {
+      Alert.alert(
+        "Account Deleted",
+        "Your account has been successfully deleted. You will now be logged out.",
+        [
+          {
+            text: "OK",
+            onPress: async () => {
+              resetDeleteMutation();
+              try {
+                await clearSession();
+                router.replace("/");
+              } catch (error) {
+                console.error("Error during logout after deletion:", error);
+                router.replace("/");
+              }
+            },
+          },
+        ],
+      );
+    }
+  }, [isDeleteSuccess, clearSession, resetDeleteMutation]);
+
+  useEffect(() => {
+    if (isDeleteError && deleteError) {
+      Alert.alert(
+        "Delete Failed",
+        deleteError?.message ||
+          "Failed to delete account. Please try again later.",
+      );
+      resetDeleteMutation();
+    }
+  }, [isDeleteError, deleteError, resetDeleteMutation]);
+
   if (isLoading) {
     return (
       <Box className="flex-1 justify-center items-center">
@@ -41,28 +85,39 @@ const ProfileScreen = () => {
     }
   };
 
-  const navigateToSecurity = () => {
-    console.log("To Security Button Pushed");
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete Account",
+      "Are you sure you want to delete your account? This action cannot be undone. All your data including properties, incidents, and messages will be permanently removed.",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete Account",
+          style: "destructive",
+          onPress: confirmDeleteAccount,
+        },
+      ],
+    );
+  };
+
+  const confirmDeleteAccount = () => {
+    if (!user?.id) {
+      Alert.alert("Error", "Unable to delete account: User ID not available");
+      return;
+    }
+
+    deleteUser(user.id.toString());
   };
 
   const navigateToNotifications = () => {
     console.log("To Notifications Button Pushed");
   };
 
-  const navigateToTeamMembers = () => {
-    console.log("To Team Members Button Pushed");
-  };
-
-  const navigateToSettings = () => {
-    console.log("Settings Button Pushed");
-  };
-
   const navigateToHelp = () => {
     console.log("Help Button Pushed");
-  };
-
-  const navigateToPreferences = () => {
-    console.log("Preferences Button Pushed");
   };
 
   const navigateToEditProfile = () => {
@@ -78,7 +133,6 @@ const ProfileScreen = () => {
               <ProfileHeader
                 user={user as User}
                 fallbackPicture={auth0User?.picture}
-                onEditProfile={navigateToEditProfile}
               />
             )}
           </View>
@@ -92,42 +146,15 @@ const ProfileScreen = () => {
             </ThemedText>
 
             <ProfileMenuItem
-              iconName="lock.fill"
-              title="Privacy & Security"
-              onPress={navigateToSecurity}
+              iconName="person.circle.fill"
+              title="Edit Profile"
+              onPress={navigateToEditProfile}
             />
 
             <ProfileMenuItem
               iconName="bell.fill"
               title="Notifications"
               onPress={navigateToNotifications}
-            />
-
-            {/* Team Management Section */}
-            <ThemedText type="defaultSemiBold" className="px-5 pt-2">
-              TEAM MANAGEMENT
-            </ThemedText>
-
-            <ProfileMenuItem
-              iconName="person.2.fill"
-              title="Team Members"
-              onPress={navigateToTeamMembers}
-            />
-
-            {/* Preferences Section */}
-            <ThemedText type="defaultSemiBold" className="px-5 pt-2">
-              PREFERENCES
-            </ThemedText>
-            <ProfileMenuItem
-              iconName="moonphase.new.moon.inverse"
-              title="Appearance"
-              onPress={navigateToPreferences}
-            />
-
-            <ProfileMenuItem
-              iconName="app.badge"
-              title="App Settings"
-              onPress={navigateToSettings}
             />
 
             {/* Support Section */}
@@ -138,6 +165,14 @@ const ProfileScreen = () => {
               iconName="circle.badge.questionmark"
               title="Help Center"
               onPress={navigateToHelp}
+            />
+
+            <ProfileMenuItem
+              iconName="trash.fill"
+              title={
+                isDeletingAccount ? "Deleting Account..." : "Delete Account"
+              }
+              onPress={isDeletingAccount ? () => {} : handleDeleteAccount}
             />
 
             <ProfileMenuItem
