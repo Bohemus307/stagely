@@ -427,7 +427,7 @@ export default function IncidentCameraScreen(): React.ReactElement {
     else if (angleMatchScore >= 70) color = "bg-yellow-500";
 
     return (
-      <Box className="absolute left-4 top-20 bg-black/70 rounded-full p-2">
+      <Box className="absolute left-2 top-20 bg-black/70 rounded-full p-2">
         <VStack className="items-center">
           <Box className={`h-3 w-3 rounded-full ${color}`} />
           <Text className="text-white text-xs mt-1">
@@ -550,7 +550,7 @@ export default function IncidentCameraScreen(): React.ReactElement {
                 <Button
                   variant="outline"
                   onPress={toggleCameraType}
-                  className="bg-black/40 rounded-full w-12 h-12 justify-center items-center"
+                  className="bg-black/40 ml-4 rounded-full w-12 h-12 justify-center items-center"
                 >
                   <IconSymbol name="camera.rotate" size={24} color="white" />
                 </Button>

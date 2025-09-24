@@ -155,6 +155,7 @@ export const useInviteConversation = () => {
       try {
         const errorData = JSON.parse(errorText);
         errorMessage = errorData.error || errorData.message || errorText;
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (parseError) {
         // Use raw text if parsing fails
       }

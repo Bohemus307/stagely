@@ -119,7 +119,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
               source={{ uri: imageUrl }}
               alt="Property Image"
               className="h-full w-full object-cover"
-              onError={(error) => {
+              onError={(error: any) => {
                 console.log("Custom image failed to load:", error);
               }}
             />

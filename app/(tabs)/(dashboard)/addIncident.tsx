@@ -295,6 +295,8 @@ const AddIncidentScreen = () => {
         setSelectedPhoto(null);
         setCurrentStep(2);
       }
+    } else if (currentStep === 1) {
+      router.dismissAll();
     }
   };
 
@@ -552,7 +554,7 @@ const AddIncidentScreen = () => {
                 <Textarea size="md" className="h-40">
                   <TextareaInput
                     value={incidentDetails.description}
-                    onChangeText={(text) =>
+                    onChangeText={(text: any) =>
                       setIncidentDetails({
                         ...incidentDetails,
                         description: text,
@@ -637,7 +639,7 @@ const AddIncidentScreen = () => {
           </HStack>
         ) : (
           <HStack className="h-1/6 pt-4 gap-2">
-            {(currentStep > 1 || currentSubStep > 1) && (
+            {(currentStep >= 1 || currentSubStep >= 1) && (
               <Button
                 variant="solid"
                 onPress={goToPreviousStep}

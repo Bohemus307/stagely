@@ -351,7 +351,7 @@ export default function IncidentCameraScreen(): React.ReactElement {
     else if (angleMatchScore >= 70) color = "bg-yellow-500";
 
     return (
-      <Box className="absolute left-4 top-20 bg-black/70 rounded-full p-2">
+      <Box className="absolute left-2 top-20 bg-black/70 rounded-full p-2">
         <VStack className="items-center">
           <Box className={`h-3 w-3 rounded-full ${color}`} />
           <Text className="text-white text-xs mt-1">
@@ -469,11 +469,11 @@ export default function IncidentCameraScreen(): React.ReactElement {
               {renderAngleMatchIndicator()}
 
               {/* Camera controls */}
-              <HStack className="w-full justify-around items-center pb-8 pt-4 bg-black/30">
+              <HStack className="w-full justify-around items-center pb-8 pt-8 bg-black/30">
                 <Button
                   variant="outline"
                   onPress={toggleCameraType}
-                  className="bg-black/40 rounded-full w-12 h-12 justify-center items-center"
+                  className="bg-black/40 ml-4 rounded-full w-12 h-12 justify-center items-center"
                 >
                   <IconSymbol name="camera.rotate" size={24} color="white" />
                 </Button>
@@ -501,7 +501,7 @@ export default function IncidentCameraScreen(): React.ReactElement {
                     capturedPhotos.length > 0 && setShowGallery(true)
                   }
                   disabled={capturedPhotos.length === 0}
-                  className={`bg-black/40 rounded-full w-12 h-12 justify-center items-center ${
+                  className={`bg-black/40 rounded-full w-12 h-12 mr-4 justify-center items-center ${
                     capturedPhotos.length === 0 ? "opacity-50" : ""
                   }`}
                 >
