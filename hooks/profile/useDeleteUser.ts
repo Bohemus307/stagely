@@ -34,7 +34,6 @@ export const useDeleteUser = () => {
       const response = await fetch(`https://${apiUrl}/users/${userId}`, {
         method: "DELETE",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${credentials.accessToken}`,
         },
       });
