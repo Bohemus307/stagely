@@ -33,6 +33,7 @@ import {
 import { useAuthUser } from "@/hooks/useAuthUser";
 import { ChatMessage } from "@/lib/@types/messages";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { useFocusEffect } from "@react-navigation/native";
 
 const getDisplayName = (participant: any): string => {
   if (
@@ -138,6 +139,7 @@ const ConversationScreen = () => {
 
   const flatListRef = useRef<FlatList>(null);
   const textInputRef = useRef<TextInput>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const otherUserId = useMemo(() => Number(params.userId), [params.userId]);
 
@@ -165,6 +167,22 @@ const ConversationScreen = () => {
     setNewMessage("");
   }, [backendUser?.id]);
 
+  useFocusEffect(
+    useCallback(() => {
+      // Start polling when screen is focused
+      pollingIntervalRef.current = setInterval(() => {
+        refetchMessages();
+      }, 3000); // Poll every 3 seconds
+
+      // Clean up polling when screen loses focus
+      return () => {
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+          pollingIntervalRef.current = null;
+        }
+      };
+    }, [refetchMessages]),
+  );
   const formatMessageTime = useCallback((timestamp: string) => {
     try {
       const date = new Date(timestamp);
