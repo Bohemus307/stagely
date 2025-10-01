@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { SafeAreaView, View, Alert, ActivityIndicator } from "react-native";
+import {
+  SafeAreaView,
+  View,
+  Alert,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from "react-native";
 import { router } from "expo-router";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
@@ -7,7 +15,6 @@ import { Input, InputField } from "@/components/ui/input";
 import { Button, ButtonText } from "@/components/ui/button";
 import BackButton from "@/components/BackButton";
 import { useInviteConversation } from "@/hooks/messaging/useInviteConversation";
-import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
 
 const InviteScreen = () => {
   const [email, setEmail] = useState("");
@@ -67,7 +74,10 @@ const InviteScreen = () => {
     email.trim() && isValidEmail(email.trim()) && !isInviting;
 
   return (
-    <ResponsiveScreenWrapper scrollable={false}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
       <ThemedView className="flex-1">
         <SafeAreaView className="flex-1">
           {/* Header */}
@@ -82,7 +92,11 @@ const InviteScreen = () => {
           </View>
 
           {/* Content */}
-          <View className="flex-1 p-4">
+          <ScrollView
+            className="flex-1"
+            contentContainerStyle={{ padding: 16 }}
+            keyboardShouldPersistTaps="handled"
+          >
             <View className="gap-4">
               {/* Email Input */}
               <View>
@@ -150,10 +164,10 @@ const InviteScreen = () => {
                 </ThemedText>
               </View>
             </View>
-          </View>
+          </ScrollView>
         </SafeAreaView>
       </ThemedView>
-    </ResponsiveScreenWrapper>
+    </KeyboardAvoidingView>
   );
 };
 
