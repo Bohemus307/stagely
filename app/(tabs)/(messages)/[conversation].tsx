@@ -2,14 +2,18 @@ import { useLocalSearchParams } from "expo-router";
 import { useState, useRef, useEffect, useCallback, memo, useMemo } from "react";
 import {
   FlatList,
-  SafeAreaView,
   TextInput,
   TouchableOpacity,
   View,
   Text,
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
 } from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { Box } from "@/components/ui/box";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -124,7 +128,7 @@ MessageItem.displayName = "MessageItem";
 const ConversationScreen = () => {
   const params = useLocalSearchParams();
   const conversationId = params.conversation as string;
-
+  const insets = useSafeAreaInsets();
   const { backendUser, isLoading: isLoadingUser } = useAuthUser();
   const [newMessage, setNewMessage] = useState("");
   const [formattedMessages, setFormattedMessages] = useState<ChatMessage[]>([]);
@@ -367,64 +371,65 @@ const ConversationScreen = () => {
             </HStack>
           </View>
         </View>
+        <KeyboardAvoidingView behavior="height" style={{ flex: 1 }}>
+          {/* Message List */}
+          <View style={{ flex: 1 }}>
+            <FlatList
+              ref={flatListRef}
+              data={formattedMessages}
+              renderItem={renderMessage}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={{
+                paddingHorizontal: 16,
+                paddingVertical: 16,
+              }}
+              style={{ flex: 1 }}
+              inverted
+              onRefresh={refetchMessages}
+              refreshing={isLoadingMessages}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="interactive"
+            />
+          </View>
 
-        {/* Message List */}
-        <View style={{ flex: 1 }}>
-          <FlatList
-            ref={flatListRef}
-            data={formattedMessages}
-            renderItem={renderMessage}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={{
-              paddingHorizontal: 16,
-              paddingVertical: 16,
-            }}
-            style={{ flex: 1 }}
-            inverted
-            onRefresh={refetchMessages}
-            refreshing={isLoadingMessages}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="interactive"
-          />
-        </View>
-
-        {/* Message Input */}
-        <View
-          className="border-t border-gray-200 px-2 pt-2 pb-2 mb-13 flex-row items-center"
-          style={{
-            borderTopColor: "#e5e7eb",
-            marginBottom: 52,
-          }}
-        >
-          <TextInput
-            ref={textInputRef}
-            className="flex-1 rounded-full px-4 items-center mr-2 text-base"
+          {/* Message Input */}
+          <View
+            className="border-t border-gray-200 px-2 pt-2 pb-2 flex-row items-center"
             style={{
-              backgroundColor: "#f3f4f6",
-              height: 45,
-            }}
-            placeholder="Type a message..."
-            value={newMessage}
-            onChangeText={setNewMessage}
-            returnKeyType="send"
-            onSubmitEditing={handleSendMessage}
-            editable={!!backendUser?.id && !isSendingMessage}
-            autoCorrect={false}
-            autoCapitalize="sentences"
-            keyboardType="default"
-            textContentType="none"
-            autoComplete="off"
-          />
-          <TouchableOpacity
-            onPress={handleSendMessage}
-            className="rounded-full w-10 h-10 justify-center items-center"
-            style={{
-              backgroundColor: "#042C44",
+              borderTopColor: "#e5e7eb",
+              paddingBottom: insets.bottom + 16,
             }}
           >
-            <IconSymbol name="paperplane.fill" size={20} color="white" />
-          </TouchableOpacity>
-        </View>
+            <TextInput
+              ref={textInputRef}
+              className="flex-1 rounded-full px-4 items-center mr-2 text-base"
+              style={{
+                backgroundColor: "#f3f4f6",
+                height: 45,
+              }}
+              placeholder="Type a message..."
+              value={newMessage}
+              onChangeText={setNewMessage}
+              returnKeyType="send"
+              onSubmitEditing={handleSendMessage}
+              editable={!!backendUser?.id && !isSendingMessage}
+              autoCorrect={false}
+              autoCapitalize="sentences"
+              keyboardType="default"
+              textContentType="none"
+              autoComplete="off"
+            />
+            <TouchableOpacity
+              onPress={handleSendMessage}
+              className="rounded-full w-10 h-10 justify-center items-center"
+              style={{
+                backgroundColor: "#042C44",
+              }}
+            >
+              <IconSymbol name="paperplane.fill" size={20} color="white" />
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </ThemedView>
   );
