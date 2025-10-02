@@ -11,30 +11,60 @@ import {
 } from "react-native";
 import { AddIcon } from "@/components/ui/icon";
 import { useAuthUser } from "@/hooks/useAuthUser";
-import { usePreviouslyMessagedUsers } from "@/hooks/messaging/usePreviouslyMessagedUsers";
-import { User } from "@/lib/@types/messages";
+import { useGetConversations } from "@/hooks/messaging/useConversations";
 import MessageCard from "@/components/message/list/MessageCard";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { Fab, FabIcon } from "@/components/ui/fab";
 import { Box } from "@/components/ui/box";
+import { Conversation } from "@/lib/@types/messages";
 
 const NewMessageScreen = () => {
   const { backendUser, isLoading: isLoadingUser } = useAuthUser();
 
   const {
-    data: previousUsersData,
+    conversations,
     isLoading: isLoadingContacts,
     error: contactsError,
     refetch,
-  } = usePreviouslyMessagedUsers("", true);
+  } = useGetConversations();
 
-  const handleContactPress = (user: User) => {
+  const handleContactPress = (conversation: Conversation) => {
+    const otherParticipantId = conversation.participants?.find(
+      (p: number) => p !== backendUser?.id,
+    );
+
+    let participantName = "User";
+    if (conversation.otherParticipant) {
+      const { firstName, lastName, email } = conversation.otherParticipant;
+      if (
+        firstName &&
+        lastName &&
+        !(firstName === "Invited" && lastName === "User")
+      ) {
+        participantName = `${firstName} ${lastName}`;
+      } else if (email) {
+        const emailUsername = email.split("@")[0];
+        participantName = emailUsername
+          .replace(/[._-]/g, " ")
+          .split(" ")
+          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+      }
+    } else if (conversation.participantNames?.[0]) {
+      participantName = conversation.participantNames[0];
+    }
+
     router.push({
       pathname: "/(tabs)/(messages)/[conversation]",
       params: {
-        conversation: user.conversationId || `${backendUser?.id}-${user.id}`,
-        userId: user.id.toString(),
+        conversation: conversation.conversationId,
+        userId: otherParticipantId?.toString() || "",
+        userName: participantName,
+        userAvatar:
+          conversation.otherParticipant?.profilePictureUrl ||
+          conversation.participantAvatars?.[0] ||
+          "",
       },
     });
   };
@@ -43,20 +73,55 @@ const NewMessageScreen = () => {
     router.push("/(tabs)/(messages)/invite");
   };
 
-  const renderContactItem = ({ item }: { item: User }) => {
+  const renderContactItem = ({ item }: { item: Conversation }) => {
+    const otherParticipantId = item.participants?.find(
+      (p: number) => p !== backendUser?.id,
+    );
+
+    let displayName = "User";
+    if (item.otherParticipant) {
+      const { firstName, lastName, email } = item.otherParticipant;
+      if (
+        firstName &&
+        lastName &&
+        !(firstName === "Invited" && lastName === "User")
+      ) {
+        displayName = `${firstName} ${lastName}`;
+      } else if (email) {
+        const emailUsername = email.split("@")[0];
+        displayName = emailUsername
+          .replace(/[._-]/g, " ")
+          .split(" ")
+          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+      }
+    } else if (item.participantNames?.[0]) {
+      displayName = item.participantNames[0];
+    }
+
     const messageData = {
-      id: item.conversationId || `contact-${item.id}`,
+      id: item.conversationId,
       user: {
-        id: item.id.toString(),
-        name: `${item.firstName} ${item.lastName}`,
-        firstName: item.firstName,
-        lastName: item.lastName,
-        email: item.email,
-        avatar: item.profilePictureUrl,
+        id: otherParticipantId?.toString() || "",
+        name: displayName,
+        firstName: item.participantFirstNames?.[0] || "",
+        lastName: item.participantLastNames?.[0] || "",
+        email: item.participantEmails?.[0] || "",
+        avatar:
+          item.otherParticipant?.profilePictureUrl ||
+          item.participantAvatars?.[0] ||
+          undefined,
       },
-      lastMessage: item.lastMessage || "Start a conversation...",
-      timestamp: item.lastMessageTime || new Date().toISOString(),
-      unread: false,
+      lastMessage: item.lastMessageText || "Start a conversation...",
+      timestamp: item.lastMessageTime
+        ? typeof item.lastMessageTime === "string"
+          ? item.lastMessageTime
+          : new Date(item.lastMessageTime).toISOString()
+        : new Date().toISOString(),
+      unread:
+        item.unreadCount && backendUser?.id
+          ? (item.unreadCount[backendUser.id.toString()] || 0) > 0
+          : false,
     };
 
     return (
@@ -112,7 +177,7 @@ const NewMessageScreen = () => {
     );
   }
 
-  const contacts = previousUsersData?.users || [];
+  const contacts = conversations || [];
 
   return (
     <ThemedView className="flex-1">
@@ -138,9 +203,9 @@ const NewMessageScreen = () => {
             <FlatList
               data={contacts}
               renderItem={renderContactItem}
-              keyExtractor={(item) => item.id.toString()}
+              keyExtractor={(item) => item.conversationId}
               contentContainerStyle={{
-                paddingBottom: 100, // Extra space for FAB
+                paddingBottom: 100,
                 flexGrow: 1,
               }}
               ListEmptyComponent={renderEmptyState}

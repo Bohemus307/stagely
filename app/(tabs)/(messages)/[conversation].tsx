@@ -157,6 +157,42 @@ const ConversationScreen = () => {
 
   const { mutate: markAsReadMutation } = useMarkAsRead(conversationId);
 
+  const otherParticipant = conversation?.otherParticipant;
+
+  const otherUserName = useMemo(() => {
+    if (params.userName && params.userName !== "undefined") {
+      return params.userName as string;
+    }
+    if (otherParticipant) {
+      return getDisplayName(otherParticipant);
+    }
+    if (conversation?.participantNames?.[0]) {
+      return conversation.participantNames[0];
+    }
+    return "User";
+  }, [params.userName, otherParticipant, conversation?.participantNames]);
+
+  const otherUserAvatar = useMemo(() => {
+    if (
+      params.userAvatar &&
+      params.userAvatar !== "undefined" &&
+      params.userAvatar !== ""
+    ) {
+      return params.userAvatar as string;
+    }
+    return (
+      otherParticipant?.profilePictureUrl ||
+      conversation?.participantAvatars?.[0]
+    );
+  }, [
+    params.userAvatar,
+    otherParticipant?.profilePictureUrl,
+    conversation?.participantAvatars,
+  ]);
+
+  const showEmailSubtitle =
+    otherParticipant && isPlaceholderUser(otherParticipant);
+
   useEffect(() => {
     setNewMessage("");
   }, [conversationId]);
@@ -169,12 +205,10 @@ const ConversationScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
-      // Start polling when screen is focused
       pollingIntervalRef.current = setInterval(() => {
         refetchMessages();
-      }, 3000); // Poll every 3 seconds
+      }, 3000);
 
-      // Clean up polling when screen loses focus
       return () => {
         if (pollingIntervalRef.current) {
           clearInterval(pollingIntervalRef.current);
@@ -183,6 +217,7 @@ const ConversationScreen = () => {
       };
     }, [refetchMessages]),
   );
+
   const formatMessageTime = useCallback((timestamp: string) => {
     try {
       const date = new Date(timestamp);
@@ -257,7 +292,6 @@ const ConversationScreen = () => {
     isLoadingConversation,
   ]);
 
-  // Mark messages as read
   useEffect(() => {
     if (unreadMessagesToMark.length > 0 && backendUser?.id) {
       const timeoutId = setTimeout(() => {
@@ -325,6 +359,7 @@ const ConversationScreen = () => {
     isSendingMessage,
   ]);
 
+  // NOW the early returns come AFTER all hooks
   if (
     isLoadingUser ||
     isLoadingConversation ||
@@ -346,16 +381,7 @@ const ConversationScreen = () => {
     );
   }
 
-  const otherParticipant = conversation?.otherParticipant;
-  const otherUserName = otherParticipant
-    ? getDisplayName(otherParticipant)
-    : conversation?.participantNames?.[0] || "User";
-  const otherUserAvatar =
-    otherParticipant?.profilePictureUrl ||
-    conversation?.participantAvatars?.[0];
-  const showEmailSubtitle =
-    otherParticipant && isPlaceholderUser(otherParticipant);
-
+  // Now return the main JSX - otherUserName and otherUserAvatar are already defined above
   return (
     <ThemedView className="flex-1">
       <SafeAreaView className="flex-1">
@@ -379,7 +405,6 @@ const ConversationScreen = () => {
                 <ThemedText className="font-semibold">
                   {otherUserName}
                 </ThemedText>
-                {/* Show email as subtitle for placeholder users */}
                 {showEmailSubtitle && conversation?.otherParticipant?.email && (
                   <ThemedText className="text-xs text-gray-500">
                     {conversation.otherParticipant.email}
