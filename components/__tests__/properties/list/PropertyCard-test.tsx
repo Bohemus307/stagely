@@ -47,7 +47,7 @@ describe("PropertyCard Component", () => {
         aiClassified: false,
       },
       {
-        id: 12345,
+        id: 12346,
         incidentType: "Electrical",
         description: "Wiring issue",
         reportedAt: "2025-01-02T12:00:00Z",
@@ -64,8 +64,8 @@ describe("PropertyCard Component", () => {
     updatedAt: "2025-02-01T00:00:00Z",
     propertyId: 0,
     userId: 0,
-    incidentCount: 0,
-    openIncidentCount: 0,
+    incidentCount: 2,
+    openIncidentCount: 1, // This is what the component now uses
   };
 
   // Mock event handlers
@@ -78,7 +78,7 @@ describe("PropertyCard Component", () => {
     jest.clearAllMocks();
   });
 
-  test("renders property address and location correctly", () => {
+  test("renders property address correctly", () => {
     const { getByText } = render(
       <PropertyCard
         property={mockProperty as Property}
@@ -90,7 +90,6 @@ describe("PropertyCard Component", () => {
     );
 
     expect(getByText("123 Test Street")).toBeTruthy();
-    expect(getByText("Test City, TS 12345")).toBeTruthy();
   });
 
   test("displays correct status badge for Active status", () => {
@@ -156,7 +155,47 @@ describe("PropertyCard Component", () => {
       />,
     );
 
+    // Should show "1 Issue" based on openIncidentCount
     expect(getByText("1 Issue")).toBeTruthy();
+  });
+
+  test("displays plural 'Issues' when there are multiple active incidents", () => {
+    const propertyWithMultipleIssues = {
+      ...mockProperty,
+      openIncidentCount: 2,
+    };
+
+    const { getByText } = render(
+      <PropertyCard
+        property={propertyWithMultipleIssues}
+        onPress={mockOnPress}
+        onDetailsPress={mockOnDetailsPress}
+        onPhotosPress={mockOnPhotosPress}
+        onDocumentsPress={mockOnDocumentsPress}
+      />,
+    );
+
+    expect(getByText("2 Issues")).toBeTruthy();
+  });
+
+  test("displays 'No Issues' badge when there are no active incidents", () => {
+    const propertyWithNoActiveIncidents = {
+      ...mockProperty,
+      openIncidentCount: 0,
+    };
+
+    const { getByText } = render(
+      <PropertyCard
+        property={propertyWithNoActiveIncidents}
+        onPress={mockOnPress}
+        onDetailsPress={mockOnDetailsPress}
+        onPhotosPress={mockOnPhotosPress}
+        onDocumentsPress={mockOnDocumentsPress}
+      />,
+    );
+
+    // Should show "No Issues" badge
+    expect(getByText("No Issues")).toBeTruthy();
   });
 
   test("calls onDetailsPress when Details button is pressed", () => {

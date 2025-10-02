@@ -28,6 +28,19 @@ import {
 } from "@/components/ui/modal";
 import LocationSearchMap from "@/components/LocationSearchMap";
 import { Location } from "@/lib/@types/properties";
+import { getStatusBadge } from "@/components/properties/lib/utils/detailsHelpers";
+import {
+  Select,
+  SelectBackdrop,
+  SelectContent,
+  SelectDragIndicator,
+  SelectDragIndicatorWrapper,
+  SelectIcon,
+  SelectItem,
+  SelectPortal,
+  SelectTrigger,
+} from "@/components/ui/select";
+import { ChevronDownIcon } from "@/components/ui/icon";
 
 const PropertyEditScreen = () => {
   const { propertyId } = useLocalSearchParams();
@@ -57,6 +70,16 @@ const PropertyEditScreen = () => {
   const [showAddressView, setShowAddressView] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>(
+    property?.status || "Active",
+  );
+
+  // Update selectedStatus when property loads
+  useEffect(() => {
+    if (property?.status) {
+      setSelectedStatus(property.status);
+    }
+  }, [property?.status]);
 
   useEffect(() => {
     if (isSuccess) {
@@ -112,6 +135,11 @@ const PropertyEditScreen = () => {
       console.error("Error updating location:", error);
       Alert.alert("Error", "Failed to update property location");
     }
+  };
+
+  const handleStatusChange = (value: string) => {
+    setSelectedStatus(value);
+    updateProperty({ status: value });
   };
 
   const handlePhotoFromCamera = async () => {
@@ -171,6 +199,8 @@ const PropertyEditScreen = () => {
       </View>
     );
   }
+
+  const statusBadge = getStatusBadge(selectedStatus);
   return (
     <ThemedView className="flex-1">
       <SafeAreaView edges={["top"]}>
@@ -193,6 +223,51 @@ const PropertyEditScreen = () => {
               </ThemedText>
             </Box>
           )}
+
+          {/* Status Update Card */}
+          <Box className="bg-primary-100 rounded-2xl p-5 mb-5">
+            <HStack className="items-center mb-3">
+              <Box className="w-10 h-10 bg-primary-700 rounded-xl items-center justify-center mr-4">
+                {isUpdating ? (
+                  <Spinner size="small" color="white" />
+                ) : (
+                  <IconSymbol name="flag.fill" size={20} color="white" />
+                )}
+              </Box>
+              <VStack className="flex-1">
+                <ThemedText type="defaultSemiBold" className="mb-2">
+                  Property Status
+                </ThemedText>
+                <Select
+                  selectedValue={selectedStatus}
+                  onValueChange={handleStatusChange}
+                  isDisabled={isUpdating || isDeleting}
+                >
+                  <SelectTrigger variant="outline" size="md">
+                    <HStack className="items-center flex-1">
+                      <Box className=" py-1 px-3 rounded-full mr-2">
+                        <ThemedText className="text-xs">
+                          {statusBadge.text}
+                        </ThemedText>
+                      </Box>
+                      <SelectIcon className="ml-auto" as={ChevronDownIcon} />
+                    </HStack>
+                  </SelectTrigger>
+                  <SelectPortal>
+                    <SelectBackdrop />
+                    <SelectContent>
+                      <SelectDragIndicatorWrapper>
+                        <SelectDragIndicator />
+                      </SelectDragIndicatorWrapper>
+                      <SelectItem label="Active" value="Active" />
+                      <SelectItem label="Maintenance" value="Maintenance" />
+                      <SelectItem label="Archived" value="Archived" />
+                    </SelectContent>
+                  </SelectPortal>
+                </Select>
+              </VStack>
+            </HStack>
+          </Box>
 
           {/* Address Update Card */}
           <Pressable
