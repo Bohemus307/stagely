@@ -5,30 +5,18 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   Text,
+  Pressable,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
-import * as MediaLibrary from "expo-media-library";
-import * as FileSystem from "expo-file-system";
+
 import { Box } from "@/components/ui/box";
 import { ThemedText } from "@/components/ThemedText";
-import { IconSymbol } from "@/components/ui/IconSymbol";
+import { IconSymbol, IconSymbolName } from "@/components/ui/IconSymbol";
 import { HStack } from "@/components/ui/hstack";
 import { VStack } from "@/components/ui/vstack";
 import { Button, ButtonText } from "@/components/ui/button";
 import { Textarea, TextareaInput } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectBackdrop,
-  SelectContent,
-  SelectDragIndicator,
-  SelectDragIndicatorWrapper,
-  SelectInput,
-  SelectItem,
-  SelectPortal,
-  SelectTrigger,
-} from "@/components/ui/select";
 import { useGetProperties } from "@/hooks/properties/useGetProperties";
 import { useGetPropertySpaces } from "@/hooks/spaces/useGetPropertySpaces";
 import {
@@ -47,29 +35,20 @@ import { IncidentSummaryCard } from "@/components/incidents/create/IncidentSumma
 import { Image } from "@/components/ui/image";
 import { Spinner } from "@/components/ui/spinner";
 import { useS3Upload } from "@/hooks/useS3Upload";
-import * as ImageManipulator from "expo-image-manipulator";
 
-// Helper function to convert S3 URL to CloudFront URL
-const getCloudFrontUrl = (s3Url: string): string | null => {
-  if (!s3Url) return null;
-
-  // Extract the S3 key from the URL
-  const s3Key = s3Url.split("amazonaws.com/")[1];
-
-  if (!s3Key) return s3Url; // Return original if we can't extract the key
-
-  // Construct CloudFront URL
-  return `https://d24y6hzot6c372.cloudfront.net/${s3Key}`;
-};
+import {
+  getCloudFrontUrl,
+  incidentTypes,
+  uriToBlob,
+} from "@/components/incidents/lib/utils/incidentHelpers";
 
 const AddIncidentScreen = () => {
   const params = useLocalSearchParams();
 
   const returnedPhoto = params.photoUri as string;
   const returnedPhotoType = params.photoType as string;
-
-  const [severitySelected, setSeveritySelected] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [currentSubStep, setCurrentSubStep] = useState(1); // For severity (1), type (2), and description (3)
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(
     null,
   );
@@ -77,6 +56,7 @@ const AddIncidentScreen = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [incidentData, setIncidentData] = useState<any>(null);
 
+  // Simplified incident details
   const [incidentDetails, setIncidentDetails] = useState({
     type: "",
     severity: IncidentSeverity.Medium,
@@ -152,7 +132,7 @@ const AddIncidentScreen = () => {
   // Handle photo selection
   const handleTakePhoto = () => {
     router.push({
-      pathname: "/(tabs)/(dashboard)/camera",
+      pathname: "/(tabs)/(incidents)/camera",
       params: {
         propertyId: selectedProperty?.id.toString(),
         returnTo: "addIncident",
@@ -162,7 +142,7 @@ const AddIncidentScreen = () => {
 
   const handleSelectFromGallery = () => {
     router.push({
-      pathname: "/(tabs)/(dashboard)/(photos)/select",
+      pathname: "/(tabs)/(incidents)/(photos)/select",
       params: {
         propertyId: selectedProperty?.id.toString(),
         returnTo: "addIncident",
@@ -178,158 +158,6 @@ const AddIncidentScreen = () => {
     }
   }, [selectedPhoto, returnedPhoto, currentStep]);
 
-  // Helper function to convert URI to Blob (handles ph:// URIs)
-  const uriToBlob = async (uri: string): Promise<Blob> => {
-    console.log(
-      "[uriToBlob] Starting blob creation for URI:",
-      uri.substring(0, 30) + "...",
-    );
-
-    let tempFileUri: string | null = null;
-    let processedUri = uri;
-
-    try {
-      // Handle photo library URIs (ph://)
-      if (uri.startsWith("ph://")) {
-        console.log("[uriToBlob] Detected photo library URI, processing...");
-
-        try {
-          // Extract asset ID from the ph:// URI
-          const assetId = uri.replace("ph://", "").split("/")[0];
-          console.log("[uriToBlob] Extracted asset ID:", assetId);
-
-          // Get asset info to retrieve localUri
-          const asset = await MediaLibrary.getAssetInfoAsync(assetId);
-          console.log("[uriToBlob] Got asset info:", {
-            id: asset.id,
-            hasLocalUri: !!asset.localUri,
-            hasUri: !!asset.uri,
-            filename: asset.filename,
-          });
-
-          // Use localUri if available
-          if (asset.localUri) {
-            console.log("[uriToBlob] Using localUri instead of photo URI");
-            processedUri = asset.localUri;
-          }
-        } catch (assetError) {
-          console.log(
-            "[uriToBlob] Could not get asset info, falling back to FileSystem:",
-            assetError,
-          );
-
-          // Fallback: copy the image to a temporary file
-          try {
-            const timestamp = new Date().getTime() % 1000000;
-            const random = Math.floor(Math.random() * 10000);
-            const uniqueFileName = `temp_incident_image_${timestamp}_${random}.jpg`;
-            tempFileUri = FileSystem.cacheDirectory + uniqueFileName;
-
-            console.log("[uriToBlob] Creating temporary file at:", tempFileUri);
-
-            // Check if file exists and delete if it does
-            const fileInfo = await FileSystem.getInfoAsync(tempFileUri);
-            if (fileInfo.exists) {
-              console.log("[uriToBlob] File already exists, deleting it");
-              await FileSystem.deleteAsync(tempFileUri);
-            }
-
-            // Copy the photo to temporary file
-            await FileSystem.copyAsync({
-              from: uri,
-              to: tempFileUri,
-            });
-
-            console.log("[uriToBlob] Successfully copied to temporary file");
-            processedUri = tempFileUri;
-          } catch (copyError) {
-            console.error("[uriToBlob] Error copying file:", copyError);
-            throw new Error(
-              `Failed to process photo library image: ${copyError}`,
-            );
-          }
-        }
-      }
-
-      // **NEW: Convert HEIC/HEIF to JPEG using Expo ImageManipulator**
-      console.log("[uriToBlob] Converting image to JPEG and optimizing...");
-
-      try {
-        // Use ImageManipulator to convert any format (including HEIC) to JPEG
-        const result = await ImageManipulator.manipulateAsync(
-          processedUri,
-          [
-            // Resize if too large (optional - adjust as needed)
-            { resize: { width: 1568 } }, // Maintains aspect ratio, max width 1568px
-          ],
-          {
-            compress: 0.85, // 85% quality for good balance of quality/size
-            format: ImageManipulator.SaveFormat.JPEG, // Force JPEG output
-          },
-        );
-
-        console.log("[uriToBlob] Image converted successfully:", {
-          originalUri: processedUri.substring(0, 30) + "...",
-          convertedUri: result.uri.substring(0, 30) + "...",
-          width: result.width,
-          height: result.height,
-        });
-
-        // Use the converted image URI
-        processedUri = result.uri;
-      } catch (conversionError) {
-        console.warn(
-          "[uriToBlob] Image conversion failed, using original:",
-          conversionError,
-        );
-        // Continue with original URI if conversion fails
-      }
-
-      // Fetch and convert to blob
-      console.log(
-        "[uriToBlob] Fetching from processed URI:",
-        processedUri.substring(0, 30) + "...",
-      );
-      const response = await fetch(processedUri);
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch image: ${response.status} ${response.statusText}`,
-        );
-      }
-
-      const blob = await response.blob();
-      console.log("[uriToBlob] Blob created successfully:", {
-        size: blob.size,
-        type: blob.type || "image/jpeg",
-      });
-
-      // Ensure blob has correct MIME type
-      if (!blob.type || blob.type === "application/octet-stream") {
-        console.log("[uriToBlob] Fixing blob MIME type to image/jpeg");
-        return new Blob([blob], { type: "image/jpeg" });
-      }
-
-      return blob;
-    } catch (error) {
-      console.error("[uriToBlob] Error creating blob:", error);
-      throw error;
-    } finally {
-      // Clean up temporary file if created
-      if (tempFileUri) {
-        try {
-          const fileInfo = await FileSystem.getInfoAsync(tempFileUri);
-          if (fileInfo.exists) {
-            console.log("[uriToBlob] Cleaning up temporary file:", tempFileUri);
-            await FileSystem.deleteAsync(tempFileUri, { idempotent: true });
-          }
-        } catch (cleanupError) {
-          console.log("[uriToBlob] Error during cleanup:", cleanupError);
-        }
-      }
-    }
-  };
-
   // Handle form submission
   const handleSubmit = async () => {
     // Validation checks
@@ -340,6 +168,11 @@ const AddIncidentScreen = () => {
 
     if (!selectedProperty) {
       Alert.alert("Error", "Please select a property");
+      return;
+    }
+
+    if (!incidentDetails.type) {
+      Alert.alert("Error", "Please select an incident type");
       return;
     }
 
@@ -446,33 +279,39 @@ const AddIncidentScreen = () => {
     }
   };
 
-  // Navigation handlers
-  const goToNextStep = () => {
-    if (currentStep < 3) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
   const goToPreviousStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
+    if (currentStep === 2) {
+      setSelectedProperty(null);
+      setCurrentStep(1);
+    } else if (currentStep === 3) {
+      if (currentSubStep === 3) {
+        // Go back to incident type selection
+        setCurrentSubStep(2);
+      } else if (currentSubStep === 2) {
+        // Go back to severity selection
+        setCurrentSubStep(1);
+      } else {
+        // Go back to photo selection
+        setSelectedPhoto(null);
+        setCurrentStep(2);
+      }
+    } else if (currentStep === 1) {
+      router.dismissAll();
     }
   };
 
-  const canProceedToNext = () => {
-    switch (currentStep) {
-      case 1:
-        return selectedProperty !== null;
-      case 2:
-        return selectedPhoto !== null;
-      case 3:
-        return (
-          incidentDetails.type !== "" &&
-          incidentDetails.description.trim() !== ""
-        );
-      default:
-        return false;
-    }
+  // Handle severity selection
+  const handleSeveritySelected = (severity: IncidentSeverity) => {
+    setIncidentDetails({ ...incidentDetails, severity });
+    // Move to incident type selection
+    setCurrentSubStep(2);
+  };
+
+  // Handle incident type selection
+  const handleIncidentTypeSelected = (type: string) => {
+    setIncidentDetails({ ...incidentDetails, type });
+    // Move to description input
+    setCurrentSubStep(3);
   };
 
   // Render step indicator with labels
@@ -534,6 +373,7 @@ const AddIncidentScreen = () => {
       loading={propertiesLoading}
     />
   );
+
   // Render Step 2: Photo Selection
   const renderPhotoSelection = () => (
     <PhotoSelector
@@ -547,8 +387,8 @@ const AddIncidentScreen = () => {
     />
   );
 
-  // Render Step 3: Incident Details
-  const renderIncidentDetails = () => {
+  // Render Step 3.1: Severity Selection
+  const renderSeveritySelection = () => {
     return (
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -556,7 +396,7 @@ const AddIncidentScreen = () => {
       >
         <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
           <Box className="p-4">
-            {/* Photo Preview - Always visible */}
+            {/* Photo Preview */}
             {selectedPhoto && (
               <Box className="mb-4">
                 <ThemedText className="text-sm font-semibold text-gray-600 mb-2">
@@ -569,210 +409,162 @@ const AddIncidentScreen = () => {
                 />
               </Box>
             )}
+            {/* Severity Selector */}
+            <Box className="mb-4">
+              <ThemedText className="text-lg font-semibold mb-3">
+                How severe is this incident?
+              </ThemedText>
+              <SeveritySelector
+                selectedSeverity={incidentDetails.severity}
+                onSelectSeverity={handleSeveritySelected}
+                showDescriptions={true}
+              />
+            </Box>
+          </Box>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    );
+  };
 
-            {/* Severity Selector - Shows first, then hides after selection */}
-            {!severitySelected && (
-              <Box className="mb-4">
-                <ThemedText className="text-lg font-semibold mb-3">
-                  How severe is this incident?
+  // Render Step 3.2: Incident Type Selection
+  const renderIncidentTypeSelection = () => {
+    return (
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+      >
+        <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
+          <Box className="p-4">
+            {/* Severity Chip */}
+            <Box className="mb-4">
+              <ThemedText className="text-sm text-gray-600 mb-2">
+                Selected Severity:
+              </ThemedText>
+              <Box
+                className={`px-3 py-2 rounded-md w-auto self-start flex-row items-center ${
+                  incidentDetails.severity === IncidentSeverity.High
+                    ? "bg-red-100"
+                    : incidentDetails.severity === IncidentSeverity.Medium
+                      ? "bg-yellow-100"
+                      : "bg-green-100"
+                }`}
+              >
+                <ThemedText
+                  className={`text-sm font-semibold ${
+                    incidentDetails.severity === IncidentSeverity.High
+                      ? "text-red-700"
+                      : incidentDetails.severity === IncidentSeverity.Medium
+                        ? "text-yellow-700"
+                        : "text-green-700"
+                  }`}
+                >
+                  {incidentDetails.severity}
                 </ThemedText>
-                <SeveritySelector
-                  selectedSeverity={incidentDetails.severity}
-                  onSelectSeverity={(severity) => {
-                    setIncidentDetails({ ...incidentDetails, severity });
-                    // Auto-progress after severity selection
-                    setTimeout(() => setSeveritySelected(true), 300);
-                  }}
-                  showDescriptions={true}
-                />
               </Box>
-            )}
+            </Box>
 
-            {/* Form fields show after severity is selected */}
-            {severitySelected && (
-              <>
-                {/* Show selected severity as a chip */}
-                <Box className="mb-4 flex-row items-center">
-                  <ThemedText className="text-sm text-gray-600 mr-2">
-                    Severity:
-                  </ThemedText>
+            {/* Incident Type Selection */}
+            <Box className="mb-4">
+              <ThemedText className="text-lg font-semibold mb-3">
+                What type of incident is this?
+              </ThemedText>
+              <ThemedText className="text-sm text-gray-600 mb-4">
+                Choose the category that best matches the issue.
+              </ThemedText>
+
+              <VStack>
+                {incidentTypes.map((item) => (
                   <Pressable
-                    onPress={() => setSeveritySelected(false)}
-                    className={`px-3 py-1 rounded-full flex-row items-center ${
-                      incidentDetails.severity === IncidentSeverity.High
-                        ? "bg-red-100"
-                        : incidentDetails.severity === IncidentSeverity.Medium
-                          ? "bg-yellow-100"
-                          : "bg-green-100"
+                    key={item.type}
+                    onPress={() => handleIncidentTypeSelected(item.type)}
+                    className={`p-3 rounded-lg border ${
+                      incidentDetails.type === item.type
+                        ? "border-primary-500 bg-primary-50"
+                        : "border-gray-200"
                     }`}
                   >
-                    <ThemedText
-                      className={`text-sm font-semibold ${
-                        incidentDetails.severity === IncidentSeverity.High
-                          ? "text-red-700"
-                          : incidentDetails.severity === IncidentSeverity.Medium
-                            ? "text-yellow-700"
-                            : "text-green-700"
-                      }`}
-                    >
-                      {incidentDetails.severity}
-                    </ThemedText>
-                    <IconSymbol
-                      name="pencil"
-                      size={12}
-                      color={
-                        incidentDetails.severity === IncidentSeverity.High
-                          ? "#B91C1C"
-                          : incidentDetails.severity === IncidentSeverity.Medium
-                            ? "#A16207"
-                            : "#15803D"
-                      }
-                      style={{ marginLeft: 4 }}
-                    />
+                    <HStack className="items-center">
+                      <Box
+                        style={{ backgroundColor: item.color }}
+                        className="w-10 h-10 rounded-full items-center justify-center mr-3"
+                      >
+                        <IconSymbol
+                          name={item.icon as IconSymbolName}
+                          size={20}
+                          color="white"
+                        />
+                      </Box>
+                      <VStack className="flex-1">
+                        <ThemedText className="font-semibold">
+                          {item.type}
+                        </ThemedText>
+                        <ThemedText className="text-xs text-gray-600">
+                          {item.description}
+                        </ThemedText>
+                      </VStack>
+                      {incidentDetails.type === item.type && (
+                        <IconSymbol
+                          name="checkmark.circle.fill"
+                          size={22}
+                          color="#0284c7"
+                        />
+                      )}
+                    </HStack>
                   </Pressable>
-                </Box>
+                ))}
+              </VStack>
+            </Box>
+          </Box>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    );
+  };
 
-                {/* Space Type */}
-                <Box className="mb-4">
-                  <ThemedText className="font-semibold mb-2">
-                    Location in Property
-                  </ThemedText>
-                  {!selectedPhoto?.analysisData?.type ? (
-                    <Select
-                      selectedValue={incidentDetails.spaceType}
-                      onValueChange={(value) =>
-                        setIncidentDetails({
-                          ...incidentDetails,
-                          spaceType: value as SpaceType,
-                        })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectInput
-                          placeholder="Select space type (optional)"
-                          value={incidentDetails.spaceType}
-                        />
-                      </SelectTrigger>
-                      <SelectPortal>
-                        <SelectBackdrop />
-                        <SelectContent>
-                          <SelectDragIndicatorWrapper>
-                            <SelectDragIndicator />
-                          </SelectDragIndicatorWrapper>
-                          <SelectItem label="Kitchen" value="Kitchen" />
-                          <SelectItem label="Living Room" value="LivingRoom" />
-                          <SelectItem label="Bedroom" value="Bedroom" />
-                          <SelectItem label="Bathroom" value="Bathroom" />
-                          <SelectItem label="Dining Room" value="DiningRoom" />
-                          <SelectItem label="Hallway" value="Hallway" />
-                          <SelectItem label="Basement" value="Basement" />
-                          <SelectItem label="Attic" value="Attic" />
-                          <SelectItem label="Garage" value="Garage" />
-                          <SelectItem label="Exterior" value="Exterior" />
-                          <SelectItem label="Yard" value="Yard" />
-                          <SelectItem label="Other" value="Other" />
-                        </SelectContent>
-                      </SelectPortal>
-                    </Select>
-                  ) : (
-                    <ThemedText>{selectedPhoto?.analysisData?.type}</ThemedText>
-                  )}
-                </Box>
+  // Render Step 3.3: Incident Description Input
+  const renderIncidentDescriptionInput = () => {
+    return (
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        className="flex-1"
+      >
+        <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
+          <Box className="p-4">
+            {/* Type Chip */}
+            <Box className="mb-4">
+              <ThemedText className="text-sm text-gray-600 mb-2">
+                Selected Type:
+              </ThemedText>
+              <Box className="px-3 py-2 rounded-md w-auto self-start flex-row items-center bg-primary-50">
+                <ThemedText className="text-sm font-semibold text-primary-700">
+                  {incidentDetails.type}
+                </ThemedText>
+              </Box>
+            </Box>
 
-                {/* Incident Type */}
-                <Box className="mb-4">
-                  <ThemedText className="font-semibold mb-2">
-                    Incident Type
-                  </ThemedText>
-                  <Select
-                    selectedValue={incidentDetails.type}
-                    onValueChange={(value: any) =>
-                      setIncidentDetails({ ...incidentDetails, type: value })
+            {/* Description Input */}
+            <Box className="mb-4">
+              <ThemedText className="text-lg font-semibold mb-3">
+                Would you like to add a description?
+              </ThemedText>
+              <ThemedText className="text-sm text-gray-600 mb-4">
+                Provide additional details about the incident (optional).
+              </ThemedText>
+
+              <Box className="p-3 rounded-lg border border-gray-200 bg-white">
+                <Textarea size="md" className="h-40">
+                  <TextareaInput
+                    value={incidentDetails.description}
+                    onChangeText={(text: any) =>
+                      setIncidentDetails({
+                        ...incidentDetails,
+                        description: text,
+                      })
                     }
-                  >
-                    <SelectTrigger>
-                      <SelectInput
-                        placeholder="Select incident type"
-                        value={incidentDetails.type}
-                      />
-                    </SelectTrigger>
-                    <SelectPortal>
-                      <SelectBackdrop />
-                      <SelectContent>
-                        <SelectDragIndicatorWrapper>
-                          <SelectDragIndicator />
-                        </SelectDragIndicatorWrapper>
-                        <SelectItem label="Water Damage" value="Water Damage" />
-                        <SelectItem
-                          label="Electrical Issue"
-                          value="Electrical Issue"
-                        />
-                        <SelectItem
-                          label="Structural Damage"
-                          value="Structural Damage"
-                        />
-                        <SelectItem
-                          label="Missing Items"
-                          value="Missing Items"
-                        />
-                        <SelectItem label="HVAC Problem" value="HVAC Problem" />
-                        <SelectItem
-                          label="Pest Infestation"
-                          value="Pest Infestation"
-                        />
-                        <SelectItem
-                          label="Plumbing Issue"
-                          value="Plumbing Issue"
-                        />
-                        <SelectItem
-                          label="Security Concern"
-                          value="Security Concern"
-                        />
-                        <SelectItem label="Fire Safety" value="Fire Safety" />
-                        <SelectItem label="Mold/Mildew" value="Mold/Mildew" />
-                        <SelectItem
-                          label="Appliance Issue"
-                          value="Appliance Issue"
-                        />
-                        <SelectItem label="Roof/Gutter" value="Roof/Gutter" />
-                        <SelectItem label="Window/Door" value="Window/Door" />
-                        <SelectItem label="Flooring" value="Flooring" />
-                        <SelectItem label="Other" value="Other" />
-                        <SelectItem
-                          label="Damaged Items"
-                          value="Damaged Items"
-                        />
-                      </SelectContent>
-                    </SelectPortal>
-                  </Select>
-                </Box>
-
-                {/* Description */}
-                <Box className="mb-6">
-                  <ThemedText className="font-semibold mb-2">
-                    Description
-                  </ThemedText>
-                  <Textarea className="bg-white">
-                    <TextareaInput
-                      placeholder="Describe the incident in detail. Include when you first noticed it, any potential causes, and immediate concerns..."
-                      value={incidentDetails.description}
-                      onChangeText={(text: any) =>
-                        setIncidentDetails({
-                          ...incidentDetails,
-                          description: text,
-                        })
-                      }
-                      className="min-h-32"
-                      multiline
-                      textAlignVertical="top"
-                    />
-                  </Textarea>
-                  <ThemedText className="text-xs text-gray-500 mt-1">
-                    {incidentDetails.description.length}/500 characters
-                  </ThemedText>
-                </Box>
-              </>
-            )}
+                    placeholder="Describe the incident in more detail..."
+                  />
+                </Textarea>
+              </Box>
+            </Box>
           </Box>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -824,73 +616,42 @@ const AddIncidentScreen = () => {
       <Box className="flex-1 bg-gray-50">
         {currentStep === 1 && renderPropertySelection()}
         {currentStep === 2 && selectedProperty && renderPhotoSelection()}
-        {currentStep === 3 && renderIncidentDetails()}
+        {currentStep === 3 && currentSubStep === 1 && renderSeveritySelection()}
+        {currentStep === 3 &&
+          currentSubStep === 2 &&
+          renderIncidentTypeSelection()}
+        {currentStep === 3 &&
+          currentSubStep === 3 &&
+          renderIncidentDescriptionInput()}
         {currentStep === 4 && renderIncidentSummary()}
       </Box>
 
       {/* Bottom Navigation */}
       <Box className="px-4 py-3 border-t border-gray-200 bg-white">
         {currentStep === 4 ? (
-          <VStack className="gap-2">
+          <HStack className="h-1/6 pt-4 gap-2">
             <Button
-              onPress={() => {
-                router.replace({
-                  pathname: "/(tabs)/(incidents)/details",
-                  params: { incidentId: incidentData.id.toString() },
-                });
-              }}
-              className="w-full"
-            >
-              <HStack className="items-center justify-center">
-                <IconSymbol
-                  name="arrow.right.circle.fill"
-                  size={18}
-                  color="white"
-                />
-                <ButtonText className="ml-2">View Incident Details</ButtonText>
-              </HStack>
-            </Button>
-            <Button
-              variant="outline"
-              onPress={() => {
-                router.back();
-              }}
+              onPress={() => router.push("/(tabs)/(dashboard)/")}
               className="w-full"
             >
               <ButtonText>Done</ButtonText>
             </Button>
-          </VStack>
+          </HStack>
         ) : (
-          <HStack className=" h-1/6 pt-4 gap-2">
-            {currentStep > 1 && (
+          <HStack className="h-1/6 pt-4 gap-2">
+            {(currentStep >= 1 || currentSubStep >= 1) && (
               <Button
-                variant="outline"
+                variant="solid"
                 onPress={goToPreviousStep}
                 className="flex-1"
               >
                 <ButtonText>Back</ButtonText>
               </Button>
             )}
-            {currentStep < 3 ? (
-              <Button
-                onPress={goToNextStep}
-                disabled={!canProceedToNext()}
-                className="flex-1"
-              >
-                <HStack className="items-center justify-center">
-                  <ButtonText>Next</ButtonText>
-                  <IconSymbol
-                    name="chevron.right"
-                    size={16}
-                    color="white"
-                    style={{ marginLeft: 4 }}
-                  />
-                </HStack>
-              </Button>
-            ) : (
+            {currentStep === 3 && currentSubStep === 3 && (
               <Button
                 onPress={handleSubmit}
-                disabled={isCreating || isUploading || !canProceedToNext()}
+                disabled={isCreating || isUploading || !incidentDetails.type}
                 className="flex-1"
               >
                 {isUploading ? (

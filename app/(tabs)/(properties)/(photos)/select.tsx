@@ -11,6 +11,7 @@ import GalleryHeader from "@/components/photos/GalleryHeader";
 import GalleryImageGrid from "@/components/photos/GalleryImageGrid";
 import GalleryPermissionDenied from "@/components/photos/GalleryPermissionDenied";
 import GalleryLoadingState from "@/components/photos/GalleryLoadingState";
+import ResponsiveScreenWrapper from "@/components/ResponsiveScreenWrapper";
 
 interface SelectedImage {
   id: string;
@@ -507,26 +508,27 @@ const GallerySelectScreen = () => {
     );
   }
 
-  // Default: Show selection screen
   return (
-    <SafeAreaView className="flex-1 p-4">
-      {/* Header */}
-      <GalleryHeader
-        selectedCount={selectedCount}
-        isLoading={isSpaceCreationLoading}
-        onNext={handleNext}
-      />
+    <ResponsiveScreenWrapper scrollable={true}>
+      <SafeAreaView className="flex-1 p-4 mt-4">
+        {/* Header */}
+        <GalleryHeader
+          selectedCount={selectedCount}
+          isLoading={isSpaceCreationLoading}
+          onNext={handleNext}
+        />
 
-      {/* Image Grid */}
-      <GalleryImageGrid
-        mediaAssets={mediaAssets}
-        selectedImages={selectedImages}
-        onToggleSelection={toggleImageSelection}
-        onRefresh={handleRefresh}
-        refreshing={refreshing}
-        imageSize={imageSize}
-      />
-    </SafeAreaView>
+        {/* Image Grid */}
+        <GalleryImageGrid
+          mediaAssets={mediaAssets}
+          selectedImages={selectedImages}
+          onToggleSelection={toggleImageSelection}
+          onRefresh={handleRefresh}
+          refreshing={refreshing}
+          imageSize={imageSize}
+        />
+      </SafeAreaView>
+    </ResponsiveScreenWrapper>
   );
 };
 
