@@ -29,3 +29,66 @@ export const filterMessages = (
     return matchesSearch && matchesStatus;
   });
 };
+
+/**
+ * Get display name for a user/participant
+ * Handles placeholder users, invited users, and email-based names
+ */
+export const getDisplayName = (participant: {
+  firstName?: string | null;
+  lastName?: string | null;
+  name?: string | null;
+  email?: string | null;
+}): string => {
+  // Use firstName + lastName if both exist and not placeholder
+  if (
+    participant.firstName &&
+    participant.lastName &&
+    !(participant.firstName === "Invited" && participant.lastName === "User")
+  ) {
+    return `${participant.firstName} ${participant.lastName}`;
+  }
+
+  // Use name if it exists and isn't placeholder
+  if (
+    participant.name &&
+    participant.name !== "Invited User" &&
+    participant.name.trim() !== ""
+  ) {
+    return participant.name;
+  }
+
+  // Fall back to email username if available
+  if (participant.email) {
+    const emailUsername = participant.email.split("@")[0];
+    return emailUsername
+      .replace(/[._-]/g, " ")
+      .split(" ")
+      .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  }
+
+  return "User";
+};
+
+/**
+ * Check if user is a placeholder (invited but not registered)
+ */
+export const isPlaceholderUser = (participant: {
+  firstName?: string | null;
+  lastName?: string | null;
+  name?: string | null;
+  isPlaceholder?: boolean;
+}): boolean => {
+  if (participant.isPlaceholder) return true;
+
+  return (
+    !participant.firstName ||
+    !participant.lastName ||
+    participant.firstName === "Invited" ||
+    participant.lastName === "User" ||
+    participant.name === "Invited User" ||
+    !participant.name ||
+    participant.name.trim() === ""
+  );
+};

@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from "expo-router";
-import { useState, useRef, useEffect, useCallback, memo, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback, memo } from "react";
 import {
   FlatList,
   TextInput,
@@ -34,47 +34,10 @@ import { useAuthUser } from "@/hooks/useAuthUser";
 import { ChatMessage } from "@/lib/@types/messages";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { useFocusEffect } from "@react-navigation/native";
-
-const getDisplayName = (participant: any): string => {
-  if (
-    participant?.firstName &&
-    participant?.lastName &&
-    !(participant.firstName === "Invited" && participant.lastName === "User")
-  ) {
-    return `${participant.firstName} ${participant.lastName}`;
-  }
-
-  if (
-    participant?.name &&
-    participant.name !== "Invited User" &&
-    participant.name.trim() !== ""
-  ) {
-    return participant.name;
-  }
-
-  if (participant?.email) {
-    const emailUsername = participant.email.split("@")[0];
-    return emailUsername
-      .replace(/[._]/g, " ")
-      .split(" ")
-      .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  }
-
-  return "Unknown User";
-};
-
-const isPlaceholderUser = (participant: any): boolean => {
-  return (
-    !participant?.firstName ||
-    !participant?.lastName ||
-    participant.firstName === "Invited" ||
-    participant.lastName === "User" ||
-    participant.name === "Invited User" ||
-    !participant.name ||
-    participant.name.trim() === ""
-  );
-};
+import {
+  getDisplayName,
+  isPlaceholderUser,
+} from "@/components/message/lib/utils/messageHelpers";
 
 const MessageItem = memo(
   ({
@@ -141,8 +104,6 @@ const ConversationScreen = () => {
   const textInputRef = useRef<TextInput>(null);
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const otherUserId = useMemo(() => Number(params.userId), [params.userId]);
-
   const { conversation, isLoading: isLoadingConversation } =
     useGetConversation(conversationId);
 
@@ -157,39 +118,15 @@ const ConversationScreen = () => {
 
   const { mutate: markAsReadMutation } = useMarkAsRead(conversationId);
 
+  const otherUserId = conversation?.participants?.find(
+    (p: number) => p !== backendUser?.id,
+  );
+
   const otherParticipant = conversation?.otherParticipant;
-
-  const otherUserName = useMemo(() => {
-    if (params.userName && params.userName !== "undefined") {
-      return params.userName as string;
-    }
-    if (otherParticipant) {
-      return getDisplayName(otherParticipant);
-    }
-    if (conversation?.participantNames?.[0]) {
-      return conversation.participantNames[0];
-    }
-    return "User";
-  }, [params.userName, otherParticipant, conversation?.participantNames]);
-
-  const otherUserAvatar = useMemo(() => {
-    if (
-      params.userAvatar &&
-      params.userAvatar !== "undefined" &&
-      params.userAvatar !== ""
-    ) {
-      return params.userAvatar as string;
-    }
-    return (
-      otherParticipant?.profilePictureUrl ||
-      conversation?.participantAvatars?.[0]
-    );
-  }, [
-    params.userAvatar,
-    otherParticipant?.profilePictureUrl,
-    conversation?.participantAvatars,
-  ]);
-
+  const otherUserName = otherParticipant
+    ? getDisplayName(otherParticipant)
+    : "User";
+  const otherUserAvatar = otherParticipant?.profilePictureUrl;
   const showEmailSubtitle =
     otherParticipant && isPlaceholderUser(otherParticipant);
 
@@ -359,7 +296,6 @@ const ConversationScreen = () => {
     isSendingMessage,
   ]);
 
-  // NOW the early returns come AFTER all hooks
   if (
     isLoadingUser ||
     isLoadingConversation ||
@@ -381,7 +317,6 @@ const ConversationScreen = () => {
     );
   }
 
-  // Now return the main JSX - otherUserName and otherUserAvatar are already defined above
   return (
     <ThemedView className="flex-1">
       <SafeAreaView className="flex-1">

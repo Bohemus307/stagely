@@ -18,6 +18,7 @@ import { Colors } from "@/constants/Colors";
 import { Fab, FabIcon } from "@/components/ui/fab";
 import { Box } from "@/components/ui/box";
 import { Conversation } from "@/lib/@types/messages";
+import { getDisplayName } from "@/components/message/lib/utils/messageHelpers";
 
 const NewMessageScreen = () => {
   const { backendUser, isLoading: isLoadingUser } = useAuthUser();
@@ -30,41 +31,10 @@ const NewMessageScreen = () => {
   } = useGetConversations();
 
   const handleContactPress = (conversation: Conversation) => {
-    const otherParticipantId = conversation.participants?.find(
-      (p: number) => p !== backendUser?.id,
-    );
-
-    let participantName = "User";
-    if (conversation.otherParticipant) {
-      const { firstName, lastName, email } = conversation.otherParticipant;
-      if (
-        firstName &&
-        lastName &&
-        !(firstName === "Invited" && lastName === "User")
-      ) {
-        participantName = `${firstName} ${lastName}`;
-      } else if (email) {
-        const emailUsername = email.split("@")[0];
-        participantName = emailUsername
-          .replace(/[._-]/g, " ")
-          .split(" ")
-          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ");
-      }
-    } else if (conversation.participantNames?.[0]) {
-      participantName = conversation.participantNames[0];
-    }
-
     router.push({
       pathname: "/(tabs)/(messages)/[conversation]",
       params: {
         conversation: conversation.conversationId,
-        userId: otherParticipantId?.toString() || "",
-        userName: participantName,
-        userAvatar:
-          conversation.otherParticipant?.profilePictureUrl ||
-          conversation.participantAvatars?.[0] ||
-          "",
       },
     });
   };
@@ -74,43 +44,19 @@ const NewMessageScreen = () => {
   };
 
   const renderContactItem = ({ item }: { item: Conversation }) => {
-    const otherParticipantId = item.participants?.find(
-      (p: number) => p !== backendUser?.id,
-    );
-
-    let displayName = "User";
-    if (item.otherParticipant) {
-      const { firstName, lastName, email } = item.otherParticipant;
-      if (
-        firstName &&
-        lastName &&
-        !(firstName === "Invited" && lastName === "User")
-      ) {
-        displayName = `${firstName} ${lastName}`;
-      } else if (email) {
-        const emailUsername = email.split("@")[0];
-        displayName = emailUsername
-          .replace(/[._-]/g, " ")
-          .split(" ")
-          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(" ");
-      }
-    } else if (item.participantNames?.[0]) {
-      displayName = item.participantNames[0];
-    }
+    const displayName = item.otherParticipant
+      ? getDisplayName(item.otherParticipant)
+      : item.participantNames?.[0] || "User";
 
     const messageData = {
       id: item.conversationId,
       user: {
-        id: otherParticipantId?.toString() || "",
+        id: item.otherParticipant?.toString() || "",
         name: displayName,
-        firstName: item.participantFirstNames?.[0] || "",
-        lastName: item.participantLastNames?.[0] || "",
-        email: item.participantEmails?.[0] || "",
-        avatar:
-          item.otherParticipant?.profilePictureUrl ||
-          item.participantAvatars?.[0] ||
-          undefined,
+        firstName: item.otherParticipant?.firstName || "",
+        lastName: item.otherParticipant?.lastName || "",
+        email: item.otherParticipant?.email || "",
+        avatar: item.otherParticipant?.profilePictureUrl || undefined,
       },
       lastMessage: item.lastMessageText || "Start a conversation...",
       timestamp: item.lastMessageTime
