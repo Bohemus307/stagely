@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import {
   SafeAreaView,
@@ -349,7 +350,11 @@ const ConversationScreen = () => {
             </HStack>
           </View>
         </View>
-        <KeyboardAvoidingView behavior="height" style={{ flex: 1 }}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
+        >
           {/* Message List */}
           <View style={{ flex: 1 }}>
             <FlatList
@@ -375,7 +380,7 @@ const ConversationScreen = () => {
             className="border-t border-gray-200 px-2 pt-2 pb-2 flex-row items-center"
             style={{
               borderTopColor: "#e5e7eb",
-              paddingBottom: insets.bottom + 16,
+              paddingBottom: (insets.bottom || 0) + 16,
             }}
           >
             <TextInput
