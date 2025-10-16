@@ -11,6 +11,7 @@ interface UpdatePropertyData {
   latitude?: number;
   longitude?: number;
   imageUrl?: string;
+  status?: string;
 }
 
 export const useUpdateProperty = (propertyId: string) => {

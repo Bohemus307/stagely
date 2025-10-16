@@ -11,30 +11,30 @@ import {
 } from "react-native";
 import { AddIcon } from "@/components/ui/icon";
 import { useAuthUser } from "@/hooks/useAuthUser";
-import { usePreviouslyMessagedUsers } from "@/hooks/messaging/usePreviouslyMessagedUsers";
-import { User } from "@/lib/@types/messages";
+import { useGetConversations } from "@/hooks/messaging/useConversations";
 import MessageCard from "@/components/message/list/MessageCard";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/Colors";
 import { Fab, FabIcon } from "@/components/ui/fab";
 import { Box } from "@/components/ui/box";
+import { Conversation } from "@/lib/@types/messages";
+import { getDisplayName } from "@/components/message/lib/utils/messageHelpers";
 
 const NewMessageScreen = () => {
   const { backendUser, isLoading: isLoadingUser } = useAuthUser();
 
   const {
-    data: previousUsersData,
+    conversations,
     isLoading: isLoadingContacts,
     error: contactsError,
     refetch,
-  } = usePreviouslyMessagedUsers("", true);
+  } = useGetConversations();
 
-  const handleContactPress = (user: User) => {
+  const handleContactPress = (conversation: Conversation) => {
     router.push({
       pathname: "/(tabs)/(messages)/[conversation]",
       params: {
-        conversation: user.conversationId || `${backendUser?.id}-${user.id}`,
-        userId: user.id.toString(),
+        conversation: conversation.conversationId,
       },
     });
   };
@@ -43,20 +43,31 @@ const NewMessageScreen = () => {
     router.push("/(tabs)/(messages)/invite");
   };
 
-  const renderContactItem = ({ item }: { item: User }) => {
+  const renderContactItem = ({ item }: { item: Conversation }) => {
+    const displayName = item.otherParticipant
+      ? getDisplayName(item.otherParticipant)
+      : item.participantNames?.[0] || "User";
+
     const messageData = {
-      id: item.conversationId || `contact-${item.id}`,
+      id: item.conversationId,
       user: {
-        id: item.id.toString(),
-        name: `${item.firstName} ${item.lastName}`,
-        firstName: item.firstName,
-        lastName: item.lastName,
-        email: item.email,
-        avatar: item.profilePictureUrl,
+        id: item.otherParticipant?.toString() || "",
+        name: displayName,
+        firstName: item.otherParticipant?.firstName || "",
+        lastName: item.otherParticipant?.lastName || "",
+        email: item.otherParticipant?.email || "",
+        avatar: item.otherParticipant?.profilePictureUrl || undefined,
       },
-      lastMessage: item.lastMessage || "Start a conversation...",
-      timestamp: item.lastMessageTime || new Date().toISOString(),
-      unread: false,
+      lastMessage: item.lastMessageText || "Start a conversation...",
+      timestamp: item.lastMessageTime
+        ? typeof item.lastMessageTime === "string"
+          ? item.lastMessageTime
+          : new Date(item.lastMessageTime).toISOString()
+        : new Date().toISOString(),
+      unread:
+        item.unreadCount && backendUser?.id
+          ? (item.unreadCount[backendUser.id.toString()] || 0) > 0
+          : false,
     };
 
     return (
@@ -112,7 +123,7 @@ const NewMessageScreen = () => {
     );
   }
 
-  const contacts = previousUsersData?.users || [];
+  const contacts = conversations || [];
 
   return (
     <ThemedView className="flex-1">
@@ -138,9 +149,9 @@ const NewMessageScreen = () => {
             <FlatList
               data={contacts}
               renderItem={renderContactItem}
-              keyExtractor={(item) => item.id.toString()}
+              keyExtractor={(item) => item.conversationId}
               contentContainerStyle={{
-                paddingBottom: 100, // Extra space for FAB
+                paddingBottom: 100,
                 flexGrow: 1,
               }}
               ListEmptyComponent={renderEmptyState}

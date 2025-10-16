@@ -14,13 +14,25 @@ function Header() {
   const { user } = useAuth0();
   const router = useRouter();
 
+  const navigateToDashboard = () => {
+    try {
+      router.push("/(tabs)/(dashboard)");
+    } catch (error) {
+      console.error("Navigation error:", error);
+    }
+  };
+
+  const navigateToProfile = () => {
+    try {
+      router.push("/(tabs)/(profile)");
+    } catch (error) {
+      console.error("Profile navigation error:", error);
+    }
+  };
   return (
     <View className="flex-row justify-between items-center px-2 py-2 bg-white">
       <View className="flex-row items-center">
-        <TouchableOpacity
-          onPress={() => console.log("Image Pressed!")}
-          activeOpacity={0.7}
-        >
+        <TouchableOpacity onPress={navigateToDashboard} activeOpacity={0.7}>
           <Image
             source={require("@/assets/images/adaptive-icon.png")}
             className="w-8 h-8 mr-2"
@@ -36,7 +48,7 @@ function Header() {
         <MaterialIcons name="notifications" size={24} color="#687076" />
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push("/(tabs)/profile")}>
+      <TouchableOpacity onPress={navigateToProfile}>
         <Avatar size="sm">
           {user?.picture ? (
             <AvatarImage source={{ uri: user.picture }} />

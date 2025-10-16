@@ -72,11 +72,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
   );
 
   // Count active incidents
-  const activeIncidents =
-    property.incidents?.filter(
-      (incident) =>
-        incident.status !== "Resolved" && incident.status !== "Closed",
-    ).length || 0;
+  const activeIncidents = property.openIncidentCount || 0;
 
   // Determine status badge color and text based on property status
   const getStatusBadge = () => {
@@ -154,6 +150,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
       </Box>
     );
   };
+
   return (
     <Pressable onPress={() => onPress(property)} className={cardClassName}>
       <Box className="rounded-lg shadow-lg overflow-hidden bg-white">
@@ -176,15 +173,27 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
             <Heading className="text-lg font-semibold">
               {property.address}
             </Heading>
-            <Text>{`${property.city}, ${property.state} ${property.zipCode}`}</Text>
-            <HStack className="items-center mt-2 space-x-2">
-              {activeIncidents > 0 && (
-                <Badge className="bg-red-100/80 py-0.5 px-2 rounded">
-                  <Text className="text-xs text-red-500/90">
-                    {activeIncidents} Issue{activeIncidents > 1 ? "s" : ""}
-                  </Text>
-                </Badge>
-              )}
+
+            <HStack className="items-center mt-2">
+              <Badge
+                className={
+                  activeIncidents > 0
+                    ? "bg-red-100/80 py-0.5 px-2 rounded"
+                    : "bg-green-100/80 py-0.5 px-2 rounded"
+                }
+              >
+                <Text
+                  className={
+                    activeIncidents > 0
+                      ? "text-xs text-red-500/90"
+                      : "text-xs text-green-600/90"
+                  }
+                >
+                  {activeIncidents > 0
+                    ? `${activeIncidents} Issue${activeIncidents > 1 ? "s" : ""}`
+                    : "No Issues"}
+                </Text>
+              </Badge>
             </HStack>
           </VStack>
 

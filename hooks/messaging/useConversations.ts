@@ -237,7 +237,12 @@ export const useGetConversation = (conversationId: string) => {
         ) || [];
 
       const participantNames: string[] = [];
+      const participantEmails: string[] = [];
+      const participantFirstNames: string[] = [];
+      const participantLastNames: string[] = [];
       const participantAvatars: (string | null)[] = [];
+
+      let otherParticipant = null;
 
       for (const participantId of otherParticipants) {
         try {
@@ -268,21 +273,14 @@ export const useGetConversation = (conversationId: string) => {
                 userData.user.profilePictureUrl || userData.profilePictureUrl;
             }
 
-            if (firstName && lastName) {
-              if (!(firstName === "Invited" && lastName === "User")) {
-                displayName = `${firstName} ${lastName}`;
-              } else if (email) {
-                const emailUsername = email.split("@")[0];
-                displayName = emailUsername
-                  .replace(/[._-]/g, " ")
-                  .split(" ")
-                  .map(
-                    (word: string) =>
-                      word.charAt(0).toUpperCase() + word.slice(1),
-                  )
-                  .join(" ");
-              }
+            if (
+              firstName &&
+              lastName &&
+              !(firstName === "Invited" && lastName === "User")
+            ) {
+              displayName = `${firstName} ${lastName}`;
             } else if (email) {
+              // Create display name from email
               const emailUsername = email.split("@")[0];
               displayName = emailUsername
                 .replace(/[._-]/g, " ")
@@ -295,14 +293,35 @@ export const useGetConversation = (conversationId: string) => {
             }
 
             participantNames.push(displayName);
+            participantEmails.push(email || "");
+            participantFirstNames.push(firstName || "");
+            participantLastNames.push(lastName || "");
             participantAvatars.push(avatar || null);
+
+            // For one-on-one conversations, set the other participant
+            if (otherParticipants.length === 1) {
+              otherParticipant = {
+                id: participantId,
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                profilePictureUrl: avatar,
+                name: displayName,
+              };
+            }
           } else {
             participantNames.push(`User ${participantId}`);
+            participantEmails.push("");
+            participantFirstNames.push("");
+            participantLastNames.push("");
             participantAvatars.push(null);
           }
         } catch (error) {
           console.warn(`Failed to fetch user ${participantId}:`, error);
           participantNames.push(`User ${participantId}`);
+          participantEmails.push("");
+          participantFirstNames.push("");
+          participantLastNames.push("");
           participantAvatars.push(null);
         }
       }
@@ -312,7 +331,11 @@ export const useGetConversation = (conversationId: string) => {
         conversation: {
           ...conversationData.conversation,
           participantNames,
+          participantEmails,
+          participantFirstNames,
+          participantLastNames,
           participantAvatars,
+          otherParticipant,
         },
       };
     },

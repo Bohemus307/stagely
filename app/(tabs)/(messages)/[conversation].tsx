@@ -1,15 +1,20 @@
 import { useLocalSearchParams } from "expo-router";
-import { useState, useRef, useEffect, useCallback, memo, useMemo } from "react";
+import { useState, useRef, useEffect, useCallback, memo } from "react";
 import {
   FlatList,
-  SafeAreaView,
   TextInput,
   TouchableOpacity,
   View,
   Text,
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { Box } from "@/components/ui/box";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -29,47 +34,11 @@ import {
 import { useAuthUser } from "@/hooks/useAuthUser";
 import { ChatMessage } from "@/lib/@types/messages";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-
-const getDisplayName = (participant: any): string => {
-  if (
-    participant?.firstName &&
-    participant?.lastName &&
-    !(participant.firstName === "Invited" && participant.lastName === "User")
-  ) {
-    return `${participant.firstName} ${participant.lastName}`;
-  }
-
-  if (
-    participant?.name &&
-    participant.name !== "Invited User" &&
-    participant.name.trim() !== ""
-  ) {
-    return participant.name;
-  }
-
-  if (participant?.email) {
-    const emailUsername = participant.email.split("@")[0];
-    return emailUsername
-      .replace(/[._]/g, " ")
-      .split(" ")
-      .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  }
-
-  return "Unknown User";
-};
-
-const isPlaceholderUser = (participant: any): boolean => {
-  return (
-    !participant?.firstName ||
-    !participant?.lastName ||
-    participant.firstName === "Invited" ||
-    participant.lastName === "User" ||
-    participant.name === "Invited User" ||
-    !participant.name ||
-    participant.name.trim() === ""
-  );
-};
+import { useFocusEffect } from "@react-navigation/native";
+import {
+  getDisplayName,
+  isPlaceholderUser,
+} from "@/components/message/lib/utils/messageHelpers";
 
 const MessageItem = memo(
   ({
@@ -124,7 +93,7 @@ MessageItem.displayName = "MessageItem";
 const ConversationScreen = () => {
   const params = useLocalSearchParams();
   const conversationId = params.conversation as string;
-
+  const insets = useSafeAreaInsets();
   const { backendUser, isLoading: isLoadingUser } = useAuthUser();
   const [newMessage, setNewMessage] = useState("");
   const [formattedMessages, setFormattedMessages] = useState<ChatMessage[]>([]);
@@ -134,8 +103,7 @@ const ConversationScreen = () => {
 
   const flatListRef = useRef<FlatList>(null);
   const textInputRef = useRef<TextInput>(null);
-
-  const otherUserId = useMemo(() => Number(params.userId), [params.userId]);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const { conversation, isLoading: isLoadingConversation } =
     useGetConversation(conversationId);
@@ -151,6 +119,18 @@ const ConversationScreen = () => {
 
   const { mutate: markAsReadMutation } = useMarkAsRead(conversationId);
 
+  const otherUserId = conversation?.participants?.find(
+    (p: number) => p !== backendUser?.id,
+  );
+
+  const otherParticipant = conversation?.otherParticipant;
+  const otherUserName = otherParticipant
+    ? getDisplayName(otherParticipant)
+    : "User";
+  const otherUserAvatar = otherParticipant?.profilePictureUrl;
+  const showEmailSubtitle =
+    otherParticipant && isPlaceholderUser(otherParticipant);
+
   useEffect(() => {
     setNewMessage("");
   }, [conversationId]);
@@ -160,6 +140,21 @@ const ConversationScreen = () => {
     setUnreadMessagesToMark([]);
     setNewMessage("");
   }, [backendUser?.id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      pollingIntervalRef.current = setInterval(() => {
+        refetchMessages();
+      }, 3000);
+
+      return () => {
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+          pollingIntervalRef.current = null;
+        }
+      };
+    }, [refetchMessages]),
+  );
 
   const formatMessageTime = useCallback((timestamp: string) => {
     try {
@@ -235,7 +230,6 @@ const ConversationScreen = () => {
     isLoadingConversation,
   ]);
 
-  // Mark messages as read
   useEffect(() => {
     if (unreadMessagesToMark.length > 0 && backendUser?.id) {
       const timeoutId = setTimeout(() => {
@@ -324,16 +318,6 @@ const ConversationScreen = () => {
     );
   }
 
-  const otherParticipant = conversation?.otherParticipant;
-  const otherUserName = otherParticipant
-    ? getDisplayName(otherParticipant)
-    : conversation?.participantNames?.[0] || "User";
-  const otherUserAvatar =
-    otherParticipant?.profilePictureUrl ||
-    conversation?.participantAvatars?.[0];
-  const showEmailSubtitle =
-    otherParticipant && isPlaceholderUser(otherParticipant);
-
   return (
     <ThemedView className="flex-1">
       <SafeAreaView className="flex-1">
@@ -357,7 +341,6 @@ const ConversationScreen = () => {
                 <ThemedText className="font-semibold">
                   {otherUserName}
                 </ThemedText>
-                {/* Show email as subtitle for placeholder users */}
                 {showEmailSubtitle && conversation?.otherParticipant?.email && (
                   <ThemedText className="text-xs text-gray-500">
                     {conversation.otherParticipant.email}
@@ -367,64 +350,69 @@ const ConversationScreen = () => {
             </HStack>
           </View>
         </View>
-
-        {/* Message List */}
-        <View style={{ flex: 1 }}>
-          <FlatList
-            ref={flatListRef}
-            data={formattedMessages}
-            renderItem={renderMessage}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={{
-              paddingHorizontal: 16,
-              paddingVertical: 16,
-            }}
-            style={{ flex: 1 }}
-            inverted
-            onRefresh={refetchMessages}
-            refreshing={isLoadingMessages}
-            keyboardShouldPersistTaps="handled"
-            keyboardDismissMode="interactive"
-          />
-        </View>
-
-        {/* Message Input */}
-        <View
-          className="border-t border-gray-200 px-2 pt-2 pb-2 mb-13 flex-row items-center"
-          style={{
-            borderTopColor: "#e5e7eb",
-            marginBottom: 52,
-          }}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
         >
-          <TextInput
-            ref={textInputRef}
-            className="flex-1 rounded-full px-4 items-center mr-2 text-base"
+          {/* Message List */}
+          <View style={{ flex: 1 }}>
+            <FlatList
+              ref={flatListRef}
+              data={formattedMessages}
+              renderItem={renderMessage}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={{
+                paddingHorizontal: 16,
+                paddingVertical: 16,
+              }}
+              style={{ flex: 1 }}
+              inverted
+              onRefresh={refetchMessages}
+              refreshing={isLoadingMessages}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="interactive"
+            />
+          </View>
+
+          {/* Message Input */}
+          <View
+            className="border-t border-gray-200 px-2 pt-2 pb-2 flex-row items-center"
             style={{
-              backgroundColor: "#f3f4f6",
-              height: 45,
-            }}
-            placeholder="Type a message..."
-            value={newMessage}
-            onChangeText={setNewMessage}
-            returnKeyType="send"
-            onSubmitEditing={handleSendMessage}
-            editable={!!backendUser?.id && !isSendingMessage}
-            autoCorrect={false}
-            autoCapitalize="sentences"
-            keyboardType="default"
-            textContentType="none"
-            autoComplete="off"
-          />
-          <TouchableOpacity
-            onPress={handleSendMessage}
-            className="rounded-full w-10 h-10 justify-center items-center"
-            style={{
-              backgroundColor: "#042C44",
+              borderTopColor: "#e5e7eb",
+              paddingBottom: (insets.bottom || 0) + 16,
             }}
           >
-            <IconSymbol name="paperplane.fill" size={20} color="white" />
-          </TouchableOpacity>
-        </View>
+            <TextInput
+              ref={textInputRef}
+              className="flex-1 rounded-full px-4 items-center mr-2 text-base"
+              style={{
+                backgroundColor: "#f3f4f6",
+                height: 45,
+              }}
+              placeholder="Type a message..."
+              value={newMessage}
+              onChangeText={setNewMessage}
+              returnKeyType="send"
+              onSubmitEditing={handleSendMessage}
+              editable={!!backendUser?.id && !isSendingMessage}
+              autoCorrect={false}
+              autoCapitalize="sentences"
+              keyboardType="default"
+              textContentType="none"
+              autoComplete="off"
+            />
+            <TouchableOpacity
+              onPress={handleSendMessage}
+              className="rounded-full w-10 h-10 justify-center items-center"
+              style={{
+                backgroundColor: "#042C44",
+              }}
+            >
+              <IconSymbol name="paperplane.fill" size={20} color="white" />
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </ThemedView>
   );
